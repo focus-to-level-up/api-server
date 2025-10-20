@@ -1,0 +1,89 @@
+name: CI/CD Template
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'dev/prod'
+        required: true
+        type: string
+
+env:
+  IMAGE_TAG: ${{ inputs.environment == 'prod' && github.ref_name || github.sha }}
+  EC2_HOST: ${{ inputs.environment == 'prod' && secrets.EC2_HOST_PROD || secrets.EC2_HOST_DEV }}
+  EC2_SSH_KEY: ${{ inputs.environment == 'prod' && secrets.EC2_SSH_KEY_PROD || secrets.EC2_SSH_KEY_DEV }}
+
+jobs:
+  build-and-release:
+    name: Build and Release for ${{ inputs.environment }}
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          no-cache: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}:${{ env.IMAGE_TAG }}
+            ${{ inputs.environment == 'prod' && format('{0}/{1}:latest', secrets.DOCKER_USERNAME, secrets.DOCKER_REPO) || '' }}
+          platforms: linux/amd64
+
+  deploy:
+    needs: build-and-release
+    runs-on: ubuntu-24.04
+    name: Deploy for ${{ inputs.environment }}
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ env.EC2_SSH_KEY }}
+          envs: IMAGE_TAG
+          port: 22
+          script: |
+            set -e
+
+            # /opt/focus-to-level-up 디렉토리로 이동
+            cd /opt/focus-to-level-up
+
+            # .env 파일 업데이트
+            cat > .env << 'ENV_EOF'
+            ${{ inputs.environment == 'prod' && secrets.ENV_FILE_PROD || secrets.ENV_FILE_DEV }}
+            ENV_EOF
+
+            # IMAGE_TAG 환경변수 export
+            export IMAGE_TAG=${{ env.IMAGE_TAG }}
+
+            # Docker Hub 로그인
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+            # 새 이미지 pull
+            docker compose pull app
+
+            # Rolling update (다운타임 최소화)
+            docker compose up -d --no-deps --force-recreate app
+
+            # 사용하지 않는 이미지 정리
+            docker image prune -f

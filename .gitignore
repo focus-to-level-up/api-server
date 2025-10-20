@@ -37,6 +37,8 @@ out/
 .vscode/
 
 ### Docker volumes ###
+mysql/
+redis/
 
 ### Environment & Secrets ###
 .env
@@ -47,9 +49,13 @@ out/
 ### AWS Credentials ###
 
 ### Application Config (with sensitive data) ###
-src/main/resources/application-dev.yml
-src/main/resources/application-prod.yml
-src/main/resources/static/
+# Note: application-dev.yml, application-prod.yml은 환경변수만 참조하므로 커밋 가능
+# 하지만 실수 방지를 위해 주석 처리
+# src/main/resources/application-dev.yml
+# src/main/resources/application-prod.yml
+src/main/resources/static/*.json
+src/main/resources/static/*.pem
+src/main/resources/static/*.key
 
 ### Service Account Keys ###
 
