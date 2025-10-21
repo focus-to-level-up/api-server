@@ -1,0 +1,16 @@
+name: CI/CD for Development
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  call-cicd-template:
+    name: Call CI/CD Template for Development
+    uses: ./.github/workflows/cicd-template.yml
+    secrets: inherit
+    with:
+      environment: 'dev'

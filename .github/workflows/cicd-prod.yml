@@ -1,0 +1,17 @@
+name: CI/CD for Production
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: read
+
+jobs:
+  call-cicd-template:
+    name: Call CI/CD Template for Production
+    uses: ./.github/workflows/cicd-template.yml
+    secrets: inherit
+    with:
+      environment: 'prod'

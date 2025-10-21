@@ -1,0 +1,7 @@
+# application-local.yml (로컬 개발용)
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:13307/focus_db?serverTimezone=UTC&characterEncoding=UTF-8
+    username: focus
+    password: focus
+    driver-class-name: com.mysql.cj.jdbc.Driver
