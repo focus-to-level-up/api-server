@@ -12,6 +12,9 @@ env:
   IMAGE_TAG: ${{ inputs.environment == 'prod' && github.ref_name || github.sha }}
   EC2_HOST: ${{ inputs.environment == 'prod' && secrets.EC2_HOST_PROD || secrets.EC2_HOST_DEV }}
   EC2_SSH_KEY: ${{ inputs.environment == 'prod' && secrets.EC2_SSH_KEY_PROD || secrets.EC2_SSH_KEY_DEV }}
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
 jobs:
   build-and-release:
@@ -83,7 +86,7 @@ jobs:
           host: ${{ env.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ env.EC2_SSH_KEY }}
-          envs: IMAGE_TAG
+          envs: IMAGE_TAG,DOCKER_USERNAME,DOCKER_REPO,DOCKER_PASSWORD
           port: 22
           script: |
             set -e
@@ -92,9 +95,11 @@ jobs:
             ${{ inputs.environment == 'prod' && secrets.ENV_FILE_PROD || secrets.ENV_FILE_DEV }}
             ENV_EOF
 
-            export IMAGE_TAG=${{ env.IMAGE_TAG }}
+            export IMAGE_TAG="${IMAGE_TAG}"
+            export DOCKER_USERNAME="${DOCKER_USERNAME}"
+            export DOCKER_REPO="${DOCKER_REPO}"
 
-            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+            echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
 
             docker compose -f /opt/focus-to-level-up/docker-compose.yml pull app
             docker compose -f /opt/focus-to-level-up/docker-compose.yml up -d 
