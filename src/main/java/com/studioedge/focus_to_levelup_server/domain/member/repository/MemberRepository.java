@@ -1,7 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.member.repository;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.SocialType;
+import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

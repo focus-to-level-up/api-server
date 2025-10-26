@@ -1,13 +1,15 @@
 package com.studioedge.focus_to_levelup_server.domain.member.entity;
 
+import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
+import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;
+import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
 
 import java.time.LocalDateTime;
 
@@ -15,8 +17,8 @@ import java.time.LocalDateTime;
 @Table(name = "members")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EntityListeners(AuditingEntityListener.class)
-public class Member {
+@DynamicInsert
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,15 +56,8 @@ public class Member {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @ColumnDefault("'ACTIVE'")
     private MemberStatus status;
-
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
 
     @Builder
     public Member(SocialType socialType, String socialId, String nickname, String fcmToken,
