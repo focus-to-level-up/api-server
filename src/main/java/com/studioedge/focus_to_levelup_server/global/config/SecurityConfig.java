@@ -1,5 +1,8 @@
 package com.studioedge.focus_to_levelup_server.global.config;
 
+import com.studioedge.focus_to_levelup_server.global.jwt.CustomJwtAuthenticationEntryPoint;
+import com.studioedge.focus_to_levelup_server.global.jwt.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,21 +12,28 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomJwtAuthenticationEntryPoint customJwtAuthenticationEntryPoint;
 
     private static final String[] PERMIT_URL_ARRAY = {
             // test endpoint
             "/test/**",
             "/api/test/**",
 
-            // auth endpoints (TODO: JWT 구현 후 추가)
-            "/api/auth/**",
+            // auth endpoints (회원가입, 로그인, 토큰 갱신은 인증 불필요)
+            "/api/auth/login/**",
+            "/api/auth/signup/**",
+            "/api/auth/refresh",
 
             // swagger
             "/v2/api-docs",
@@ -75,8 +85,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeHttpRequests ->
                         authorizeHttpRequests
                                 .requestMatchers(PERMIT_URL_ARRAY).permitAll()
-                                // TODO: JWT 구현 후 인증 필요한 엔드포인트 설정
-                                .anyRequest().permitAll() // 임시로 모든 요청 허용
+                                .anyRequest().authenticated() // 나머지 요청은 인증 필요
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exceptionHandling ->
+                        exceptionHandling.authenticationEntryPoint(customJwtAuthenticationEntryPoint)
                 )
                 .build();
     }

@@ -17,6 +17,17 @@ spring:
     generate-ddl: true
     database-platform: org.hibernate.dialect.MySQLDialect
 
+# JWT 설정
+jwt:
+  secret: ${JWT_SECRET}
+
+# Apple Sign In 설정
+apple:
+  client-id: ${APPLE_CLIENT_ID}
+  team-id: ${APPLE_TEAM_ID}
+  key-id: ${APPLE_KEY_ID}
+  private-key: ${APPLE_PRIVATE_KEY}
+
 logging:
   level:
     org:
