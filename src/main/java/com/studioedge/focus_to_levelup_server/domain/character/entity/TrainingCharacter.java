@@ -29,6 +29,9 @@ public class TrainingCharacter extends BaseEntity {
     private Integer reward;
 
     @Column(nullable = false)
+    private Integer floor;
+
+    @Column(nullable = false)
     private LocalDateTime startDateTime;
 
     @Column(nullable = false)

@@ -1,6 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.member.entity;
 
 import com.studioedge.focus_to_levelup_server.domain.member.enums.Gender;
+import com.studioedge.focus_to_levelup_server.domain.system.entity.MemberAsset;
 import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
 import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
 import jakarta.persistence.*;
@@ -13,7 +14,7 @@ import org.hibernate.annotations.DynamicInsert;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "member_info")
+@Table(name = "member_infos")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicInsert
@@ -24,7 +25,6 @@ public class MemberInfo {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
     private Member member;
 
     @Column(nullable = false)
@@ -42,8 +42,7 @@ public class MemberInfo {
     @Column(nullable = false)
     private CategorySubType categorySub;
 
-    @Column(nullable = false)
-    @ColumnDefault()
+    // 유저 생성 시점에는 null -> (null || 1달이 지났을 경우) 업데이트 가능.
     private LocalDateTime categoryUpdatedAt;
 
     @Column(nullable = false)
@@ -52,5 +51,19 @@ public class MemberInfo {
 
     private String profileMessage;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_asset_id") // Asset ID 참조
+    private MemberAsset profileImage;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_asset_id") // Asset ID 참조
+    private MemberAsset profileBorder;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private int gold;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private int diamond;
 }
