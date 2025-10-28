@@ -2,6 +2,7 @@ package com.studioedge.focus_to_levelup_server.domain.auth.controller;
 
 import com.studioedge.focus_to_levelup_server.domain.auth.dto.*;
 import com.studioedge.focus_to_levelup_server.domain.auth.service.AuthService;
+import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.SocialType;
 import com.studioedge.focus_to_levelup_server.global.jwt.UserAuthentication;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
@@ -136,10 +137,10 @@ public class AuthController {
             @Parameter(description = "소셜 로그인 타입 (apple, kakao, naver, google)", example = "apple")
             @PathVariable String socialType,
             @Parameter(hidden = true)
-            @AuthenticationPrincipal UserAuthentication userAuth
+            @AuthenticationPrincipal Member member
     ) {
         SocialType type = SocialType.valueOf(socialType.toUpperCase());
-        authService.resign(userAuth.getMemberId(), type);
+        authService.resign(member.getMemberId(), type);
         return HttpResponseUtil.ok(null);
     }
 }

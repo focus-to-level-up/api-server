@@ -26,12 +26,16 @@ public class ExceptionMapper {
     private static void setUpAuthException() {
         mapper.put(UserNotRegisteredException.class,
                 ExceptionSituation.of("등록되지 않은 사용자입니다. 회원가입이 필요합니다.", HttpStatus.UNAUTHORIZED));
+        mapper.put(WithdrawnMemberException.class,
+                ExceptionSituation.of("탈퇴한 회원입니다. 재가입이 필요합니다.", HttpStatus.FORBIDDEN));
         mapper.put(InvalidTokenTypeException.class,
                 ExceptionSituation.of("잘못된 토큰 타입입니다. Refresh Token이 필요합니다.", HttpStatus.BAD_REQUEST));
         mapper.put(TokenMismatchException.class,
                 ExceptionSituation.of("Refresh Token이 일치하지 않습니다.", HttpStatus.UNAUTHORIZED));
         mapper.put(RefreshTokenExpiredException.class,
                 ExceptionSituation.of("Refresh Token이 만료되었습니다. 재로그인이 필요합니다.", HttpStatus.UNAUTHORIZED));
+        mapper.put(InvalidSocialTokenException.class,
+                ExceptionSituation.of("유효하지 않은 소셜 로그인 토큰입니다.", HttpStatus.BAD_REQUEST));
         mapper.put(InvalidAppleTokenException.class,
                 ExceptionSituation.of("유효하지 않은 Apple Identity Token입니다.", HttpStatus.BAD_REQUEST));
     }

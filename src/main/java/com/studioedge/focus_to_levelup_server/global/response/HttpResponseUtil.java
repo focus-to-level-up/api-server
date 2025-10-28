@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 
@@ -29,5 +30,22 @@ public class HttpResponseUtil {
         response.setStatus(httpStatus.value());
         response.setCharacterEncoding("UTF-8");
         objectMapper.writeValue(response.getOutputStream(), body);
+    }
+
+    // REST API용 메서드들
+    public static <T> ResponseEntity<CommonResponse<T>> ok(T data) {
+        return ResponseEntity.ok(CommonResponse.ok(data));
+    }
+
+    public static <T> ResponseEntity<CommonResponse<T>> created(T data) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.ok(data));
+    }
+
+    public static <T> ResponseEntity<CommonResponse<T>> updated(T data) {
+        return ResponseEntity.ok(CommonResponse.ok(data));
+    }
+
+    public static <T> ResponseEntity<CommonResponse<T>> delete(T data) {
+        return ResponseEntity.ok(CommonResponse.ok(data));
     }
 }

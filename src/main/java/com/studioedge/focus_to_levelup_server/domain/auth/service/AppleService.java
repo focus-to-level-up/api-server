@@ -112,7 +112,7 @@ public class AppleService {
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                     .body(BodyInserters.fromFormData(params))
                     .retrieve()
-                    .onStatus(HttpStatus::isError, clientResponse -> {
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), clientResponse -> {
                         log.error("Failed to get Apple token, status: {}", clientResponse.statusCode());
                         return Mono.error(new InvalidAppleTokenException());
                     })
@@ -132,7 +132,7 @@ public class AppleService {
      */
     @Transactional
     public void revokeAppleToken(Member member) {
-        if (member.getRefreshToken() == null) {
+        if (member.getAppleRefreshToken() == null) {
             log.warn("Member {} has no Apple refresh token to revoke", member.getMemberId());
             return;
         }
@@ -143,7 +143,7 @@ public class AppleService {
             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
             params.add("client_id", clientId);
             params.add("client_secret", clientSecret);
-            params.add("token", member.getRefreshToken());
+            params.add("token", member.getAppleRefreshToken());
             params.add("token_type_hint", "refresh_token");
 
             webClient.post()
@@ -151,7 +151,7 @@ public class AppleService {
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                     .body(BodyInserters.fromFormData(params))
                     .retrieve()
-                    .onStatus(HttpStatus::isError, clientResponse -> {
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), clientResponse -> {
                         log.error("Failed to revoke Apple token, status: {}", clientResponse.statusCode());
                         return Mono.empty();
                     })

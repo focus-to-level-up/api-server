@@ -38,6 +38,18 @@ public class Member {
     @Column(length = 500)
     private String refreshToken;
 
+    @Column(length = 500)
+    private String appleRefreshToken;
+
+    @Column(length = 500)
+    private String kakaoRefreshToken;
+
+    @Column(length = 500)
+    private String naverRefreshToken;
+
+    @Column(length = 500)
+    private String googleRefreshToken;
+
     private String fcmToken;
 
     @Enumerated(EnumType.STRING)
@@ -53,17 +65,39 @@ public class Member {
     private LocalDateTime updatedAt;
 
     @Builder
-    public Member(SocialType socialType, String socialId, String nickname, String fcmToken, MemberStatus status) {
+    public Member(SocialType socialType, String socialId, String nickname, String fcmToken,
+                  String appleRefreshToken, String kakaoRefreshToken,
+                  String naverRefreshToken, String googleRefreshToken, MemberStatus status) {
         this.socialType = socialType;
         this.socialId = socialId;
         this.nickname = nickname;
         this.fcmToken = fcmToken;
+        this.appleRefreshToken = appleRefreshToken;
+        this.kakaoRefreshToken = kakaoRefreshToken;
+        this.naverRefreshToken = naverRefreshToken;
+        this.googleRefreshToken = googleRefreshToken;
         this.status = status != null ? status : MemberStatus.ACTIVE;
     }
 
     // 비즈니스 로직
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    public void setAppleRefreshToken(String appleRefreshToken) {
+        this.appleRefreshToken = appleRefreshToken;
+    }
+
+    public void setKakaoRefreshToken(String kakaoRefreshToken) {
+        this.kakaoRefreshToken = kakaoRefreshToken;
+    }
+
+    public void setNaverRefreshToken(String naverRefreshToken) {
+        this.naverRefreshToken = naverRefreshToken;
+    }
+
+    public void setGoogleRefreshToken(String googleRefreshToken) {
+        this.googleRefreshToken = googleRefreshToken;
     }
 
     public void resetRefreshToken() {
@@ -83,5 +117,9 @@ public class Member {
         this.status = MemberStatus.WITHDRAWN;
         this.refreshToken = null;
         this.fcmToken = null;
+    }
+
+    public void reactivate() {
+        this.status = MemberStatus.ACTIVE;
     }
 }

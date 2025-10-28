@@ -25,53 +25,170 @@ public class AuthService {
     private static final long REFRESH_TOKEN_EXPIRATION = 1209600000L; // 14일
 
     private final AppleService appleService;
+    private final KakaoService kakaoService;
+    private final NaverService naverService;
+    private final GoogleService googleService;
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
     /**
-     * 로그인 (Apple)
+     * 로그인
      */
     @Transactional
     public LoginResponse signIn(LoginRequest request, SocialType socialType) {
-        // 1. Apple Identity Token 검증 및 소셜 ID 추출
-        String socialId = getSocialIdBySocialType(request.getIdentityToken(), socialType);
+        // 1. 각 플랫폼 Service에서 소셜 ID 조회
+        String socialId = switch (socialType) {
+            case APPLE -> appleService.getSocialIdFromIdentityToken(request.getIdentityToken());
+            case KAKAO -> kakaoService.signIn(request.getIdentityToken());
+            case NAVER -> naverService.getSocialIdFromAccessToken(request.getIdentityToken());
+            case GOOGLE -> googleService.getSocialIdFromIdToken(request.getIdentityToken());
+        };
 
         // 2. 사용자 조회
         Member member = memberRepository.findBySocialTypeAndSocialId(socialType, socialId)
                 .orElseThrow(UserNotRegisteredException::new);
 
-        // 3. FCM 토큰 업데이트 (있는 경우)
+        // 3. 탈퇴한 사용자 체크
+        if (member.getStatus() == MemberStatus.WITHDRAWN) {
+            throw new WithdrawnMemberException();
+        }
+
+        // 4. FCM 토큰 업데이트
         if (request.getFcmToken() != null) {
             member.setFcmToken(request.getFcmToken());
         }
 
-        // 4. JWT 토큰 생성
+        // 5. JWT 토큰 생성 및 저장
         Token token = generateToken(member.getMemberId());
-
-        // 5. Refresh Token DB 저장
         member.setRefreshToken(token.getRefreshToken());
 
-        // 6. 프로필 완성 여부 확인 (닉네임이 있으면 완성된 것으로 간주)
+        // 6. 프로필 완성 여부 확인
         boolean isProfileCompleted = member.getNickname() != null;
 
         return LoginResponse.of(token, isProfileCompleted);
     }
 
     /**
-     * 회원가입 (Apple)
+     * 회원가입 (분기점)
      */
     @Transactional
     public SignUpResponse signUp(SignUpRequest request, SocialType socialType) {
-        // 1. Authorization Code로 Apple Token 획득 (Apple Refresh Token 포함)
-        AppleTokenResponse appleTokenResponse = getAppleTokenBySocialType(
+        return switch (socialType) {
+            case APPLE -> signUpApple(request);
+            case KAKAO -> signUpKakao(request);
+            case NAVER -> signUpNaver(request);
+            case GOOGLE -> signUpGoogle(request);
+        };
+    }
+
+    /**
+     * Kakao 회원가입
+     */
+    @Transactional
+    public SignUpResponse signUpKakao(SignUpRequest request) {
+        // 1. KakaoService에서 회원가입 처리 (Authorization Code → socialId + refreshToken)
+        KakaoService.KakaoSignUpResult result = kakaoService.signUp(request.getAuthorizationCode());
+
+        // 2. 회원 생성 또는 조회
+        Member member = findOrCreateMember(SocialType.KAKAO, result.socialId(), request.getFcmToken());
+
+        // 3. Kakao Refresh Token 저장
+        member.setKakaoRefreshToken(result.refreshToken());
+
+        // 4. JWT 토큰 생성 및 저장
+        Token token = generateToken(member.getMemberId());
+        member.setRefreshToken(token.getRefreshToken());
+
+        return SignUpResponse.of(token);
+    }
+
+    /**
+     * Apple 회원가입
+     */
+    @Transactional
+    public SignUpResponse signUpApple(SignUpRequest request) {
+        // 1. Identity Token 검증 및 소셜 ID 추출
+        String socialId = appleService.getSocialIdFromIdentityToken(request.getIdentityToken());
+
+        // 2. Authorization Code로 Refresh Token 교환
+        String refreshToken = appleService.getAppleTokenFromAuthorizationCode(
+                request.getAuthorizationCode()
+        ).getRefreshToken();
+
+        // 3. 회원 생성 또는 조회
+        Member member = findOrCreateMember(SocialType.APPLE, socialId, request.getFcmToken());
+
+        // 4. Apple Refresh Token 저장
+        member.setAppleRefreshToken(refreshToken);
+
+        // 5. JWT 토큰 생성 및 저장
+        Token token = generateToken(member.getMemberId());
+        member.setRefreshToken(token.getRefreshToken());
+
+        return SignUpResponse.of(token);
+    }
+
+    /**
+     * Naver 회원가입
+     */
+    @Transactional
+    public SignUpResponse signUpNaver(SignUpRequest request) {
+        // 1. Authorization Code로 Access Token + Refresh Token 교환
+        // state는 클라이언트가 제공 (CSRF 방지), 없으면 기본값 "STATE" 사용 (하위 호환성)
+        String state = request.getState() != null ? request.getState() : "STATE";
+        NaverTokenResponse tokenResponse = naverService.getNaverTokenFromAuthorizationCode(
                 request.getAuthorizationCode(),
-                socialType
+                state
+        );
+        String accessToken = tokenResponse.getAccessToken();
+        String refreshToken = tokenResponse.getRefreshToken();
+
+        // 2. Access Token으로 사용자 정보 조회
+        String socialId = naverService.getSocialIdFromAccessToken(accessToken);
+
+        // 3. 회원 생성 또는 조회
+        Member member = findOrCreateMember(SocialType.NAVER, socialId, request.getFcmToken());
+
+        // 4. Naver Refresh Token 저장
+        member.setNaverRefreshToken(refreshToken);
+
+        // 5. JWT 토큰 생성 및 저장
+        Token token = generateToken(member.getMemberId());
+        member.setRefreshToken(token.getRefreshToken());
+
+        return SignUpResponse.of(token);
+    }
+
+    /**
+     * Google 회원가입
+     */
+    @Transactional
+    public SignUpResponse signUpGoogle(SignUpRequest request) {
+        // 1. Authorization Code로 Token 교환 (ID Token + Refresh Token)
+        GoogleTokenResponse tokenResponse = googleService.getGoogleTokenFromAuthorizationCode(
+                request.getAuthorizationCode()
         );
 
-        // 2. Identity Token 검증 및 소셜 ID 추출
-        String socialId = getSocialIdBySocialType(request.getIdentityToken(), socialType);
+        // 2. ID Token 검증 및 소셜 ID 추출
+        String socialId = googleService.getSocialIdFromIdToken(tokenResponse.getIdToken());
 
-        // 3. 기존 회원 여부 확인
+        // 3. 회원 생성 또는 조회
+        Member member = findOrCreateMember(SocialType.GOOGLE, socialId, request.getFcmToken());
+
+        // 4. Google Refresh Token 저장
+        member.setGoogleRefreshToken(tokenResponse.getRefreshToken());
+
+        // 5. JWT 토큰 생성 및 저장
+        Token token = generateToken(member.getMemberId());
+        member.setRefreshToken(token.getRefreshToken());
+
+        return SignUpResponse.of(token);
+    }
+
+    /**
+     * 회원 생성 또는 조회 (공통 로직)
+     */
+    private Member findOrCreateMember(SocialType socialType, String socialId, String fcmToken) {
         Member member = memberRepository.findBySocialTypeAndSocialId(socialType, socialId)
                 .orElse(null);
 
@@ -80,39 +197,24 @@ public class AuthService {
             member = Member.builder()
                     .socialType(socialType)
                     .socialId(socialId)
-                    .fcmToken(request.getFcmToken())
+                    .fcmToken(fcmToken)
                     .status(MemberStatus.ACTIVE)
                     .build();
             memberRepository.save(member);
             log.info("New member created: memberId={}, socialType={}", member.getMemberId(), socialType);
         } else {
-            // 기존 회원 정보 업데이트 (탈퇴 후 재가입 케이스 등)
+            // 기존 회원 정보 업데이트
             if (member.getStatus() == MemberStatus.WITHDRAWN) {
-                // 탈퇴 상태였다면 활성화
-                member = Member.builder()
-                        .socialType(socialType)
-                        .socialId(socialId)
-                        .fcmToken(request.getFcmToken())
-                        .status(MemberStatus.ACTIVE)
-                        .build();
-                memberRepository.save(member);
+                member.reactivate();
+                log.info("Withdrawn member reactivated: memberId={}", member.getMemberId());
             }
-            if (request.getFcmToken() != null) {
-                member.setFcmToken(request.getFcmToken());
+            if (fcmToken != null) {
+                member.setFcmToken(fcmToken);
             }
             log.info("Existing member updated: memberId={}", member.getMemberId());
         }
 
-        // 4. Apple Refresh Token 저장 (회원탈퇴 시 필요)
-        member.setRefreshToken(appleTokenResponse.getRefreshToken());
-
-        // 5. JWT 토큰 생성
-        Token token = generateToken(member.getMemberId());
-
-        // 6. JWT Refresh Token으로 교체 (Apple Refresh Token과 구분)
-        member.setRefreshToken(token.getRefreshToken());
-
-        return SignUpResponse.of(token);
+        return member;
     }
 
     /**
@@ -164,9 +266,12 @@ public class AuthService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 회원 ID입니다."));
 
-        // 1. Apple Token revoke
-        if (socialType == SocialType.APPLE) {
-            appleService.revokeAppleToken(member);
+        // 1. 소셜 로그인별 Token revoke
+        switch (socialType) {
+            case APPLE -> appleService.revokeAppleToken(member);
+            case KAKAO -> kakaoService.unlinkKakaoAccount(member);
+            case NAVER -> naverService.revokeNaverToken(member);
+            case GOOGLE -> googleService.revokeGoogleToken(member);
         }
 
         // 2. 회원 탈퇴 처리
@@ -175,30 +280,6 @@ public class AuthService {
         log.info("Member resigned: memberId={}, socialType={}", memberId, socialType);
     }
 
-    /**
-     * 소셜 타입별 소셜 ID 추출
-     */
-    private String getSocialIdBySocialType(String identityToken, SocialType socialType) {
-        return switch (socialType) {
-            case APPLE -> appleService.getSocialIdFromIdentityToken(identityToken);
-            // TODO: 다른 소셜 로그인 추가
-            // case KAKAO -> kakaoService.getSocialIdFromToken(identityToken);
-            // case NAVER -> naverService.getSocialIdFromToken(identityToken);
-            // case GOOGLE -> googleService.getSocialIdFromToken(identityToken);
-            default -> throw new IllegalArgumentException("지원하지 않는 소셜 타입입니다: " + socialType);
-        };
-    }
-
-    /**
-     * 소셜 타입별 Token 획득
-     */
-    private AppleTokenResponse getAppleTokenBySocialType(String authorizationCode, SocialType socialType) {
-        return switch (socialType) {
-            case APPLE -> appleService.getAppleTokenFromAuthorizationCode(authorizationCode);
-            // TODO: 다른 소셜 로그인 추가
-            default -> throw new IllegalArgumentException("지원하지 않는 소셜 타입입니다: " + socialType);
-        };
-    }
 
     /**
      * JWT 토큰 생성 (Access + Refresh)

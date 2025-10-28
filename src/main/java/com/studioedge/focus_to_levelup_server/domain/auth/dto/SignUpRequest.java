@@ -18,6 +18,9 @@ public class SignUpRequest {
     @Schema(description = "Apple Authorization Code", example = "c1234567890abcdef...")
     private String authorizationCode;
 
+    @Schema(description = "State (Naver OAuth용 CSRF 방지, Optional)", example = "random_state_string_12345")
+    private String state;
+
     @Schema(description = "FCM 토큰 (푸시 알림용)", example = "dGhpc2lzZmNtdG9rZW4...")
     private String fcmToken;
 }

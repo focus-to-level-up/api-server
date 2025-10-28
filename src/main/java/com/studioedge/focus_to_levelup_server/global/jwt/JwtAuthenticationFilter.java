@@ -32,13 +32,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
             final String token = getJwtFromRequest(request);
+            log.debug("Extracted JWT token: {}", token != null ? "present" : "absent");
 
             if (StringUtils.hasText(token)) {
                 JwtValidationType validationType = jwtTokenProvider.validateAccessToken(token);
+                log.debug("JWT validation result: {}", validationType);
 
                 if (validationType == JwtValidationType.VALID_JWT) {
                     // Member 조회 및 인증 객체 생성
                     Member member = jwtTokenProvider.getMember(token);
+                    log.debug("Member found: {}", member.getMemberId());
+
                     UserAuthentication authentication = new UserAuthentication(
                             member,
                             null,
@@ -48,9 +52,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     // SecurityContext에 인증 정보 저장
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.debug("Authentication set in SecurityContext for member: {}", member.getMemberId());
                 } else {
                     log.warn("Invalid JWT token: {}", validationType.getMessage());
                 }
+            } else {
+                log.debug("No JWT token found in request");
             }
         } catch (Exception e) {
             log.error("Could not set user authentication in security context", e);
