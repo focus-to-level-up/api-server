@@ -36,7 +36,7 @@ public class SecurityConfig {
             "/api/v1/auth/refresh",
 
             // OAuth callback endpoints (소셜 로그인 redirect URI)
-            "/api/v1/auth/*/callback",
+            "/api/auth/*/callback",
 
             // webhook endpoints (카카오, 네이버, 구글 등 외부에서 호출)
             "/api/v1/webhook/**",
