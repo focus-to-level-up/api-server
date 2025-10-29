@@ -46,7 +46,7 @@ Prod: TBD
 
 ## 인증 (Authentication)
 
-모든 인증 API는 `/api/auth` 경로를 사용합니다.
+모든 인증 API는 `/api/v1/auth` 경로를 사용합니다.
 
 ### 지원하는 소셜 로그인
 - `KAKAO` - 카카오
@@ -64,7 +64,7 @@ Prod: TBD
 
 **Endpoint**
 ```
-POST /api/auth/signup/kakao
+POST /api/v1/auth/signup/kakao
 ```
 
 **Request Body**
@@ -97,7 +97,7 @@ POST /api/auth/signup/kakao
 
 **Endpoint**
 ```
-POST /api/auth/signup/naver
+POST /api/v1/auth/signup/naver
 ```
 
 **Request Body**
@@ -131,7 +131,7 @@ POST /api/auth/signup/naver
 
 **Endpoint**
 ```
-POST /api/auth/signup/google
+POST /api/v1/auth/signup/google
 ```
 
 **Request Body**
@@ -160,7 +160,7 @@ POST /api/auth/signup/google
 
 **Endpoint**
 ```
-POST /api/auth/signup/apple
+POST /api/v1/auth/signup/apple
 ```
 
 **Request Body**
@@ -196,7 +196,7 @@ POST /api/auth/signup/apple
 
 **Endpoint**
 ```
-POST /api/auth/login/kakao
+POST /api/v1/auth/login/kakao
 ```
 
 **Request Body**
@@ -230,7 +230,7 @@ POST /api/auth/login/kakao
 
 **Endpoint**
 ```
-POST /api/auth/login/naver
+POST /api/v1/auth/login/naver
 ```
 
 **Request Body**
@@ -259,7 +259,7 @@ POST /api/auth/login/naver
 
 **Endpoint**
 ```
-POST /api/auth/login/google
+POST /api/v1/auth/login/google
 ```
 
 **Request Body**
@@ -291,7 +291,7 @@ POST /api/auth/login/google
 
 **Endpoint**
 ```
-POST /api/auth/login/apple
+POST /api/v1/auth/login/apple
 ```
 
 **Request Body**
@@ -322,7 +322,7 @@ Access Token이 만료되었을 때 Refresh Token으로 새로운 Access Token�
 
 **Endpoint**
 ```
-POST /api/auth/refresh
+POST /api/v1/auth/refresh
 ```
 
 **Headers**
@@ -363,7 +363,7 @@ Authorization: Bearer {refreshToken}
 
 **Endpoint**
 ```
-DELETE /api/auth/resign/kakao
+DELETE /api/v1/auth/resign/kakao
 ```
 
 **Headers**
@@ -390,7 +390,7 @@ Authorization: Bearer {accessToken}
 
 **Endpoint**
 ```
-DELETE /api/auth/resign/naver
+DELETE /api/v1/auth/resign/naver
 ```
 
 **Headers**
@@ -417,7 +417,7 @@ Authorization: Bearer {accessToken}
 
 **Endpoint**
 ```
-DELETE /api/auth/resign/google
+DELETE /api/v1/auth/resign/google
 ```
 
 **Headers**
@@ -444,7 +444,7 @@ Authorization: Bearer {accessToken}
 
 **Endpoint**
 ```
-DELETE /api/auth/resign/apple
+DELETE /api/v1/auth/resign/apple
 ```
 
 **Headers**
@@ -540,7 +540,7 @@ sequenceDiagram
 
     Client->>SocialProvider: 소셜 로그인 (Authorization Code 발급)
     SocialProvider-->>Client: Authorization Code / Identity Token
-    Client->>Server: POST /api/auth/signup/{socialType}
+    Client->>Server: POST /api/v1/auth/signup/{socialType}
     Server->>SocialProvider: Authorization Code로 Access Token 교환
     SocialProvider-->>Server: Access Token + 사용자 정보
     Server->>Server: 신규 회원 생성 (Member)
@@ -558,7 +558,7 @@ sequenceDiagram
 
     Client->>SocialProvider: 소셜 로그인 (Access Token 발급)
     SocialProvider-->>Client: Access Token / ID Token
-    Client->>Server: POST /api/auth/login/{socialType}
+    Client->>Server: POST /api/v1/auth/login/{socialType}
     Server->>SocialProvider: Token 검증 + 사용자 정보 조회
     SocialProvider-->>Server: 사용자 정보
     Server->>Server: 기존 회원 조회 (socialId로)
@@ -573,7 +573,7 @@ sequenceDiagram
     participant Client
     participant Server
 
-    Client->>Server: POST /api/auth/refresh (with Refresh Token)
+    Client->>Server: POST /api/v1/auth/refresh (with Refresh Token)
     Server->>Server: Refresh Token 검증
     Server->>Server: Member ID 일치 확인
     Server->>Server: 새 JWT 토큰 생성
@@ -588,7 +588,7 @@ sequenceDiagram
     participant Server
     participant SocialProvider
 
-    Client->>Server: DELETE /api/auth/resign/{socialType} (with Access Token)
+    Client->>Server: DELETE /api/v1/auth/resign/{socialType} (with Access Token)
     Server->>Server: JWT 토큰 검증 (Member 조회)
     Server->>SocialProvider: 소셜 토큰 revoke/unlink
     SocialProvider-->>Server: 성공
@@ -635,12 +635,12 @@ sequenceDiagram
 ### 2. 탈퇴 후 재가입
 
 - 탈퇴한 회원(WITHDRAWN)이 다시 로그인 시도하면 `403 Forbidden` 에러 발생
-- 재가입 필요: `/api/auth/signup/{socialType}` 호출
+- 재가입 필요: `/api/v1/auth/signup/{socialType}` 호출
 - 재가입 시 기존 회원 정보 재활성화 (상태 WITHDRAWN → ACTIVE)
 
 ### 3. 인증이 필요한 API
 
-- `/api/auth/**` 외의 모든 엔드포인트는 JWT Access Token 필요
+- `/api/v1/auth/**` 외의 모든 엔드포인트는 JWT Access Token 필요
 - Header에 `Authorization: Bearer {accessToken}` 포함 필수
 
 ### 4. Swagger UI

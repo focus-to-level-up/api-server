@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/webhook/kakao")
+@RequestMapping("/api/v1/webhook/kakao")
 @RequiredArgsConstructor
 public class KakaoWebhookController {
 

@@ -31,15 +31,15 @@ public class SecurityConfig {
             "/api/test/**",
 
             // auth endpoints (회원가입, 로그인, 토큰 갱신은 인증 불필요)
-            "/api/auth/login/**",
-            "/api/auth/signup/**",
-            "/api/auth/refresh",
+            "/api/v1/auth/login/**",
+            "/api/v1/auth/signup/**",
+            "/api/v1/auth/refresh",
 
             // OAuth callback endpoints (소셜 로그인 redirect URI)
-            "/api/auth/*/callback",
+            "/api/v1/auth/*/callback",
 
             // webhook endpoints (카카오, 네이버, 구글 등 외부에서 호출)
-            "/api/webhook/**",
+            "/api/v1/webhook/**",
 
             // swagger
             "/v2/api-docs",
