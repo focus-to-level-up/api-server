@@ -24,8 +24,6 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-    command:
-      - --default-authentication-plugin=mysql_native_password
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
