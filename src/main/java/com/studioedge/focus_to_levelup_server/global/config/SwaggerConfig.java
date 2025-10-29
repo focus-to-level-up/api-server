@@ -75,8 +75,8 @@ public class SwaggerConfig {
 
                         - 해당 페이지는 Focus to Level Up API 서버의 swagger 페이지입니다.
                         - 에러나 문제가 발생한다면 곧바로 이슈를 등록해주세요.
-                        - URI는 꼭 `/api`로 시작하며, RESTful API를 지향합니다.
-                        - `/api/auth/**` 외에는 모두 인증/인가를 수행합니다.
+                        - URI는 꼭 `/api/v1`로 시작하며, RESTful API를 지향합니다.
+                        - `/api/v1/auth/**` 외에는 모두 인증/인가를 수행합니다.
 
                         ### 인증인가 방법
                         - Swagger에서는 오른쪽에 보이는 Authorize에 토큰값만 넣어주면 됩니다.

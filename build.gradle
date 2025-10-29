@@ -1,7 +1,7 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.4.10'
-	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.springframework.boot' version '3.3.5'
+	id 'io.spring.dependency-management' version '1.1.6'
 }
 
 group = 'com.studioedge'
@@ -36,6 +36,20 @@ dependencies {
 
 	// swagger
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+
+	// jwt
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+	// webclient (for Apple API)
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+	// gson (for social login APIs)
+	implementation 'com.google.code.gson:gson:2.10.1'
+
+	// google oauth (for Google Sign In) - using WebClient instead of Google API Client
+	// We'll verify Google ID Token using our existing JWT library
 
 	// dotenv
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
