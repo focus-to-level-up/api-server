@@ -16,7 +16,7 @@
 
 ```
 Local: http://localhost:8080
-Dev: TBD
+Dev: https://dev.api.studio-edge.app
 Prod: TBD
 ```
 
@@ -37,7 +37,6 @@ Prod: TBD
 ### 에러 응답
 ```json
 {
-  "code": "ERROR_CODE",
   "message": "에러 메시지"
 }
 ```
@@ -70,7 +69,8 @@ POST /api/v1/auth/signup/kakao
 **Request Body**
 ```json
 {
-  "authorizationCode": "카카오 인가 코드"
+  "authorizationCode": "카카오 인가 코드",
+  "fcmToken": "FCM 토큰 (선택사항)"
 }
 ```
 
@@ -79,10 +79,7 @@ POST /api/v1/auth/signup/kakao
 {
   "message": "ok",
   "data": {
-    "memberId": 1,
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "isProfileCompleted": false
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
@@ -104,7 +101,8 @@ POST /api/v1/auth/signup/naver
 ```json
 {
   "authorizationCode": "네이버 인가 코드",
-  "state": "CSRF 방지용 state 값 (선택사항)"
+  "state": "CSRF 방지용 state 값 (선택사항)",
+  "fcmToken": "FCM 토큰 (선택사항)"
 }
 ```
 
@@ -113,10 +111,7 @@ POST /api/v1/auth/signup/naver
 {
   "message": "ok",
   "data": {
-    "memberId": 2,
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "isProfileCompleted": false
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
@@ -137,7 +132,8 @@ POST /api/v1/auth/signup/google
 **Request Body**
 ```json
 {
-  "authorizationCode": "구글 인가 코드"
+  "authorizationCode": "구글 인가 코드",
+  "fcmToken": "FCM 토큰 (선택사항)"
 }
 ```
 
@@ -146,10 +142,7 @@ POST /api/v1/auth/signup/google
 {
   "message": "ok",
   "data": {
-    "memberId": 3,
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "isProfileCompleted": false
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
@@ -166,7 +159,9 @@ POST /api/v1/auth/signup/apple
 **Request Body**
 ```json
 {
-  "identityToken": "Apple Identity Token"
+  "identityToken": "Apple Identity Token",
+  "authorizationCode": "Apple Authorization Code",
+  "fcmToken": "FCM 토큰 (선택사항)"
 }
 ```
 
@@ -175,16 +170,13 @@ POST /api/v1/auth/signup/apple
 {
   "message": "ok",
   "data": {
-    "memberId": 4,
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "isProfileCompleted": false
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
 
 **참고사항**
-- Apple은 Identity Token을 사용 (Authorization Code 아님)
+- Apple은 Identity Token과 Authorization Code 모두 필요
 
 ---
 
@@ -202,7 +194,8 @@ POST /api/v1/auth/login/kakao
 **Request Body**
 ```json
 {
-  "accessToken": "카카오 액세스 토큰"
+  "identityToken": "카카오 액세스 토큰",
+  "fcmToken": "FCM 토큰 (선택사항)"
 }
 ```
 
@@ -211,9 +204,7 @@ POST /api/v1/auth/login/kakao
 {
   "message": "ok",
   "data": {
-    "memberId": 1,
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "isProfileCompleted": false
   }
 }
@@ -236,7 +227,8 @@ POST /api/v1/auth/login/naver
 **Request Body**
 ```json
 {
-  "accessToken": "네이버 액세스 토큰"
+  "identityToken": "네이버 액세스 토큰",
+  "fcmToken": "FCM 토큰 (선택사항)"
 }
 ```
 
@@ -245,9 +237,7 @@ POST /api/v1/auth/login/naver
 {
   "message": "ok",
   "data": {
-    "memberId": 2,
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "isProfileCompleted": false
   }
 }
@@ -265,7 +255,8 @@ POST /api/v1/auth/login/google
 **Request Body**
 ```json
 {
-  "idToken": "구글 ID 토큰"
+  "identityToken": "구글 ID 토큰",
+  "fcmToken": "FCM 토큰 (선택사항)"
 }
 ```
 
@@ -274,9 +265,7 @@ POST /api/v1/auth/login/google
 {
   "message": "ok",
   "data": {
-    "memberId": 3,
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "isProfileCompleted": false
   }
 }
@@ -297,7 +286,8 @@ POST /api/v1/auth/login/apple
 **Request Body**
 ```json
 {
-  "identityToken": "Apple Identity Token"
+  "identityToken": "Apple Identity Token",
+  "fcmToken": "FCM 토큰 (선택사항)"
 }
 ```
 
@@ -306,9 +296,7 @@ POST /api/v1/auth/login/apple
 {
   "message": "ok",
   "data": {
-    "memberId": 4,
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "isProfileCompleted": false
   }
 }
@@ -330,20 +318,12 @@ POST /api/v1/auth/refresh
 Authorization: Bearer {refreshToken}
 ```
 
-**Request Body**
-```json
-{
-  "memberId": 1
-}
-```
-
 **Response** `200 OK`
 ```json
 {
   "message": "ok",
   "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
@@ -352,6 +332,10 @@ Authorization: Bearer {refreshToken}
 - `401` - 유효하지 않은 Refresh Token
 - `401` - Refresh Token 만료
 - `403` - Member ID와 토큰 불일치
+
+**참고사항**
+- Refresh Token은 Header의 Authorization에 포함하여 전송
+- Request Body 없음
 
 ---
 
@@ -508,23 +492,23 @@ Location: /swagger-ui/index.html
 
 ### 인증 관련 에러
 
-| HTTP Status | Error Code | Message | 설명 |
-|-------------|------------|---------|------|
-| 404 | USER_NOT_REGISTERED | 가입되지 않은 사용자입니다. | 로그인 시도했으나 회원가입 필요 |
-| 401 | INVALID_APPLE_TOKEN | 유효하지 않은 소셜 로그인 토큰입니다. | Apple Identity Token이 유효하지 않음 |
-| 401 | INVALID_TOKEN_TYPE | 유효하지 않은 토큰입니다. | JWT 토큰 검증 실패 |
-| 403 | TOKEN_MISMATCH | 토큰과 회원 정보가 일치하지 않습니다. | Refresh Token과 Member ID 불일치 |
-| 401 | REFRESH_TOKEN_EXPIRED | Refresh Token이 만료되었습니다. | 재로그인 필요 |
+| HTTP Status | Message | 설명 |
+|-------------|---------|------|
+| 404 | 가입되지 않은 사용자입니다. | 로그인 시도했으나 회원가입 필요 |
+| 401 | 유효하지 않은 소셜 로그인 토큰입니다. | 소셜 로그인 Token이 유효하지 않음 |
+| 401 | 유효하지 않은 토큰입니다. | JWT 토큰 검증 실패 |
+| 403 | 토큰과 회원 정보가 일치하지 않습니다. | Refresh Token과 Member ID 불일치 |
+| 401 | Refresh Token이 만료되었습니다. | 재로그인 필요 |
 
 ### 일반 에러
 
-| HTTP Status | Error Code | Message | 설명 |
-|-------------|------------|---------|------|
-| 400 | BAD_REQUEST | 잘못된 요청입니다. | 요청 파라미터 오류 |
-| 401 | UNAUTHORIZED | 인증이 필요합니다. | 로그인 필요 |
-| 403 | FORBIDDEN | 접근 권한이 없습니다. | 권한 부족 |
-| 404 | NOT_FOUND | 리소스를 찾을 수 없습니다. | 존재하지 않는 리소스 |
-| 500 | INTERNAL_SERVER_ERROR | 서버 내부 오류입니다. | 서버 오류 |
+| HTTP Status | Message | 설명 |
+|-------------|---------|------|
+| 400 | 잘못된 요청입니다. | 요청 파라미터 오류 |
+| 401 | 인증이 필요합니다. | 로그인 필요 |
+| 403 | 접근 권한이 없습니다. | 권한 부족 |
+| 404 | 리소스를 찾을 수 없습니다. | 존재하지 않는 리소스 |
+| 500 | 서버 내부 오류입니다. | 서버 오류 |
 
 ---
 
@@ -545,7 +529,7 @@ sequenceDiagram
     SocialProvider-->>Server: Access Token + 사용자 정보
     Server->>Server: 신규 회원 생성 (Member)
     Server->>Server: JWT 토큰 생성 (Access + Refresh)
-    Server-->>Client: 201 Created (memberId, accessToken, refreshToken)
+    Server-->>Client: 201 Created (accessToken)
 ```
 
 ### 2. 기존 사용자 로그인 Flow
@@ -563,7 +547,7 @@ sequenceDiagram
     SocialProvider-->>Server: 사용자 정보
     Server->>Server: 기존 회원 조회 (socialId로)
     Server->>Server: JWT 토큰 생성 (Access + Refresh)
-    Server-->>Client: 200 OK (memberId, accessToken, refreshToken)
+    Server-->>Client: 200 OK (accessToken, isProfileCompleted)
 ```
 
 ### 3. Access Token 갱신 Flow
@@ -573,11 +557,10 @@ sequenceDiagram
     participant Client
     participant Server
 
-    Client->>Server: POST /api/v1/auth/refresh (with Refresh Token)
+    Client->>Server: POST /api/v1/auth/refresh (with Refresh Token in Header)
     Server->>Server: Refresh Token 검증
-    Server->>Server: Member ID 일치 확인
-    Server->>Server: 새 JWT 토큰 생성
-    Server-->>Client: 200 OK (new accessToken, refreshToken)
+    Server->>Server: 새 Access Token 생성
+    Server-->>Client: 200 OK (new accessToken)
 ```
 
 ### 4. 회원 탈퇴 Flow
@@ -605,11 +588,13 @@ sequenceDiagram
 - **유효기간**: 2시간
 - **용도**: API 인증
 - **Header**: `Authorization: Bearer {accessToken}`
+- **반환**: 회원가입, 로그인, 토큰 갱신 시 반환
 
 ### Refresh Token
 - **유효기간**: 2주
 - **용도**: Access Token 갱신
-- **저장**: DB에 저장 (Member 테이블)
+- **저장**: 서버 DB에 저장 (클라이언트는 받지 않음)
+- **사용**: 토큰 갱신 API 호출 시 Header로 전송
 
 ### Token Payload
 ```json
@@ -625,12 +610,16 @@ sequenceDiagram
 
 ### 1. 소셜 로그인별 필요한 값
 
-| 소셜 | 회원가입 | 로그인 |
+| 소셜 | 회원가입 Request | 로그인 Request |
 |------|---------|--------|
-| Kakao | Authorization Code | Access Token |
-| Naver | Authorization Code + State | Access Token |
-| Google | Authorization Code | ID Token |
-| Apple | Identity Token | Identity Token |
+| Kakao | authorizationCode | identityToken (Kakao Access Token) |
+| Naver | authorizationCode, state (optional) | identityToken (Naver Access Token) |
+| Google | authorizationCode | identityToken (Google ID Token) |
+| Apple | identityToken, authorizationCode | identityToken |
+
+**참고**:
+- 모든 Request DTO는 범용 DTO를 사용하며, 각 플랫폼에 필요한 필드만 채워서 전송
+- `identityToken` 필드는 각 플랫폼의 토큰을 담는 범용 필드명
 
 ### 2. 탈퇴 후 재가입
 
@@ -654,5 +643,5 @@ sequenceDiagram
 ## Contact
 
 - **Project**: Focus to Level Up
-- **Tech Stack**: Spring Boot 3.4.10, Java 17, MySQL 8.0
+- **Tech Stack**: Spring Boot 3.3.5, Java 17, MySQL 8.0
 - **Swagger**: http://localhost:8080/swagger-ui/index.html
