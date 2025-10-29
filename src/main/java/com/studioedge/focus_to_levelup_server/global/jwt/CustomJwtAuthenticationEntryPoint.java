@@ -1,11 +1,13 @@
 package com.studioedge.focus_to_levelup_server.global.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
+import com.studioedge.focus_to_levelup_server.global.exception.ExceptionResponse;
+import com.studioedge.focus_to_levelup_server.global.exception.ExceptionSituation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -30,7 +32,9 @@ public class CustomJwtAuthenticationEntryPoint implements AuthenticationEntryPoi
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
 
-        CommonResponse<Void> errorResponse = CommonResponse.error("인증이 필요합니다.");
+        ExceptionResponse errorResponse = ExceptionResponse.from(
+                ExceptionSituation.of("인증이 필요합니다.", HttpStatus.UNAUTHORIZED)
+        );
 
         String jsonResponse = objectMapper.writeValueAsString(errorResponse);
         response.getWriter().write(jsonResponse);

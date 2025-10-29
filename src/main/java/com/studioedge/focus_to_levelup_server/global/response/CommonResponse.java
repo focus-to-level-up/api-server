@@ -31,8 +31,4 @@ public record CommonResponse<T>(@Schema(example = "data status") String message,
     public static <T> CommonResponse<T> delete(T result) {
         return new CommonResponse<>("deleted", result);
     }
-
-    public static <T> CommonResponse<T> error(String message) {
-        return new CommonResponse<>(message, null);
-    }
 }
