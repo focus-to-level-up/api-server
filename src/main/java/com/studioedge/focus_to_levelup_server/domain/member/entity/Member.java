@@ -29,12 +29,14 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private SocialType socialType;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true, nullable = false)
     private String socialId;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 16, nullable = false)
     private String nickname;
 
+    // 유저 생성할 때 null.
+    // 수정하고 싶다면, (null || 1달이 지났을 경우) 업데이트 가능.
     private LocalDateTime nicknameUpdatedAt;
 
     @Column(length = 500)
@@ -52,6 +54,7 @@ public class Member extends BaseEntity {
     @Column(length = 500)
     private String googleRefreshToken;
 
+    @Column(length = 500)
     private String fcmToken;
 
     @Enumerated(EnumType.STRING)
@@ -59,10 +62,14 @@ public class Member extends BaseEntity {
     @ColumnDefault("'ACTIVE'")
     private MemberStatus status;
 
+    @Column(nullable = false)
+    @ColumnDefault("true")
+    private boolean isAlarmOn;
+
     @Builder
     public Member(SocialType socialType, String socialId, String nickname, String fcmToken,
-                  String appleRefreshToken, String kakaoRefreshToken,
-                  String naverRefreshToken, String googleRefreshToken, MemberStatus status) {
+                  String appleRefreshToken, String kakaoRefreshToken, String naverRefreshToken,
+                  String googleRefreshToken, MemberStatus status, boolean isAlarmOn) {
         this.socialType = socialType;
         this.socialId = socialId;
         this.nickname = nickname;
@@ -72,6 +79,7 @@ public class Member extends BaseEntity {
         this.naverRefreshToken = naverRefreshToken;
         this.googleRefreshToken = googleRefreshToken;
         this.status = status != null ? status : MemberStatus.ACTIVE;
+        this.isAlarmOn = isAlarmOn;
     }
 
     // 비즈니스 로직

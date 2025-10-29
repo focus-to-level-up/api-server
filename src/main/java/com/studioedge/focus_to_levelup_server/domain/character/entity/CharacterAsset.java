@@ -1,7 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.character.entity;
 
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
-import com.studioedge.focus_to_levelup_server.global.common.enums.AssetType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

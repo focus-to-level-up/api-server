@@ -42,7 +42,8 @@ public class MemberInfo {
     @Column(nullable = false)
     private CategorySubType categorySub;
 
-    // 유저 생성 시점에는 null -> (null || 1달이 지났을 경우) 업데이트 가능.
+    // 유저 생성할 때 null.
+    // 수정하고 싶다면, (null || 1달이 지났을 경우) 업데이트 가능.
     private LocalDateTime categoryUpdatedAt;
 
     @Column(nullable = false)

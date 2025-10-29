@@ -39,4 +39,12 @@ public class MemberCharacter extends BaseEntity {
     @Column(nullable = false)
     @ColumnDefault("false")
     private boolean isTraining;
+
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private boolean isDefault; // 대표 캐릭터 여부
+
+    @Column(nullable = false)
+    @ColumnDefault("1")
+    private int defaultEvolution; // 대표 캐릭터의 진화단계 여부
 }
