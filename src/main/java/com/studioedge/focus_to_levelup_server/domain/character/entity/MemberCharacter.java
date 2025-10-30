@@ -4,6 +4,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -34,21 +35,32 @@ public class MemberCharacter extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("1")
-    private int level;
+    private Integer level = 1;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer experience = 0;
 
     @Column(nullable = false)
     @ColumnDefault("1")
-    private int evolution;
+    private Integer evolution = 1;
 
     @Column(nullable = false)
     @ColumnDefault("false")
-    private boolean isTraining;
+    private Boolean isTraining = false;
 
     @Column(nullable = false)
     @ColumnDefault("false")
-    private boolean isDefault; // 대표 캐릭터 여부
+    private Boolean isDefault = false; // 대표 캐릭터 여부
 
     @Column(nullable = false)
     @ColumnDefault("1")
-    private int defaultEvolution; // 대표 캐릭터의 진화단계 여부
+    private Integer defaultEvolution = 1; // 대표 캐릭터의 진화단계 여부
+
+    @Builder
+    public MemberCharacter(Member member, Character character)
+    {
+        this.member = member;
+        this.character = character;
+    }
 }

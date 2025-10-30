@@ -4,6 +4,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -15,7 +16,6 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "daily_goals")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@DynamicInsert
 public class DailyGoal extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,16 +27,25 @@ public class DailyGoal extends BaseEntity {
     private Member member;
 
     @Column(nullable = false)
-    private int targetMinutes;
+    private Integer targetMinutes;
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int currentMinutes;
+    private Integer currentMinutes = 0;
 
     @Column(nullable = false)
     @ColumnDefault("false")
-    private boolean isArchived;
+    private Boolean isArchive = false;
 
     @Column(nullable = false)
-    private float rewardMultiplier;
+    private Float rewardMultiplier;
+
+    @Builder
+    public DailyGoal(Member member, Integer targetMinutes) {
+        this.member = member;
+        this.targetMinutes = targetMinutes;
+
+        int number = (targetMinutes / 60) - 2;
+        this.rewardMultiplier = (float) Math.pow(1.1, Math.max(0, number));
+    }
 }

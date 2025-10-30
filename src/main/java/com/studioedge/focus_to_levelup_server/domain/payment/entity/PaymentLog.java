@@ -4,6 +4,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -26,5 +27,12 @@ public class PaymentLog extends BaseEntity {
     private Product product;
 
     @Column(unique = true, nullable = false)
-    private String productTransactionId;
+    private String productTransactionId; // 결제 영수증
+
+    @Builder
+    public PaymentLog(Member member, Product product, String productTransactionId) {
+        this.member = member;
+        this.product = product;
+        this.productTransactionId = productTransactionId;
+    }
 }

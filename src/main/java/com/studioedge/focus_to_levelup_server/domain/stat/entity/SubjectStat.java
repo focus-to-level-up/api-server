@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -39,5 +40,16 @@ public class SubjectStat extends BaseEntity {
     private LocalDate endDate;
 
     @Column(nullable = false)
-    private int totalMinutes;
+    @ColumnDefault("0")
+    private Integer totalMinutes;
+
+    public SubjectStat(Member member, Subject subject, LocalDate startDate,
+                       LocalDate endDate, Integer totalMinutes)
+    {
+        this.member = member;
+        this.subject = subject;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.totalMinutes = totalMinutes;
+    }
 }

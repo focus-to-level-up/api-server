@@ -9,7 +9,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
 
 import java.time.LocalDateTime;
 
@@ -17,7 +16,6 @@ import java.time.LocalDateTime;
 @Table(name = "members")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@DynamicInsert
 public class Member extends BaseEntity {
 
     @Id
@@ -60,16 +58,16 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'ACTIVE'")
-    private MemberStatus status;
+    private MemberStatus status = MemberStatus.ACTIVE;
 
     @Column(nullable = false)
     @ColumnDefault("true")
-    private boolean isAlarmOn;
+    private Boolean alarmOn = true;
 
     @Builder
     public Member(SocialType socialType, String socialId, String nickname, String fcmToken,
                   String appleRefreshToken, String kakaoRefreshToken, String naverRefreshToken,
-                  String googleRefreshToken, MemberStatus status, boolean isAlarmOn) {
+                  String googleRefreshToken) {
         this.socialType = socialType;
         this.socialId = socialId;
         this.nickname = nickname;
@@ -78,8 +76,6 @@ public class Member extends BaseEntity {
         this.kakaoRefreshToken = kakaoRefreshToken;
         this.naverRefreshToken = naverRefreshToken;
         this.googleRefreshToken = googleRefreshToken;
-        this.status = status != null ? status : MemberStatus.ACTIVE;
-        this.isAlarmOn = isAlarmOn;
     }
 
     // 비즈니스 로직

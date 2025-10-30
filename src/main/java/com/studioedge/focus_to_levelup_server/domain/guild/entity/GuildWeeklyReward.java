@@ -14,7 +14,6 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "guild_weekly_rewards")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@DynamicInsert
 public class GuildWeeklyReward extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,13 +26,18 @@ public class GuildWeeklyReward extends BaseEntity {
     private Guild guild;
 
     @Column(nullable = false)
-    private int avgStudyTime;
+    @ColumnDefault("0")
+    private Integer avgStudyTime = 0;
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int boostMemberCount;
+    private Integer boostMemberCount = 0;
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int totalReward;
+    private Integer totalReward = 0;
+
+    public GuildWeeklyReward(Guild guild) {
+        this.guild = guild;
+    }
 }

@@ -2,6 +2,7 @@ package com.studioedge.focus_to_levelup_server.domain.payment.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -25,4 +26,11 @@ public class Product {
 
     @Column(nullable = false)
     private BigDecimal price;
+
+    @Builder
+    public Product(String name, String description, BigDecimal price) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+    }
 }

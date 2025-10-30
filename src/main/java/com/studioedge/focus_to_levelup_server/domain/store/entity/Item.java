@@ -3,6 +3,7 @@ package com.studioedge.focus_to_levelup_server.domain.store.entity;
 import com.studioedge.focus_to_levelup_server.domain.store.enums.ItemType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -23,11 +24,20 @@ public class Item {
     private ItemType type;
 
     @Column(nullable = false)
-    private int selection;
+    private Integer selection;
 
     @Column(nullable = false)
-    private int price;
+    private Integer price;
 
     @Column(nullable = false)
-    private int rewardExp;
+    private Integer rewardExp;
+
+    @Builder
+    public Item(String name, ItemType type, Integer selection, Integer price, Integer rewardExp) {
+        this.name = name;
+        this.type = type;
+        this.selection = selection;
+        this.price = price;
+        this.rewardExp = rewardExp;
+    }
 }

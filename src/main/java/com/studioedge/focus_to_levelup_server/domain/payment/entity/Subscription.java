@@ -5,6 +5,7 @@ import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionT
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -34,7 +35,7 @@ public class Subscription extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int giftCount;
+    private Integer giftCount = 0;
 
     @Column(nullable = false)
     private LocalDate startDate;
@@ -44,5 +45,16 @@ public class Subscription extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("false")
-    private boolean isActive;
+    private Boolean isActive = false;
+
+    @Builder
+    public Subscription(Member member, SubscriptionType type, LocalDate startDate,
+                        LocalDate endDate, Boolean isActive)
+    {
+        this.member = member;
+        this.type = type;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.isActive = isActive;
+    }
 }

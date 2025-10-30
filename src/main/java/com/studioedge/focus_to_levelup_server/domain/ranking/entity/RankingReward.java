@@ -5,6 +5,7 @@ import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
@@ -33,11 +34,23 @@ public class RankingReward extends BaseEntity {
     private Tier tier;
 
     @Column(nullable = false)
-    private int rank;
+    private Integer rank;
 
     @Column(nullable = false)
-    private int totalCount;
+    private Integer totalCount;
 
     @Column(nullable = false)
-    private int reward;
+    private Integer reward;
+
+    @Builder
+    public RankingReward(League league, Member member, Tier tier,
+                         Integer rank, Integer totalCount, Integer reward)
+    {
+        this.league = league;
+        this.member = member;
+        this.tier = tier;
+        this.rank = rank;
+        this.totalCount = totalCount;
+        this.reward = reward;
+    }
 }

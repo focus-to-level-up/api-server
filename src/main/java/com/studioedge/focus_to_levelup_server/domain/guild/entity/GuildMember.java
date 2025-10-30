@@ -16,8 +16,8 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "guild_members")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@DynamicInsert
 public class GuildMember extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "guild_member_id")
@@ -36,8 +36,14 @@ public class GuildMember extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'MEMBER'")
-    private GuildRole role;
+    private GuildRole role = GuildRole.MEMBER;
 
     @Column(nullable = false)
-    private boolean isBoosted;
+    private Boolean isBoosted;
+
+    public GuildMember(Guild guild, Member member, Boolean isBoosted) {
+        this.guild = guild;
+        this.member = member;
+        this.isBoosted = isBoosted;
+    }
 }

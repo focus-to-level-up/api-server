@@ -16,7 +16,6 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "guild_messages")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@DynamicInsert
 public class GuildMessage extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,8 +35,14 @@ public class GuildMessage extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'TEXT'")
-    private MessageType type;
+    private MessageType type = MessageType.TEXT;
 
     @Column(nullable = false)
     private String content;
+
+    public GuildMessage(Member member, Guild guild, String content) {
+        this.member = member;
+        this.guild = guild;
+        this.content = content;
+    }
 }

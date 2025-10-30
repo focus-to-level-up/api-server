@@ -3,6 +3,7 @@ package com.studioedge.focus_to_levelup_server.domain.study.entity;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -14,7 +15,6 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "todos")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@DynamicInsert
 public class Todo extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,5 +30,11 @@ public class Todo extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("false")
-    private boolean isComplete;
+    private boolean isComplete = false;
+
+    @Builder
+    public Todo(Subject subject, String content) {
+        this.subject = subject;
+        this.content = content;
+    }
 }

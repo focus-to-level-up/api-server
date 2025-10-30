@@ -4,6 +4,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
@@ -28,6 +29,9 @@ public class MemberItem extends BaseEntity {
     @JoinColumn(name = "item_id")
     private Item item;
 
-    @Column(nullable = false)
-    private int currentCount;
+    @Builder
+    public MemberItem(Member member, Item item) {
+        this.member = member;
+        this.item = item;
+    }
 }

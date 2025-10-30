@@ -12,7 +12,6 @@ import org.hibernate.annotations.DynamicInsert;
 @Table(name = "guilds")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@DynamicInsert
 public class Guild extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,10 +26,10 @@ public class Guild extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int targetHours;
+    private Integer targetHours;
 
     @Column(nullable = false)
-    private boolean isPublic = true;
+    private Boolean isPublic;
 
     private String password;
 
@@ -41,9 +40,23 @@ public class Guild extends BaseEntity {
     private String chatRoomName;
 
     @Column(nullable = false)
-    private int totalMemberCount;
+    private Integer totalMemberCount;
 
     @Column(nullable = false)
     @ColumnDefault("false")
-    private boolean isBoosted;
+    private Boolean isBoosted = false;
+
+    public Guild(String name, String description, Integer targetHours,
+                 String category, String chatRoomName, Boolean isPublic,
+                 String password, Integer totalMemberCount)
+    {
+        this.name = name;
+        this.description = description;
+        this.targetHours = targetHours;
+        this.category = category;
+        this.chatRoomName = chatRoomName + "의 채팅방";
+        this.isPublic = isPublic;
+        this.password = password;
+        this.totalMemberCount = totalMemberCount;
+    }
 }

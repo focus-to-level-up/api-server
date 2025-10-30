@@ -6,6 +6,7 @@ import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainTy
 import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -19,7 +20,6 @@ import java.time.LocalDateTime;
 @Table(name = "member_infos")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@DynamicInsert
 public class MemberInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +31,7 @@ public class MemberInfo {
     private Member member;
 
     @Column(nullable = false)
-    private int age;
+    private Integer age;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -51,7 +51,7 @@ public class MemberInfo {
 
     @Column(nullable = false)
     @ColumnDefault("없음")
-    private String belonging;
+    private String belonging = "없음";
 
     private String profileMessage;
 
@@ -65,9 +65,27 @@ public class MemberInfo {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int gold;
+    private Integer gold = 0;
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int diamond;
+    private Integer diamond = 0;
+
+    @Builder
+    public MemberInfo(Member member, Integer age, Gender gender, CategoryMainType categoryMain,
+                      CategorySubType categorySub, String belonging, String profileMessage,
+                      MemberAsset profileImage, MemberAsset profileBorder, Integer gold, Integer diamond)
+    {
+        this.member = member;
+        this.age = age;
+        this.gender = gender;
+        this.categoryMain = categoryMain;
+        this.categorySub = categorySub;
+        this.belonging = belonging;
+        this.profileMessage = profileMessage;
+        this.profileImage = profileImage;
+        this.profileBorder = profileBorder;
+        this.gold = gold;
+        this.diamond = diamond;
+    }
 }

@@ -3,10 +3,10 @@ package com.studioedge.focus_to_levelup_server.domain.character.entity;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 @Table(name = "training_characters")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@DynamicInsert
 public class TrainingCharacter extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,5 +41,16 @@ public class TrainingCharacter extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("false")
-    private boolean isReceived;
+    private Boolean isReceived = false;
+
+    @Builder
+    public TrainingCharacter(MemberCharacter character, Integer reward, Integer floor,
+                             LocalDateTime startDateTime, LocalDateTime endDateTime)
+    {
+        this.character = character;
+        this.reward = reward;
+        this.floor = floor;
+        this.startDateTime = startDateTime;
+        this.endDateTime = endDateTime;
+    }
 }

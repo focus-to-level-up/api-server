@@ -4,6 +4,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
@@ -33,11 +34,23 @@ public class WeeklyStat extends BaseEntity {
     private LocalDate endDate;
 
     @Column(nullable = false)
-    private int totalStudyMinutes;
+    private Integer totalStudyMinutes;
 
     @Column(nullable = false)
-    private int lastLevel;
+    private Integer lastLevel;
 
     @Column(length = 2048, nullable = false)
     private String lastCharacterImageUrl;
+
+    @Builder
+    public WeeklyStat(Member member, LocalDate startDate, LocalDate endDate,
+                      Integer totalStudyMinutes, Integer lastLevel, String lastCharacterImageUrl)
+    {
+        this.member = member;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.totalStudyMinutes = totalStudyMinutes;
+        this.lastLevel = lastLevel;
+        this.lastCharacterImageUrl = lastCharacterImageUrl;
+    }
 }

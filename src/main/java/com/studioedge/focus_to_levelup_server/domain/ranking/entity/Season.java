@@ -3,6 +3,7 @@ package com.studioedge.focus_to_levelup_server.domain.ranking.entity;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -26,4 +27,11 @@ public class Season extends BaseEntity {
 
     @Column(nullable = false)
     private LocalDate endDate;
+
+    @Builder
+    public Season(String name, LocalDate startDate, LocalDate endDate) {
+        this.name = name;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
 }

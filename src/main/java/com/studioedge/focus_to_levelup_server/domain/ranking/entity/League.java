@@ -4,6 +4,7 @@ import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainTy
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -15,7 +16,6 @@ import java.time.LocalDate;
 @Table(name = "leagues")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@DynamicInsert
 public class League extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,11 +31,20 @@ public class League extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("1")
-    private int currentWeek;
+    private Integer currentWeek = 1;
 
     @Column(nullable = false)
     private LocalDate startDate;
 
     @Column(nullable = false)
     private LocalDate endDate;
+
+    @Builder
+    public League(String name, CategoryMainType categoryType,
+                  LocalDate startDate, LocalDate endDate) {
+        this.name = name;
+        this.categoryType = categoryType;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
 }

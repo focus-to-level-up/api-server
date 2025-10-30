@@ -198,7 +198,6 @@ public class AuthService {
                     .socialType(socialType)
                     .socialId(socialId)
                     .fcmToken(fcmToken)
-                    .status(MemberStatus.ACTIVE)
                     .build();
             memberRepository.save(member);
             log.info("New member created: memberId={}, socialType={}", member.getMemberId(), socialType);

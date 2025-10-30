@@ -3,6 +3,7 @@ package com.studioedge.focus_to_levelup_server.domain.character.entity;
 import com.studioedge.focus_to_levelup_server.global.common.enums.Rarity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -33,8 +34,16 @@ public class Character {
     private Rarity rarity;
 
     @Column(nullable = false)
-    private Integer price;
+    private int price;
 
     @Column(length = 500, nullable = false)
     private String description;
+
+    @Builder
+    public Character(Rarity rarity, int price, String name, String description) {
+        this.rarity = rarity;
+        this.price = price;
+        this.name = name;
+        this.description = description;
+    }
 }

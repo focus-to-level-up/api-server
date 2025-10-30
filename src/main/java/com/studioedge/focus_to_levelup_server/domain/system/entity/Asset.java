@@ -26,4 +26,10 @@ public class Asset {
 
     @Column(unique = true, length = 2048, nullable = false)
     private String assetUrl;
+
+    public Asset(AssetType type, String name, String assetUrl) {
+        this.type = type;
+        this.name = name;
+        this.assetUrl = assetUrl;
+    }
 }
