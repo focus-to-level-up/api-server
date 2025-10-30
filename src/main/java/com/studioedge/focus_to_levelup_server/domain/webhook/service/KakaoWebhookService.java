@@ -1,7 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.webhook.service;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.SocialType;
+import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;
 import com.studioedge.focus_to_levelup_server.domain.member.repository.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.webhook.dto.KakaoUnlinkRequest;
 import lombok.RequiredArgsConstructor;

@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "guild_weekly_rewards")
@@ -21,6 +23,7 @@ public class GuildWeeklyReward extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "guild_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Guild guild;
 
     @Column(nullable = false)

@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -25,6 +27,7 @@ public class MemberInfo {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
 
     @Column(nullable = false)
@@ -53,11 +56,11 @@ public class MemberInfo {
     private String profileMessage;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_asset_id") // Asset ID 참조
+    @JoinColumn(name = "profile_image_id") // Asset ID 참조
     private MemberAsset profileImage;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_asset_id") // Asset ID 참조
+    @JoinColumn(name = "border_id") // Asset ID 참조
     private MemberAsset profileBorder;
 
     @Column(nullable = false)
