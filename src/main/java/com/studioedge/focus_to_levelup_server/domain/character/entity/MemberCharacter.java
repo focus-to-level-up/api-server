@@ -35,11 +35,11 @@ public class MemberCharacter extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("1")
-    private Integer level = 1;
+    private Integer currentLevel = 1;
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer experience = 0;
+    private Integer currentExp = 0;
 
     @Column(nullable = false)
     @ColumnDefault("1")

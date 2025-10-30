@@ -9,7 +9,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
 
 import java.time.LocalDate;
 
@@ -28,7 +27,7 @@ public class Mail extends BaseEntity {
     private Member receiver;
 
     @Column(nullable = false)
-    @ColumnDefault("운영자")
+    @ColumnDefault("'운영자'")
     private String senderName = "운영자";
 
     @Column(nullable = false)

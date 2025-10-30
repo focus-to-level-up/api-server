@@ -34,23 +34,23 @@ public class WeeklyStat extends BaseEntity {
     private LocalDate endDate;
 
     @Column(nullable = false)
-    private Integer totalStudyMinutes;
+    private int totalFocusMinutes;
 
     @Column(nullable = false)
-    private Integer lastLevel;
+    private int totalLevel;
 
     @Column(length = 2048, nullable = false)
     private String lastCharacterImageUrl;
 
     @Builder
     public WeeklyStat(Member member, LocalDate startDate, LocalDate endDate,
-                      Integer totalStudyMinutes, Integer lastLevel, String lastCharacterImageUrl)
+                      Integer totalFocusMinutes, Integer totalLevel, String lastCharacterImageUrl)
     {
         this.member = member;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.totalStudyMinutes = totalStudyMinutes;
-        this.lastLevel = lastLevel;
+        this.totalFocusMinutes = totalFocusMinutes;
+        this.totalLevel = totalLevel;
         this.lastCharacterImageUrl = lastCharacterImageUrl;
     }
 }

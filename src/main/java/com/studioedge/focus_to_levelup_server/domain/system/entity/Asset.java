@@ -1,6 +1,5 @@
 package com.studioedge.focus_to_levelup_server.domain.system.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
 import com.studioedge.focus_to_levelup_server.global.common.enums.AssetType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -21,10 +20,10 @@ public class Asset {
     @Column(nullable = false)
     private AssetType type;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(unique = true, length = 2048, nullable = false)
+    @Column(length = 2048, nullable = false)
     private String assetUrl;
 
     public Asset(AssetType type, String name, String assetUrl) {

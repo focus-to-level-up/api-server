@@ -15,7 +15,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "ranking_results")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class RankingReward extends BaseEntity {
+public class RankingResult extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ranking_result_id")
@@ -34,7 +34,7 @@ public class RankingReward extends BaseEntity {
     private Tier tier;
 
     @Column(nullable = false)
-    private Integer rank;
+    private Integer ranking;
 
     @Column(nullable = false)
     private Integer totalCount;
@@ -43,13 +43,13 @@ public class RankingReward extends BaseEntity {
     private Integer reward;
 
     @Builder
-    public RankingReward(League league, Member member, Tier tier,
-                         Integer rank, Integer totalCount, Integer reward)
+    public RankingResult(League league, Member member, Tier tier,
+                         Integer ranking, Integer totalCount, Integer reward)
     {
         this.league = league;
         this.member = member;
         this.tier = tier;
-        this.rank = rank;
+        this.ranking = ranking;
         this.totalCount = totalCount;
         this.reward = reward;
     }

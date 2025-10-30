@@ -6,7 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "guilds")
@@ -42,6 +43,9 @@ public class Guild extends BaseEntity {
     @Column(nullable = false)
     private Integer totalMemberCount;
 
+    @Column(unique = true, nullable = false)
+    private UUID invitationCode;
+
     @Column(nullable = false)
     @ColumnDefault("false")
     private Boolean isBoosted = false;
@@ -57,6 +61,7 @@ public class Guild extends BaseEntity {
         this.chatRoomName = chatRoomName + "의 채팅방";
         this.isPublic = isPublic;
         this.password = password;
+        this.invitationCode = UUID.randomUUID();
         this.totalMemberCount = totalMemberCount;
     }
 }

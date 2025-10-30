@@ -22,6 +22,6 @@ public class CharacterImage {
     @Column(nullable = false)
     private Integer evolution;
 
-    @Column(unique = true, length = 2048, nullable = false)
+    @Column(length = 2048, nullable = false)
     private String imageUrl;
 }

@@ -37,6 +37,14 @@ public class Member extends BaseEntity {
     // 수정하고 싶다면, (null || 1달이 지났을 경우) 업데이트 가능.
     private LocalDateTime nicknameUpdatedAt;
 
+    @Column(nullable = false)
+    @ColumnDefault("1")
+    private int currentLevel = 1;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private int currentExp = 0;
+
     @Column(length = 500)
     private String refreshToken;
 
@@ -59,10 +67,6 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     @ColumnDefault("'ACTIVE'")
     private MemberStatus status = MemberStatus.ACTIVE;
-
-    @Column(nullable = false)
-    @ColumnDefault("true")
-    private Boolean alarmOn = true;
 
     @Builder
     public Member(SocialType socialType, String socialId, String nickname, String fcmToken,

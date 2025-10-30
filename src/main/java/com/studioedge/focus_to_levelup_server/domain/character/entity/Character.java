@@ -39,11 +39,16 @@ public class Character {
     @Column(length = 500, nullable = false)
     private String description;
 
+    @Column(length = 2048, nullable = false)
+    private String backgroundImageUrl;
+
     @Builder
-    public Character(Rarity rarity, int price, String name, String description) {
+    public Character(Rarity rarity, int price, String name,
+                     String description, String backgroundImageUrl) {
         this.rarity = rarity;
         this.price = price;
         this.name = name;
         this.description = description;
+        this.backgroundImageUrl = backgroundImageUrl;
     }
 }
