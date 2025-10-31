@@ -5,7 +5,7 @@ import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;
-import com.studioedge.focus_to_levelup_server.domain.member.repository.MemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.global.jwt.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +59,7 @@ public class AuthService {
         }
 
         // 5. JWT 토큰 생성 및 저장
-        Token token = generateToken(member.getMemberId());
+        Token token = generateToken(member.getId());
         member.setRefreshToken(token.getRefreshToken());
 
         // 6. 프로필 완성 여부 확인
@@ -96,7 +96,7 @@ public class AuthService {
         member.setKakaoRefreshToken(result.refreshToken());
 
         // 4. JWT 토큰 생성 및 저장
-        Token token = generateToken(member.getMemberId());
+        Token token = generateToken(member.getId());
         member.setRefreshToken(token.getRefreshToken());
 
         return SignUpResponse.of(token);
@@ -122,7 +122,7 @@ public class AuthService {
         member.setAppleRefreshToken(refreshToken);
 
         // 5. JWT 토큰 생성 및 저장
-        Token token = generateToken(member.getMemberId());
+        Token token = generateToken(member.getId());
         member.setRefreshToken(token.getRefreshToken());
 
         return SignUpResponse.of(token);
@@ -153,7 +153,7 @@ public class AuthService {
         member.setNaverRefreshToken(refreshToken);
 
         // 5. JWT 토큰 생성 및 저장
-        Token token = generateToken(member.getMemberId());
+        Token token = generateToken(member.getId());
         member.setRefreshToken(token.getRefreshToken());
 
         return SignUpResponse.of(token);
@@ -179,7 +179,7 @@ public class AuthService {
         member.setGoogleRefreshToken(tokenResponse.getRefreshToken());
 
         // 5. JWT 토큰 생성 및 저장
-        Token token = generateToken(member.getMemberId());
+        Token token = generateToken(member.getId());
         member.setRefreshToken(token.getRefreshToken());
 
         return SignUpResponse.of(token);
@@ -200,17 +200,17 @@ public class AuthService {
                     .fcmToken(fcmToken)
                     .build();
             memberRepository.save(member);
-            log.info("New member created: memberId={}, socialType={}", member.getMemberId(), socialType);
+            log.info("New member created: memberId={}, socialType={}", member.getId(), socialType);
         } else {
             // 기존 회원 정보 업데이트
             if (member.getStatus() == MemberStatus.WITHDRAWN) {
                 member.reactivate();
-                log.info("Withdrawn member reactivated: memberId={}", member.getMemberId());
+                log.info("Withdrawn member reactivated: memberId={}", member.getId());
             }
             if (fcmToken != null) {
                 member.setFcmToken(fcmToken);
             }
-            log.info("Existing member updated: memberId={}", member.getMemberId());
+            log.info("Existing member updated: memberId={}", member.getId());
         }
 
         return member;

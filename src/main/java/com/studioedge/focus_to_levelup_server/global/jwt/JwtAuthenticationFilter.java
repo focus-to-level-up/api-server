@@ -41,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (validationType == JwtValidationType.VALID_JWT) {
                     // Member 조회 및 인증 객체 생성
                     Member member = jwtTokenProvider.getMember(token);
-                    log.debug("Member found: {}", member.getMemberId());
+                    log.debug("Member found: {}", member.getId());
 
                     UserAuthentication authentication = new UserAuthentication(
                             member,
@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     // SecurityContext에 인증 정보 저장
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-                    log.debug("Authentication set in SecurityContext for member: {}", member.getMemberId());
+                    log.debug("Authentication set in SecurityContext for member: {}", member.getId());
                 } else {
                     log.warn("Invalid JWT token: {}", validationType.getMessage());
                 }

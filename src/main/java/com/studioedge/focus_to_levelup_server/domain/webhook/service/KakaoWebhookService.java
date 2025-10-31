@@ -2,7 +2,7 @@ package com.studioedge.focus_to_levelup_server.domain.webhook.service;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;
-import com.studioedge.focus_to_levelup_server.domain.member.repository.MemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.webhook.dto.KakaoUnlinkRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +41,7 @@ public class KakaoWebhookService {
             member.withdraw();
             memberRepository.save(member);
 
-            log.info("Successfully withdrew member {} via Kakao webhook", member.getMemberId());
+            log.info("Successfully withdrew member {} via Kakao webhook", member.getId());
         } else {
             log.warn("Member not found for Kakao user ID: {}", kakaoUserId);
         }

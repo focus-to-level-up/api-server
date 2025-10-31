@@ -60,4 +60,8 @@ public class MemberSetting {
     public MemberSetting(Member member) {
         this.member = member;
     }
+
+    public void updateAlarmSetting() {
+        this.alarmOn = this.isAlarmOn() == true ? false : true;
+    }
 }

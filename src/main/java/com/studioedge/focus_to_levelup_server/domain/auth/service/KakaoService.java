@@ -8,7 +8,6 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -100,7 +99,7 @@ public class KakaoService {
     @Transactional
     public void unlinkKakaoAccount(Member member) {
         if (member.getKakaoRefreshToken() == null) {
-            log.warn("Member {} has no Kakao refresh token to unlink", member.getMemberId());
+            log.warn("Member {} has no Kakao refresh token to unlink", member.getId());
             return;
         }
 
@@ -120,7 +119,7 @@ public class KakaoService {
                     .bodyToMono(String.class)
                     .block();
 
-            log.info("Successfully unlinked Kakao account for member {}", member.getMemberId());
+            log.info("Successfully unlinked Kakao account for member {}", member.getId());
 
         } catch (Exception e) {
             log.error("Failed to unlink Kakao account", e);

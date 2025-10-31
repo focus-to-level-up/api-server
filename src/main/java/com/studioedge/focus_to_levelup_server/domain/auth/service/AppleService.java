@@ -11,7 +11,6 @@ import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -133,7 +132,7 @@ public class AppleService {
     @Transactional
     public void revokeAppleToken(Member member) {
         if (member.getAppleRefreshToken() == null) {
-            log.warn("Member {} has no Apple refresh token to revoke", member.getMemberId());
+            log.warn("Member {} has no Apple refresh token to revoke", member.getId());
             return;
         }
 
@@ -158,7 +157,7 @@ public class AppleService {
                     .bodyToMono(String.class)
                     .block();
 
-            log.info("Successfully revoked Apple token for member {}", member.getMemberId());
+            log.info("Successfully revoked Apple token for member {}", member.getId());
 
         } catch (Exception e) {
             log.error("Failed to revoke Apple token", e);
