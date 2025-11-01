@@ -3,8 +3,8 @@ package com.studioedge.focus_to_levelup_server.domain.auth.service;
 import com.studioedge.focus_to_levelup_server.domain.auth.dto.*;
 import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberStatus;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.SocialType;
+import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
+import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;
 import com.studioedge.focus_to_levelup_server.domain.member.repository.MemberRepository;
 import com.studioedge.focus_to_levelup_server.global.jwt.*;
 import lombok.RequiredArgsConstructor;
@@ -198,7 +198,6 @@ public class AuthService {
                     .socialType(socialType)
                     .socialId(socialId)
                     .fcmToken(fcmToken)
-                    .status(MemberStatus.ACTIVE)
                     .build();
             memberRepository.save(member);
             log.info("New member created: memberId={}, socialType={}", member.getMemberId(), socialType);

@@ -1,13 +1,14 @@
 package com.studioedge.focus_to_levelup_server.domain.member.entity;
 
+import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
+import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;
+import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
@@ -15,8 +16,7 @@ import java.time.LocalDateTime;
 @Table(name = "members")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EntityListeners(AuditingEntityListener.class)
-public class Member {
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,13 +27,23 @@ public class Member {
     @Column(nullable = false)
     private SocialType socialType;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true, nullable = false)
     private String socialId;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 16, nullable = false)
     private String nickname;
 
+    // 유저 생성할 때 null.
+    // 수정하고 싶다면, (null || 1달이 지났을 경우) 업데이트 가능.
     private LocalDateTime nicknameUpdatedAt;
+
+    @Column(nullable = false)
+    @ColumnDefault("1")
+    private int currentLevel = 1;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private int currentExp = 0;
 
     @Column(length = 500)
     private String refreshToken;
@@ -50,24 +60,18 @@ public class Member {
     @Column(length = 500)
     private String googleRefreshToken;
 
+    @Column(length = 500)
     private String fcmToken;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MemberStatus status;
-
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    @ColumnDefault("'ACTIVE'")
+    private MemberStatus status = MemberStatus.ACTIVE;
 
     @Builder
     public Member(SocialType socialType, String socialId, String nickname, String fcmToken,
-                  String appleRefreshToken, String kakaoRefreshToken,
-                  String naverRefreshToken, String googleRefreshToken, MemberStatus status) {
+                  String appleRefreshToken, String kakaoRefreshToken, String naverRefreshToken,
+                  String googleRefreshToken) {
         this.socialType = socialType;
         this.socialId = socialId;
         this.nickname = nickname;
@@ -76,7 +80,6 @@ public class Member {
         this.kakaoRefreshToken = kakaoRefreshToken;
         this.naverRefreshToken = naverRefreshToken;
         this.googleRefreshToken = googleRefreshToken;
-        this.status = status != null ? status : MemberStatus.ACTIVE;
     }
 
     // 비즈니스 로직
