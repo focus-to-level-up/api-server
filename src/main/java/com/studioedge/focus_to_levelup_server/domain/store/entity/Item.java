@@ -20,24 +20,13 @@ public class Item {
     @Column(unique = true, nullable = false)
     private String name;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ItemType type;
 
-    @Column(nullable = false)
-    private Integer selection;
-
-    @Column(nullable = false)
-    private Integer price;
-
-    @Column(nullable = false)
-    private Integer rewardExp;
-
     @Builder
-    public Item(String name, ItemType type, Integer selection, Integer price, Integer rewardExp) {
+    public Item(String name, ItemType type) {
         this.name = name;
         this.type = type;
-        this.selection = selection;
-        this.price = price;
-        this.rewardExp = rewardExp;
     }
 }

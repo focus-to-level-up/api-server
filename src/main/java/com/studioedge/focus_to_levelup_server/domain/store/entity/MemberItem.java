@@ -29,9 +29,13 @@ public class MemberItem extends BaseEntity {
     @JoinColumn(name = "item_id")
     private Item item;
 
+    @Column(nullable = false)
+    private Integer selection;
+
     @Builder
-    public MemberItem(Member member, Item item) {
+    public MemberItem(Member member, Item item, Integer selection) {
         this.member = member;
         this.item = item;
+        this.selection = selection;
     }
 }
