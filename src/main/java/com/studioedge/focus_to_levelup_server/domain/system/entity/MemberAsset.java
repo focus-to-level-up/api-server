@@ -7,12 +7,16 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(name = "member_assets")
+@Table(
+        name = "member_assets",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"member_id", "asset_id"})
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberAsset extends BaseEntity {

@@ -13,7 +13,12 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(name = "member_characters")
+@Table(
+        name = "member_characters",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"member_id", "character_id"})
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @DynamicInsert
@@ -45,9 +50,13 @@ public class MemberCharacter extends BaseEntity {
     @ColumnDefault("1")
     private Integer evolution = 1;
 
+    // TODO: 기능 정리 참고
     @Column(nullable = false)
-    @ColumnDefault("false")
-    private Boolean isTraining = false;
+    private Integer floor; // 캐릭터 층수
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer remainReward = 0; // 남아있는 훈련보상. 수령받으면 0개
 
     @Column(nullable = false)
     @ColumnDefault("false")
@@ -58,9 +67,10 @@ public class MemberCharacter extends BaseEntity {
     private Integer defaultEvolution = 1; // 대표 캐릭터의 진화단계 여부
 
     @Builder
-    public MemberCharacter(Member member, Character character)
+    public MemberCharacter(Member member, Character character, Integer floor)
     {
         this.member = member;
         this.character = character;
+        this.floor = floor;
     }
 }

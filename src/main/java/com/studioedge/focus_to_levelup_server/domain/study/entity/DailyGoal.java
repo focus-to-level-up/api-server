@@ -8,12 +8,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+
+import java.time.LocalDate;
 
 @Entity
-@Table(name = "daily_goals")
+@Table(
+        name = "daily_goals",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"member_id", "daily_goal_date"})
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DailyGoal extends BaseEntity {
@@ -25,6 +29,9 @@ public class DailyGoal extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    @Column(nullable = false)
+    private LocalDate dailyGoalDate;
 
     @Column(nullable = false)
     private Integer targetMinutes;
@@ -47,5 +54,6 @@ public class DailyGoal extends BaseEntity {
 
         int number = (targetMinutes / 60) - 2;
         this.rewardMultiplier = (float) Math.pow(1.1, Math.max(0, number));
+        this.dailyGoalDate = LocalDate.now();
     }
 }

@@ -13,7 +13,12 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "weekly_stats")
+@Table(
+        name = "weekly_stats",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"member_id", "start_date"})
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WeeklyStat extends BaseEntity {
