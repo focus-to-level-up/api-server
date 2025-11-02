@@ -1,6 +1,7 @@
 package com.studioedge.focus_to_levelup_server.global.exception;
 
 import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.store.exception.*;
 import org.springframework.http.HttpStatus;
 
 import java.util.LinkedHashMap;
@@ -12,6 +13,7 @@ public class ExceptionMapper {
 
     static {
         setUpAuthException();
+        setUpStoreException();
         // TODO: 도메인별 예외 추가 등록
         // setUpMemberException();
     }
@@ -38,5 +40,19 @@ public class ExceptionMapper {
                 ExceptionSituation.of("유효하지 않은 소셜 로그인 토큰입니다.", HttpStatus.BAD_REQUEST));
         mapper.put(InvalidAppleTokenException.class,
                 ExceptionSituation.of("유효하지 않은 Apple Identity Token입니다.", HttpStatus.BAD_REQUEST));
+    }
+
+    /**
+     * Store 관련 예외 등록
+     */
+    private static void setUpStoreException() {
+        mapper.put(ItemNotFoundException.class,
+                ExceptionSituation.of("존재하지 않는 아이템입니다.", HttpStatus.NOT_FOUND));
+        mapper.put(ItemAlreadyPurchasedException.class,
+                ExceptionSituation.of("이미 구매한 아이템입니다.", HttpStatus.CONFLICT));
+        mapper.put(InvalidItemOptionException.class,
+                ExceptionSituation.of("유효하지 않은 아이템 옵션입니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(InsufficientGoldException.class,
+                ExceptionSituation.of("골드가 부족합니다.", HttpStatus.BAD_REQUEST));
     }
 }

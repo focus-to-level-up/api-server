@@ -1,6 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.member.entity;
 
 import com.studioedge.focus_to_levelup_server.domain.member.enums.Gender;
+import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.MemberAsset;
 import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
 import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
@@ -70,6 +71,10 @@ public class MemberInfo {
     @ColumnDefault("0")
     private Integer diamond = 0;
 
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer trainingReward = 0; // 훈련 보상 누적량 (다이아)
+
     @Builder
     public MemberInfo(Member member, Integer age, Gender gender, CategoryMainType categoryMain,
                       CategorySubType categorySub, String belonging, String profileMessage,
@@ -86,5 +91,30 @@ public class MemberInfo {
         this.profileBorder = profileBorder;
         this.gold = gold;
         this.diamond = diamond;
+    }
+
+    // 비즈니스 메서드
+    public void addTrainingReward(Integer reward) {
+        this.trainingReward += reward;
+    }
+
+    public void claimTrainingReward() {
+        this.diamond += this.trainingReward;
+        this.trainingReward = 0;
+    }
+
+    public void decreaseGold(Integer amount) {
+        if (this.gold < amount) {
+            throw new InsufficientGoldException();
+        }
+        this.gold -= amount;
+    }
+
+    public void addGold(Integer amount) {
+        this.gold += amount;
+    }
+
+    public void addDiamond(Integer amount) {
+        this.diamond += amount;
     }
 }
