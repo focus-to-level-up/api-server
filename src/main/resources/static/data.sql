@@ -11,6 +11,8 @@
 --
 -- -----------------------------------------------------
 
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- 기존 데이터를 비웁니다 (멱등성 보장)

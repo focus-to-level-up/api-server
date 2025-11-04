@@ -7,6 +7,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "items")
 @Getter
@@ -23,6 +26,9 @@ public class Item {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ItemType type;
+
+    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
+    private List<ItemDetail> details = new ArrayList<>();
 
     @Builder
     public Item(String name, ItemType type) {
