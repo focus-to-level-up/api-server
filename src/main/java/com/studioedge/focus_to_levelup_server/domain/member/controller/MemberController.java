@@ -6,6 +6,8 @@ import com.studioedge.focus_to_levelup_server.domain.member.service.MemberServic
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
 import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -47,23 +49,48 @@ public class MemberController {
             """
     )
     @ApiResponses({
-            @ApiResponse()
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "회원가입 완료"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "유효성 검사에서 실패했습니다."
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "이미 존재하는 닉네임입니다."
+            )
     })
     public ResponseEntity<CommonResponse<Void>> completeSignUp(
             @AuthenticationPrincipal Member member,
             @RequestBody @Valid CompleteSignUpRequest request
     ) {
         memberService.completeSignUp(member, request);
-        return ResponseEntity.ok(CommonResponse.ok());
+        return HttpResponseUtil.created(null);
     }
 
     @PostMapping("/v1/member/report/{id}")
     @Operation(summary = "유저 신고하기", description = """
+            ### 기능
+            - 특정 유저를 신고 사유와 함께 신고합니다.
+            - 신고, 피신고자, 신고내용을 기록합니다.
             
+            ### 요청
+            - `{id}`: 신고당하는 유저(경로변수)
+            - `reportType`: [필수] 신고유형 (IMPROPER_NICKNAME, IMPROPER_MESSAGE)
+            - `reason`: 신고 사유
             """
     )
     @ApiResponses({
-            @ApiResponse()
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "신고 완료"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "신고당하는 유저를 찾을 수 없습니다."
+            )
     })
     public ResponseEntity<CommonResponse<Void>> reportMember(
             @AuthenticationPrincipal Member member,
@@ -71,15 +98,25 @@ public class MemberController {
             @RequestBody @Valid ReportMemberRequest request
     ) {
         memberService.reportMember(member, memberId, request);
-        return ResponseEntity.ok(CommonResponse.ok());
+        return HttpResponseUtil.ok(null);
     }
 
     @GetMapping("/v1/member/profile/asset")
     @Operation(summary = "유저 프로필 에셋 조회", description = """
+            ### 기능
+            - 현재 로그인한 유저가 소유한 모든 프로필 에셋(이미지, 테두리) 목록을 페이징하여 조회합니다.
+            
+            ### 요청
+            - `page`: 조회할 페이지 번호 (default: 0)
+            - `size`: 페이지당 아이템 수 (default: 10)
             """
     )
     @ApiResponses({
-            @ApiResponse()
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "조회 성공",
+                    content = @Content(schema = @Schema(implementation = ProfileAssetResponse.class))
+            )
     })
     public ResponseEntity<CommonResponse<Page<ProfileAssetResponse>>> getMemberAsset(
             @AuthenticationPrincipal Member member,
@@ -91,10 +128,23 @@ public class MemberController {
 
     @GetMapping("/v1/member/profile/{id}")
     @Operation(summary = "유저 프로필 단일 조회", description = """
+            ### 기능
+            - 특정 `memberId`를 가진 유저의 프로필을 조회합니다.
+            
+            ### 요청
+            - `id`: 조회할 유저의 pk. ('유저 리스트 조회'에서 주어진 pk를 활용합니다.)
             """
     )
     @ApiResponses({
-            @ApiResponse()
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "유저 프로필 조회 성공",
+                    content = @Content(schema = @Schema(implementation = GetProfileResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "해당 유저를 찾을 수 없습니다."
+            )
     })
     public ResponseEntity<CommonResponse<GetProfileResponse>> getMemberProfile(
             @PathVariable(name = "id") Long memberId
@@ -104,10 +154,24 @@ public class MemberController {
 
     @PutMapping("/v1/member/profile")
     @Operation(summary = "유저 프로필 업데이트", description = """
+            ### 기능
+            - 특정 유저의 프로필을 업데이트 합니다. 
+            
+            ### 요청
+            - `profileImageId`: 장착할 MemberAsset pk(프로필 이미지)
+            - `profileBorderId`: 장착할 MemberAsset pk(프로필 테두리)
+            - `profileMessage`: 상태 메세지
             """
     )
     @ApiResponses({
-            @ApiResponse()
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "유저 프로필 업데이트 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "해당 에셋을 장착할 권한이 없습니다."
+            )
     })
     public ResponseEntity<CommonResponse<Void>> updateProfile(
             @AuthenticationPrincipal Member member,
@@ -119,10 +183,27 @@ public class MemberController {
 
     @PutMapping("/v1/member/nickname")
     @Operation(summary = "유저 닉네임 업데이트", description = """
+            ### 기능
+            - 유저의 닉네임을 업데이트합니다.
+            - 유저는 변경일 기준으로 한달이 지난 이후에 닉네임을 업데이트 가능합니다.
+            
+            ### 요청
+            - `nickname`: 업데이트할 닉네임
             """
     )
     @ApiResponses({
-            @ApiResponse()
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "유저 닉네임 업데이트 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "해당 닉네임은 변경일 기준으로 1달이 지나야 합니다."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "해당 닉네임은 이미 존재합니다."
+            )
     })
     public ResponseEntity<CommonResponse<Void>> updateNickname(
             @AuthenticationPrincipal Member member,
@@ -134,10 +215,28 @@ public class MemberController {
 
     @PutMapping("/v1/member/category")
     @Operation(summary = "유저 카테고리 업데이트", description = """
+            ### 기능
+            - 유저의 카테고리를 업데이트합니다.
+            - 유저는 변경일 기준으로 한달이 지난 이후에 카테고리를 업데이트 가능합니다.
+            
+            ### 요청
+            - `categoryMain`: 업데이트할 메인 카테고리
+            - `categorySub`: 업데이트할 서브 카테고리
             """
     )
     @ApiResponses({
-            @ApiResponse()
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "유저 카테고리 업데이트 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "해당 카테고리는 변경일 기준으로 1달이 지나야 합니다."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "해당 카테고리의 상하관계가 일치하지 않습니다."
+            )
     })
     public ResponseEntity<CommonResponse<Void>> updateCategory(
             @AuthenticationPrincipal Member member,
@@ -149,10 +248,15 @@ public class MemberController {
 
     @PutMapping("/v1/member/alarm")
     @Operation(summary = "유저 알람 업데이트", description = """
+            ### 기능
+            - 유저 알림 기능을 끄거나 켭니다.
             """
     )
     @ApiResponses({
-            @ApiResponse()
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "알람 on/off 성공"
+            )
     })
     public ResponseEntity<CommonResponse<Void>> updateAlarm(
             @AuthenticationPrincipal Member member
@@ -163,14 +267,23 @@ public class MemberController {
 
     @PutMapping("/v1/member/apps")
     @Operation(summary = "유저 허용가능앱 업데이트", description = """
+            ### 기능
+            - 유저의 집중 시 허용가능한 앱 목록을 클라이언트가 보낸 목록으로 설정합니다.
+            - 빈 리스트를 보낼 경우, 모든 허용가능한 앱이 삭제됩니다.
+            
+            ### 요청
+            - `appIdentifier`: 앱 식별자(패키지명/번들ID) (-> 해당 정보 외에도 추가적인 정보를 저장해야한다면 말씀해주세요!)
             """
     )
     @ApiResponses({
-            @ApiResponse()
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "허용가능앱 업데이트 성공"
+            )
     })
     public ResponseEntity<CommonResponse<Void>> updateAllowedApps(
             @AuthenticationPrincipal Member member,
-            @Valid @RequestBody List<UpdateAllowedAppsRequest> requests
+            @Valid @RequestBody UpdateAllowedAppsRequest requests
     ) {
         memberService.updateAllowedApps(member, requests);
         return HttpResponseUtil.updated(null);

@@ -86,7 +86,7 @@ public class MemberInfo {
     @Builder
     public MemberInfo(Member member, Integer age, Gender gender, CategoryMainType categoryMain,
                       CategorySubType categorySub, String belonging, String profileMessage,
-                      MemberAsset profileImage, MemberAsset profileBorder, Integer gold, Integer diamond)
+                      MemberAsset profileImage, MemberAsset profileBorder)
     {
         this.member = member;
         this.age = age;
@@ -97,8 +97,6 @@ public class MemberInfo {
         this.profileMessage = profileMessage;
         this.profileImage = profileImage;
         this.profileBorder = profileBorder;
-        this.gold = gold;
-        this.diamond = diamond;
     }
 
     // 비즈니스 메서드
@@ -136,7 +134,7 @@ public class MemberInfo {
         if (updateImage.getAsset().getType() != AssetType.CHARACTER_PROFILE_IMAGE) {
             throw new IllegalArgumentException("제공된 에셋이 프로필 이미지가 아닙니다.");
         }
-        if (updateBorder.getAsset().getType() == AssetType.CHARACTER_BORDER) {
+        if (updateBorder.getAsset().getType() != AssetType.CHARACTER_PROFILE_BORDER) {
             throw new IllegalArgumentException("제공된 에셋이 테두리가 아닙니다.");
         }
         this.profileMessage = profileMessage;

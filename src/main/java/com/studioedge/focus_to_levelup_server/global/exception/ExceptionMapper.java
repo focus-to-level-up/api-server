@@ -1,6 +1,7 @@
 package com.studioedge.focus_to_levelup_server.global.exception;
 
 import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
@@ -20,6 +21,7 @@ public class ExceptionMapper {
         setUpAuthException();
         setUpStoreException();
         setUpMemberException();
+        setUpCharacterException();
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -78,5 +80,13 @@ public class ExceptionMapper {
                 ExceptionSituation.of("현재 에셋을 사용할 수 있는 권한이 없습니다.", HttpStatus.UNAUTHORIZED));
         mapper.put(InvalidSignUpException.class,
                 ExceptionSituation.of("가입정보를 정확히 확인하여 전송해주시길 바랍니다.", HttpStatus.UNAUTHORIZED));
+    }
+
+    /**
+     * Character 관련 예외 등록
+     */
+    private static void setUpCharacterException() {
+        mapper.put(CharacterNotFoundException.class,
+                ExceptionSituation.of("해당 캐릭터를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 }

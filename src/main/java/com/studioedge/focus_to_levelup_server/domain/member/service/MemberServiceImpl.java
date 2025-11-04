@@ -1,7 +1,12 @@
 package com.studioedge.focus_to_levelup_server.domain.member.service;
 
+import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
+import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
+import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
-import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.event.entity.School;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberAssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
@@ -19,6 +24,7 @@ import com.studioedge.focus_to_levelup_server.domain.system.dao.AssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.ReportLogRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.MemberAsset;
+import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
 import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
 import lombok.RequiredArgsConstructor;
@@ -43,12 +49,6 @@ public class MemberServiceImpl implements MemberService {
             CategoryMainType.HIGH_SCHOOL
     );
 
-    // 수정 필요함
-    public static final List<String> DEFAULT_PROFILE_NAME = List.of(
-            "기본 프로필 이미지",
-            "기본 테두리"
-    );
-
     private final MemberRepository memberRepository;
     private final MemberInfoRepository memberInfoRepository;
     private final MemberAssetRepository memberAssetRepository;
@@ -58,14 +58,20 @@ public class MemberServiceImpl implements MemberService {
     private final AssetRepository assetRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final ReportLogRepository reportLogRepository;
-
+    private final MemberCharacterRepository memberCharacterRepository;
+    private final CharacterRepository characterRepository;
     @Override
     @Transactional
     public void completeSignUp(Member member, CompleteSignUpRequest request) {
         validateSignUp(request);
-        List<MemberAsset> memberAssets = saveInitialMemberAsset(member);
+
         saveMemberSetting(member);
+        saveInitialCharacter(member);
+        List<MemberAsset> memberAssets = saveInitialMemberAsset(member);
         memberInfoRepository.save(CompleteSignUpRequest.from(member, memberAssets, request));
+        memberRepository.findById(member.getId())
+                .orElseThrow(MemberNotFoundException::new)
+                .updateNickname(request.nickname());
     }
 
     @Override
@@ -89,9 +95,6 @@ public class MemberServiceImpl implements MemberService {
         memberInfo.updateProfile(newImage, newBorder, request.profileMessage());
     }
 
-    /*
-    * @TODO: N+1 문제 해결해야합니다. -> fetch join
-    * */
     @Override
     @Transactional(readOnly = true)
     public Page<ProfileAssetResponse> getMemberAsset(Member member, Pageable pageable) {
@@ -119,16 +122,24 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void updateNickname(Member member, UpdateNicknameRequest request) {
+        if (memberRepository.existsByNickname(request.nickname())) {
+            throw new IllegalArgumentException("해당 닉네임은 이미 존재합니다.");
+        }
         LocalDateTime updatedAt = member.getNicknameUpdatedAt();
         if (updatedAt != null && updatedAt.isAfter(LocalDateTime.now().minusMonths(1))) {
             throw new NicknameUpdateException();
         }
-        member.updateNickname(request.nickname());
+        Member me = memberRepository.findById(member.getId())
+                .orElseThrow(MemberNotFoundException::new);
+        me.updateNickname(request.nickname());
     }
 
     @Override
     @Transactional
     public void updateCategory(Member member, UpdateCategoryRequest request) {
+        if (!request.categorySub().getMainType().equals(request.categoryMain())) {
+            throw new IllegalArgumentException("카테고리의 상하관계가 일치하지 않습니다.");
+        }
         MemberInfo memberInfo = memberInfoRepository.findByMember(member)
                 .orElseThrow(InvalidMemberException::new);
         LocalDateTime updatedAt = memberInfo.getCategoryUpdatedAt();
@@ -141,20 +152,17 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void updateAlarmSetting(Member member) {
-        MemberSetting memberSetting = memberSettingRepository.findById(member.getId())
+        MemberSetting memberSetting = memberSettingRepository.findByMember(member)
                 .orElseThrow(InvalidMemberException::new);
         memberSetting.updateAlarmSetting();
     }
 
     @Override
     @Transactional
-    public void updateAllowedApps(Member member, List<UpdateAllowedAppsRequest> requests) {
+    public void updateAllowedApps(Member member, UpdateAllowedAppsRequest requests) {
         List<AllowedApp> allowedApps = allowedAppRepository.findAllByMember(member);
         allowedAppRepository.deleteAll(allowedApps);
-        List<AllowedApp> newAllowedApps = requests.stream().map(
-                request -> UpdateAllowedAppsRequest.from(member, request)
-        ).collect(Collectors.toList());
-        allowedAppRepository.saveAll(newAllowedApps);
+        allowedAppRepository.saveAll(UpdateAllowedAppsRequest.from(member, requests));
     }
 
     // ----------------------------- PRIVATE METHOD ---------------------------------
@@ -169,12 +177,23 @@ public class MemberServiceImpl implements MemberService {
                 throw new InvalidSignUpException();
             }
             // 1-2. 입력한 학교가 존재하는지 확인
+            // @TODO: 프론트와 합의 후, 학교 객체에 관해서 결정해야합니다.
             schoolRepository.findByName(request.schoolName())
-                    .orElseThrow(SchoolNotFoundException::new);
+                    .orElseGet(() -> {
+                        School newSchool = School.builder()
+                                .name(request.schoolName())
+                                .categoryMain(mainCategory)
+                                .build();
+                        return schoolRepository.save(newSchool);
+                    });
         }
         // 2. 카테고리 상-하위 관계 검사
         if (subCategory.getMainType() != mainCategory) {
             throw new InvalidSignUpException();
+        }
+
+        if (memberRepository.existsByNickname(request.nickname())) {
+            throw new IllegalArgumentException("해당 닉네임은 이미 존재합니다.");
         }
     }
 
@@ -196,9 +215,9 @@ public class MemberServiceImpl implements MemberService {
     }
 
     private List<MemberAsset> saveInitialMemberAsset(Member member) {
-        List<Asset> initialAssets = assetRepository.findAllByNameIn(DEFAULT_PROFILE_NAME);
+        List<Asset> initialAssets = assetRepository.findAllByNameIn(AppConstants.DEFAULT_ASSET_NAMES);
         List<MemberAsset> memberAssets = new ArrayList<>();
-        for(Asset asset : initialAssets) {
+        for (Asset asset : initialAssets) {
             memberAssets.add(MemberAsset.builder()
                     .member(member)
                     .asset(asset)
@@ -208,13 +227,24 @@ public class MemberServiceImpl implements MemberService {
         return memberAssetRepository.saveAll(memberAssets);
     }
 
+    private void saveInitialCharacter(Member member) {
+        Character defaultCharacter = characterRepository.findByName(AppConstants.DEFAULT_CHARACTER_NAME)
+                .orElseThrow(CharacterNotFoundException::new);
+        memberCharacterRepository.save(
+                MemberCharacter.builder()
+                        .character(defaultCharacter)
+                        .member(member)
+                        .build()
+        );
+    }
+
     private SubscriptionState getSubscriptionState(Long memberId) {
         return subscriptionRepository.findByMemberId(memberId)
                 .map(sub -> {
                     boolean isPremium = (sub.getType() == SubscriptionType.PREMIUM);
                     return new SubscriptionState(sub.getType(), isPremium);
                 })
-                .orElse(new SubscriptionState(SubscriptionType.NONE, false)); // 구독 정보가 없으면 기본값 반환
+                .orElse(new SubscriptionState(SubscriptionType.NONE, false));
     }
 
     // ----------------------------- PRIVATE CLASS ---------------------------------

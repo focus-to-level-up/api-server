@@ -4,6 +4,7 @@ import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainTy
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -21,8 +22,14 @@ public class School extends BaseEntity {
     private String name;
 
     @Column(nullable = false)
-    private CategoryMainType type;
+    private CategoryMainType categoryMain;
 
     @Column(nullable = false)
-    private Long total;
+    private Long total = 0l;
+
+    @Builder
+    public School(String name, CategoryMainType categoryMain) {
+        this.name = name;
+        this.categoryMain = categoryMain;
+    }
 }

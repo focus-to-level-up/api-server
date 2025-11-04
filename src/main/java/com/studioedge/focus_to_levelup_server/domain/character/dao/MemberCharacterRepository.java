@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.domain.character.entity.dao;
+package com.studioedge.focus_to_levelup_server.domain.character.dao;
 
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import org.springframework.data.jpa.repository.JpaRepository;

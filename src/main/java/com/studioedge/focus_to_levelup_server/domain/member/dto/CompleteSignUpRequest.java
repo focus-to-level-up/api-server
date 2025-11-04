@@ -39,7 +39,7 @@ public record CompleteSignUpRequest(
         @Size(min = 2, max = 16, message = "닉네임은 2자 이상, 16자 이하로 입력해야합니다.")
         @Pattern(regexp = "^[a-zA-Z0-9가-힣]*$", message = "닉네임은 한글, 영어, 숫자만 사용 가능합니다. (특수문자, 공백 불가)")
         @Schema(description = "닉네임", example = "닉네임")
-        String nickName
+        String nickname
 
 ) {
     public static MemberInfo from(Member member, List<MemberAsset> initialAssets, CompleteSignUpRequest request) {
@@ -49,7 +49,7 @@ public record CompleteSignUpRequest(
                     .orElseThrow(() -> new IllegalStateException("기본 프로필 에셋을 찾을 수 없습니다."));
 
             MemberAsset borderAsset = initialAssets.stream()
-                    .filter(ma -> ma.getAsset().getType() == AssetType.CHARACTER_BORDER)
+                    .filter(ma -> ma.getAsset().getType() == AssetType.CHARACTER_PROFILE_BORDER)
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("기본 프로필 에셋을 찾을 수 없습니다."));
 
