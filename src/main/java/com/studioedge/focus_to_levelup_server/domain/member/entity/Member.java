@@ -30,7 +30,7 @@ public class Member extends BaseEntity {
     @Column(unique = true, nullable = false)
     private String socialId;
 
-    @Column(unique = true, length = 16, nullable = false)
+    @Column(unique = true, length = 16)
     private String nickname;
 
     // 유저 생성할 때 null.
