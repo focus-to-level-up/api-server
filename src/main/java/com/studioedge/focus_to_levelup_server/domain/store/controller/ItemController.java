@@ -28,17 +28,14 @@ public class ItemController {
     private final ItemQueryService itemQueryService;
     private final ItemPurchaseService itemPurchaseService;
 
-    @Operation(summary = "아이템 목록 조회", description = "모든 아이템 목록을 조회합니다")
+    @Operation(summary = "아이템 목록 조회", description = "아이템 목록을 조회합니다. 타입을 지정하지 않으면 모든 아이템을 조회합니다.")
     @GetMapping
-    public ResponseEntity<CommonResponse<ItemListResponse>> getAllItems() {
-        return HttpResponseUtil.ok(itemQueryService.getAllItems());
-    }
-
-    @Operation(summary = "타입별 아이템 조회", description = "특정 타입의 아이템 목록을 조회합니다")
-    @GetMapping("/type/{type}")
-    public ResponseEntity<CommonResponse<ItemListResponse>> getItemsByType(
-            @PathVariable ItemType type
+    public ResponseEntity<CommonResponse<ItemListResponse>> getItems(
+            @RequestParam(required = false) ItemType type
     ) {
+        if (type == null) {
+            return HttpResponseUtil.ok(itemQueryService.getAllItems());
+        }
         return HttpResponseUtil.ok(itemQueryService.getItemsByType(type));
     }
 
