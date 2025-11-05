@@ -43,6 +43,6 @@ public class DailyGoalService {
         DailyGoal dailyGoal = dailyGoalRepository.findById(dailyGoalId)
                 .orElseThrow(DailyGoalNotFoundException::new);
         dailyGoal.receiveReward();
-        member.receiveDailyGoal(request);
+        member.levelUp(request.rewardExp());
     }
 }

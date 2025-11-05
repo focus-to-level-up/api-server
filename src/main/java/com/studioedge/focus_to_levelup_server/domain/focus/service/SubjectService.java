@@ -9,6 +9,7 @@ import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectUnAu
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 public class SubjectService {
     private final SubjectRepository subjectRepository;
 
+    @Transactional(readOnly = true)
     public List<GetSubjectResponse> getSubjectList(Long memberId) {
         List<Subject> subjects = subjectRepository.findAllByMemberId(memberId);
         return subjects.stream()
@@ -26,9 +28,12 @@ public class SubjectService {
     }
 
     public void createSubject(Member member, CreateSubjectRequest request) {
-        subjectRepository.save(CreateSubjectRequest.from(member, request));
+        Subject subject = subjectRepository.findByMemberAndName(member, request.name())
+                .orElse(subjectRepository.save(CreateSubjectRequest.from(member, request)));
+        subject.update(request);
     }
 
+    @Transactional
     public void updateSubject(Long memberId, Long subjectId, CreateSubjectRequest request) {
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(SubjectNotFoundException::new);
@@ -37,11 +42,12 @@ public class SubjectService {
         subject.update(request);
     }
 
+    @Transactional
     public void deleteSubject(Long memberId, Long subjectId) {
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(SubjectNotFoundException::new);
         if (!subject.getMember().getId().equals(memberId))
             throw new SubjectUnAuthorizedException();
-        subjectRepository.delete(subject);
+        subject.delete();
     }
 }

@@ -7,6 +7,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class SaveSessionService {
     public void saveSession(Long memberId, Long subjectId) {
-
+        // member 레벨업 -> member.levelUp()
+        // subject 공부 시간 누적
+        // dailyGoal 누적
+        // MemberCharacter 친밀도 누적
+        //
     }
 }

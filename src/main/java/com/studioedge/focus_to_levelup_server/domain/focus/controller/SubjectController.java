@@ -56,6 +56,11 @@ public class SubjectController {
     }
 
     /**
+     * 과목 공부 시작
+     * TODO: member 현재 공부상태임을 보여줌.
+     * */
+
+    /**
      * 과목 수정
      * */
     @PutMapping("/v1/subject/{subjectId}")
