@@ -1,0 +1,46 @@
+package com.studioedge.focus_to_levelup_server.domain.member.dto;
+
+import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
+import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
+import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
+import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
+
+@Builder
+public record GetProfileResponse(
+        @Schema(description = "유저 pk", example = "1")
+        Long id,
+        @Schema(description = "닉네임", example = "닉네임")
+        String nickname,
+        @Schema(description = "메인 카테고리", example = "HIGH_SCHOOL")
+        CategoryMainType categoryMain,
+        @Schema(description = "서브 카테고리", example = "HIGH_2")
+        CategorySubType categorySub,
+        @Schema(description = "프로필 이미지 url", example = "https://lvup-image.s3.ap-northeast-2.amazonaws.com/1629780000000.jpg")
+        String profileImageUrl,
+        @Schema(description = "프로필 테두리 url", example = "https://lvup-image.s3.ap-northeast-2.amazonaws.com/1629780000000.jpg")
+        String profileBorderUrl,
+        @Schema(description = "소속 이름", example = "서울고등학교")
+        String belonging,
+        @Schema(description = "부스트 여부", example = "true")
+        Boolean boosted,
+        @Schema(description = "구독 상태", example = "PREMIUM")
+        SubscriptionType subscriptionType
+) {
+    public static GetProfileResponse of(Member member, MemberInfo memberInfo,
+                                        SubscriptionType subscriptionType, boolean boosted) {
+        return GetProfileResponse.builder()
+                .id(member.getId())
+                .nickname(member.getNickname())
+                .categoryMain(memberInfo.getCategoryMain())
+                .categorySub(memberInfo.getCategorySub())
+                .profileImageUrl(memberInfo.getProfileImage().getAsset().getAssetUrl())
+                .profileBorderUrl(memberInfo.getProfileBorder().getAsset().getAssetUrl())
+                .belonging(memberInfo.getBelonging())
+                .boosted(boosted)
+                .subscriptionType(subscriptionType)
+                .build();
+    }
+}

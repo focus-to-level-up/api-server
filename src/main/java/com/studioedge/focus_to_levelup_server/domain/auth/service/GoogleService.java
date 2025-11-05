@@ -134,7 +134,7 @@ public class GoogleService {
     @Transactional
     public void revokeGoogleToken(Member member) {
         if (member.getGoogleRefreshToken() == null) {
-            log.warn("Member {} has no Google refresh token to revoke", member.getMemberId());
+            log.warn("Member {} has no Google refresh token to revoke", member.getId());
             return;
         }
 
@@ -158,7 +158,7 @@ public class GoogleService {
                     .bodyToMono(String.class)
                     .block();
 
-            log.info("Successfully revoked Google token for member {}", member.getMemberId());
+            log.info("Successfully revoked Google token for member {}", member.getId());
 
         } catch (Exception e) {
             log.error("Failed to revoke Google token", e);

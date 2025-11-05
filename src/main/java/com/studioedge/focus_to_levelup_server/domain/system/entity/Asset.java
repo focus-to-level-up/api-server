@@ -3,6 +3,7 @@ package com.studioedge.focus_to_levelup_server.domain.system.entity;
 import com.studioedge.focus_to_levelup_server.global.common.enums.AssetType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -26,6 +27,7 @@ public class Asset {
     @Column(length = 2048, nullable = false)
     private String assetUrl;
 
+    @Builder
     public Asset(AssetType type, String name, String assetUrl) {
         this.type = type;
         this.name = name;

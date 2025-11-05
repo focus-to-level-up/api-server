@@ -133,13 +133,12 @@ public class AuthController {
             )
     })
     public ResponseEntity<CommonResponse<Void>> resign(
-            @Parameter(description = "소셜 로그인 타입 (apple, kakao, naver, google)", example = "apple")
+            @Parameter(description = "소셜 로그인 타입 (apple, kakao, naver, google)", example = "apple", hidden = true)
             @PathVariable String socialType,
-            @Parameter(hidden = true)
             @AuthenticationPrincipal Member member
     ) {
         SocialType type = SocialType.valueOf(socialType.toUpperCase());
-        authService.resign(member.getMemberId(), type);
+        authService.resign(member.getId(), type);
         return HttpResponseUtil.ok(null);
     }
 }

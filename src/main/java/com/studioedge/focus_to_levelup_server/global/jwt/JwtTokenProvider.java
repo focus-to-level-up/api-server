@@ -1,7 +1,7 @@
 package com.studioedge.focus_to_levelup_server.global.jwt;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.repository.MemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;

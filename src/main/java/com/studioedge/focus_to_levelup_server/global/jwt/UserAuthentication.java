@@ -17,7 +17,7 @@ public class UserAuthentication extends UsernamePasswordAuthenticationToken {
             return (Long) super.getPrincipal();
         }
         if (super.getPrincipal() instanceof Member) {
-            return ((Member) super.getPrincipal()).getMemberId();
+            return ((Member) super.getPrincipal()).getId();
         }
         return null;
     }

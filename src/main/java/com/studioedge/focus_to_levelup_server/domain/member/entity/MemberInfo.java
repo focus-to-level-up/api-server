@@ -1,8 +1,10 @@
 package com.studioedge.focus_to_levelup_server.domain.member.entity;
 
+import com.studioedge.focus_to_levelup_server.domain.member.dto.UpdateCategoryRequest;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.Gender;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.MemberAsset;
+import com.studioedge.focus_to_levelup_server.global.common.enums.AssetType;
 import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
 import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
 import jakarta.persistence.*;
@@ -17,7 +19,12 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "member_infos")
+@Table(
+        name = "member_infos",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"profile_image_id", "profile_border_id"})
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberInfo {
@@ -27,6 +34,7 @@ public class MemberInfo {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", unique = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
 
@@ -51,16 +59,16 @@ public class MemberInfo {
 
     @Column(nullable = false)
     @ColumnDefault("'없음'")
-    private String belonging = "없음";
+    private String belonging;
 
     private String profileMessage;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_image_id") // Asset ID 참조
     private MemberAsset profileImage;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "border_id") // Asset ID 참조
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_border_id") // Asset ID 참조
     private MemberAsset profileBorder;
 
     @Column(nullable = false)
@@ -78,7 +86,7 @@ public class MemberInfo {
     @Builder
     public MemberInfo(Member member, Integer age, Gender gender, CategoryMainType categoryMain,
                       CategorySubType categorySub, String belonging, String profileMessage,
-                      MemberAsset profileImage, MemberAsset profileBorder, Integer gold, Integer diamond)
+                      MemberAsset profileImage, MemberAsset profileBorder)
     {
         this.member = member;
         this.age = age;
@@ -89,8 +97,6 @@ public class MemberInfo {
         this.profileMessage = profileMessage;
         this.profileImage = profileImage;
         this.profileBorder = profileBorder;
-        this.gold = gold;
-        this.diamond = diamond;
     }
 
     // 비즈니스 메서드
@@ -116,5 +122,23 @@ public class MemberInfo {
 
     public void addDiamond(Integer amount) {
         this.diamond += amount;
+    }
+
+    public void updateCategory(UpdateCategoryRequest request) {
+        this.categoryMain = request.categoryMain();
+        this.categorySub = request.categorySub();
+        this.categoryUpdatedAt = LocalDateTime.now();
+    }
+
+    public void updateProfile(MemberAsset updateImage, MemberAsset updateBorder, String profileMessage) {
+        if (updateImage.getAsset().getType() != AssetType.CHARACTER_PROFILE_IMAGE) {
+            throw new IllegalArgumentException("제공된 에셋이 프로필 이미지가 아닙니다.");
+        }
+        if (updateBorder.getAsset().getType() != AssetType.CHARACTER_PROFILE_BORDER) {
+            throw new IllegalArgumentException("제공된 에셋이 테두리가 아닙니다.");
+        }
+        this.profileMessage = profileMessage;
+        this.profileImage = updateImage;
+        this.profileBorder = updateBorder;
     }
 }

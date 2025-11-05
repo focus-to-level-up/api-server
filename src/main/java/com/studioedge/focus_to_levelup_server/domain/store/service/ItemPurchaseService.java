@@ -1,9 +1,9 @@
 package com.studioedge.focus_to_levelup_server.domain.store.service;
 
+import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
+import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.member.repository.MemberInfoRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.repository.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.store.dto.request.ItemPurchaseRequest;
 import com.studioedge.focus_to_levelup_server.domain.store.entity.Item;
 import com.studioedge.focus_to_levelup_server.domain.store.entity.ItemDetail;

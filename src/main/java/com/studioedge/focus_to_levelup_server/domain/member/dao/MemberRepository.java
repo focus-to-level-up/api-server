@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.domain.member.repository;
+package com.studioedge.focus_to_levelup_server.domain.member.dao;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;

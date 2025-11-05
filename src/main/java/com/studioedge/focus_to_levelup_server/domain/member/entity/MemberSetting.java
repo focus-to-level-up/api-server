@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -20,6 +22,8 @@ public class MemberSetting {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", unique = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
 
     @Column(nullable = false)
@@ -59,5 +63,9 @@ public class MemberSetting {
     @Builder
     public MemberSetting(Member member) {
         this.member = member;
+    }
+
+    public void updateAlarmSetting() {
+        this.alarmOn = this.isAlarmOn() == true ? false : true;
     }
 }

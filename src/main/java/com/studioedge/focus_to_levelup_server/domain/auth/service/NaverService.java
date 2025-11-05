@@ -8,7 +8,6 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -104,7 +103,7 @@ public class NaverService {
     @Transactional
     public void revokeNaverToken(Member member) {
         if (member.getNaverRefreshToken() == null) {
-            log.warn("Member {} has no Naver refresh token to revoke", member.getMemberId());
+            log.warn("Member {} has no Naver refresh token to revoke", member.getId());
             return;
         }
 
@@ -129,7 +128,7 @@ public class NaverService {
                     .bodyToMono(String.class)
                     .block();
 
-            log.info("Successfully revoked Naver token for member {}", member.getMemberId());
+            log.info("Successfully revoked Naver token for member {}", member.getId());
 
         } catch (Exception e) {
             log.error("Failed to revoke Naver token", e);

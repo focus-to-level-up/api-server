@@ -1,7 +1,13 @@
 package com.studioedge.focus_to_levelup_server.global.exception;
 
 import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
-import com.studioedge.focus_to_levelup_server.domain.store.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
+import com.studioedge.focus_to_levelup_server.domain.store.exception.InvalidItemOptionException;
+import com.studioedge.focus_to_levelup_server.domain.store.exception.ItemAlreadyPurchasedException;
+import com.studioedge.focus_to_levelup_server.domain.store.exception.ItemNotFoundException;
 import org.springframework.http.HttpStatus;
 
 import java.util.LinkedHashMap;
@@ -14,8 +20,8 @@ public class ExceptionMapper {
     static {
         setUpAuthException();
         setUpStoreException();
-        // TODO: 도메인별 예외 추가 등록
-        // setUpMemberException();
+        setUpMemberException();
+        setUpCharacterException();
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -54,5 +60,33 @@ public class ExceptionMapper {
                 ExceptionSituation.of("유효하지 않은 아이템 옵션입니다.", HttpStatus.BAD_REQUEST));
         mapper.put(InsufficientGoldException.class,
                 ExceptionSituation.of("골드가 부족합니다.", HttpStatus.BAD_REQUEST));
+    }
+
+    /**
+     * Member 관련 예외 등록
+     */
+    private static void setUpMemberException() {
+        mapper.put(MemberNotFoundException.class,
+                ExceptionSituation.of("해당 유저를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(NicknameUpdateException.class,
+                ExceptionSituation.of("닉네임은 변경일을 기준으로 1달 이후에 변경 가능합니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(InvalidMemberException.class,
+                ExceptionSituation.of("회원님의 정보가 존재하지 않습니다. 탈퇴후 계정을 새로 생성해야합니다.", HttpStatus.NOT_FOUND));
+        mapper.put(CategoryUpdateException.class,
+                ExceptionSituation.of("카테고리는 변경일을 기준으로 1달 이후에 변경 가능합니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(SchoolNotFoundException.class,
+                ExceptionSituation.of("입력한 학교가 존재하지 않습니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(AssetUnauthorizedException.class,
+                ExceptionSituation.of("현재 에셋을 사용할 수 있는 권한이 없습니다.", HttpStatus.UNAUTHORIZED));
+        mapper.put(InvalidSignUpException.class,
+                ExceptionSituation.of("가입정보를 정확히 확인하여 전송해주시길 바랍니다.", HttpStatus.UNAUTHORIZED));
+    }
+
+    /**
+     * Character 관련 예외 등록
+     */
+    private static void setUpCharacterException() {
+        mapper.put(CharacterNotFoundException.class,
+                ExceptionSituation.of("해당 캐릭터를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 }

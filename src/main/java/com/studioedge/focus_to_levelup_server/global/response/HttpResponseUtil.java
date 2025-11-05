@@ -42,10 +42,10 @@ public class HttpResponseUtil {
     }
 
     public static <T> ResponseEntity<CommonResponse<T>> updated(T data) {
-        return ResponseEntity.ok(CommonResponse.ok(data));
+        return ResponseEntity.ok(CommonResponse.updated(data));
     }
 
     public static <T> ResponseEntity<CommonResponse<T>> delete(T data) {
-        return ResponseEntity.ok(CommonResponse.ok(data));
+        return ResponseEntity.ok(CommonResponse.delete(data));
     }
 }
