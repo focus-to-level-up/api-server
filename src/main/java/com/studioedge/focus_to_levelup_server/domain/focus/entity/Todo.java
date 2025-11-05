@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.entity;
 
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.CreateTodoRequest;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -29,11 +30,20 @@ public class Todo extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("false")
-    private boolean isComplete = false;
+    private Boolean isComplete = false;
 
     @Builder
     public Todo(Subject subject, String content) {
         this.subject = subject;
         this.content = content;
+    }
+
+    public void update(CreateTodoRequest request) {
+        this.content = request.content();
+    }
+
+    public boolean changeStatus() {
+        this.isComplete = this.isComplete ? false : true;
+        return this.isComplete;
     }
 }

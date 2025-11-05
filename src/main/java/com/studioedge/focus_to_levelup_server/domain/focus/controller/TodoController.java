@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -23,7 +25,7 @@ public class TodoController {
      * @TODO: 프론트 입장에서 과목 + 할일 조회를 한번에 하는게 좋을지 고민해봐야합니다.
      * */
     @GetMapping("/v1/subject/{subjectId}/todos")
-    public ResponseEntity<CommonResponse<GetTodoResponse>> getTodoList(
+    public ResponseEntity<CommonResponse<List<GetTodoResponse>>> getTodoList(
             @PathVariable(name = "subjectId") Long subjectId
     ) {
         return HttpResponseUtil.ok(todoService.getTodoList(subjectId));
@@ -34,11 +36,10 @@ public class TodoController {
      * */
     @PostMapping("/v1/subject/{subjectId}/todo")
     public ResponseEntity<CommonResponse<Void>> createTodo(
-            @AuthenticationPrincipal Long memberId,
             @PathVariable(name = "subjectId") Long subjectId,
             @Valid @RequestBody CreateTodoRequest request
     ) {
-        todoService.createTodo(memberId, subjectId, request);
+        todoService.createTodo(subjectId, request);
         return HttpResponseUtil.created(null);
     }
 
@@ -63,7 +64,7 @@ public class TodoController {
             @AuthenticationPrincipal Long memberId,
             @PathVariable(name = "todoId") Long todoId
     ) {
-        return HttpResponseUtil.updated(todoService.changeTodoStatus(memberId, todoId));
+        return HttpResponseUtil.updated(todoService.changeTodoStatus(todoId));
     }
 
     /**
