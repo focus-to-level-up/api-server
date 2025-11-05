@@ -20,7 +20,7 @@ public interface MemberService {
 
     void updateCategory(Member member, UpdateCategoryRequest request);
 
-    void updateAlarmSetting(Member member);
+    void updateAlarmSetting(Long memberId);
 
     void updateAllowedApps(Member member, UpdateAllowedAppsRequest requests);
 }

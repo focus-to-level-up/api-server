@@ -46,12 +46,12 @@ public record CompleteSignUpRequest(
             MemberAsset imageAsset = initialAssets.stream()
                     .filter(ma -> ma.getAsset().getType() == AssetType.CHARACTER_PROFILE_IMAGE)
                     .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("기본 프로필 에셋을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new IllegalStateException("기본 프로필 이미지를 찾을 수 없습니다."));
 
             MemberAsset borderAsset = initialAssets.stream()
                     .filter(ma -> ma.getAsset().getType() == AssetType.CHARACTER_PROFILE_BORDER)
                     .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("기본 프로필 에셋을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new IllegalStateException("기본 프로필 테두리를 찾을 수 없습니다."));
 
             return MemberInfo.builder()
                     .member(member)
@@ -60,7 +60,7 @@ public record CompleteSignUpRequest(
                     .categoryMain(request.categoryMain())
                     .categorySub(request.categorySub())
                     .profileImage(imageAsset)
-                    .profileBorder(imageAsset)
+                    .profileBorder(borderAsset)
                     .belonging(request.schoolName() == null ? "없음" : request.schoolName())
                     .build();
     }
