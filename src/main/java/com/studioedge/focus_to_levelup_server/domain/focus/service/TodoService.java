@@ -1,6 +1,5 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.service;
 
-<<<<<<< HEAD
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.TodoRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateTodoRequest;
@@ -16,18 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
-=======
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.TodoRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.CreateTodoRequest;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.GetTodoResponse;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
->>>>>>> 5ad2a90 (feat: initial setting(controller, service, repository) 'daily', 'subject', 'todo' domain without business logic)
-
 @Service
 @RequiredArgsConstructor
 public class TodoService {
-<<<<<<< HEAD
     private final SubjectRepository subjectRepository;
     private final TodoRepository todoRepository;
 
@@ -68,28 +58,5 @@ public class TodoService {
                 .orElseThrow(TodoNotFoundException::new);
         if (!todo.getSubject().getMember().getId().equals(memberId))
             throw new TodoUnAuthorizedException();
-        todoRepository.delete(todo);
-=======
-    private final TodoRepository todoRepository;
-
-    public GetTodoResponse getTodoList(Long subjectId) {
-        return null;
-    }
-
-    public void createTodo(Long memberId, Long subjectId, CreateTodoRequest request) {
-
-    }
-
-    public void updateTodo(Long memberId, Long todoId, CreateTodoRequest request) {
-
-    }
-
-    public Boolean changeTodoStatus(Long memberId, Long todoId) {
-        return null;
-    }
-
-    public void deleteTodo(Long memberId, Long todoId) {
-
->>>>>>> 5ad2a90 (feat: initial setting(controller, service, repository) 'daily', 'subject', 'todo' domain without business logic)
     }
 }

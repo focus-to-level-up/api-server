@@ -1,6 +1,5 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.service;
 
-<<<<<<< HEAD
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.AllowedAppRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
@@ -22,19 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
-=======
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.GetSubjectResponse;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
->>>>>>> 5ad2a90 (feat: initial setting(controller, service, repository) 'daily', 'subject', 'todo' domain without business logic)
 
 @Service
 @RequiredArgsConstructor
 public class SubjectService {
-<<<<<<< HEAD
     private final DailyGoalRepository dailyGoalRepository;
     private final SubjectRepository subjectRepository;
     private final AllowedAppRepository allowedAppRepository;
@@ -79,27 +69,5 @@ public class SubjectService {
 
         dailyGoal.useApp(request.usingSeconds());
         allowedApp.useApp(request.usingSeconds());
-=======
-    private final SubjectRepository subjectRepository;
-
-    public List<GetSubjectResponse> getSubjectList(Long memberId) {
-        return null;
-    }
-
-    public void createSubject(Long memberId) {
-
-    }
-
-    public void saveSession(Long memberId, Long subjectId) {
-
-    }
-
-    public void updateSubject(Long memberId, Long subjectId) {
-
-    }
-
-    public void  deleteSubject(Long memberId, Long subjectId) {
-
->>>>>>> 5ad2a90 (feat: initial setting(controller, service, repository) 'daily', 'subject', 'todo' domain without business logic)
     }
 }

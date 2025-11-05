@@ -1,15 +1,9 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.service;
 
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-<<<<<<< HEAD
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateDailyGoalRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.ReceiveDailyGoalRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetDailyGoalResponse;
-=======
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.CreateDailyGoalRequest;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.GetDailyGoalResponse;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.ReceiveDailyGoalRequest;
->>>>>>> 5ad2a90 (feat: initial setting(controller, service, repository) 'daily', 'subject', 'todo' domain without business logic)
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
@@ -49,10 +43,7 @@ public class DailyGoalService {
         DailyGoal dailyGoal = dailyGoalRepository.findById(dailyGoalId)
                 .orElseThrow(DailyGoalNotFoundException::new);
         dailyGoal.receiveReward();
-<<<<<<< HEAD
         member.levelUp(request.rewardExp());
-=======
         member.receiveDailyGoal(request);
->>>>>>> 5ad2a90 (feat: initial setting(controller, service, repository) 'daily', 'subject', 'todo' domain without business logic)
     }
 }
