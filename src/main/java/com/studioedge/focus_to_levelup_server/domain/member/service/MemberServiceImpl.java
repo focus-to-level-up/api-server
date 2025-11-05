@@ -151,8 +151,8 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void updateAlarmSetting(Member member) {
-        MemberSetting memberSetting = memberSettingRepository.findByMember(member)
+    public void updateAlarmSetting(Long memberId) {
+        MemberSetting memberSetting = memberSettingRepository.findByMemberId(memberId)
                 .orElseThrow(InvalidMemberException::new);
         memberSetting.updateAlarmSetting();
     }

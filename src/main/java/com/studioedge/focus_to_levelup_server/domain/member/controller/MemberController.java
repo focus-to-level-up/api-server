@@ -19,8 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Tag(name = "Member")
 @RestController
 @RequestMapping("/api")
@@ -259,9 +257,9 @@ public class MemberController {
             )
     })
     public ResponseEntity<CommonResponse<Void>> updateAlarm(
-            @AuthenticationPrincipal Member member
+            @AuthenticationPrincipal Long memberId
     ) {
-        memberService.updateAlarmSetting(member);
+        memberService.updateAlarmSetting(memberId);
         return HttpResponseUtil.updated(null);
     }
 
