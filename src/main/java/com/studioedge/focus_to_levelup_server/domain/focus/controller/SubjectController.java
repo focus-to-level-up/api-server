@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.controller;
 
+<<<<<<< HEAD
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateSubjectRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveAllowedAppRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetSubjectResponse;
@@ -10,6 +11,12 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
 import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
 import jakarta.validation.Valid;
+=======
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.GetSubjectResponse;
+import com.studioedge.focus_to_levelup_server.domain.focus.service.SubjectService;
+import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
+import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
+>>>>>>> 5ad2a90 (feat: initial setting(controller, service, repository) 'daily', 'subject', 'todo' domain without business logic)
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,10 +29,14 @@ import java.util.List;
 @RequestMapping("/api")
 public class SubjectController {
     private final SubjectService subjectService;
+<<<<<<< HEAD
     private final SaveFocusService saveFocusService;
     /**
      * 과목 리스트 조회
      * */
+=======
+
+>>>>>>> 5ad2a90 (feat: initial setting(controller, service, repository) 'daily', 'subject', 'todo' domain without business logic)
     @GetMapping("/v1/subjects")
     public ResponseEntity<CommonResponse<List<GetSubjectResponse>>> getSubjectList(
             @AuthenticationPrincipal Long memberId
@@ -33,6 +44,7 @@ public class SubjectController {
         return HttpResponseUtil.ok(subjectService.getSubjectList(memberId));
     }
 
+<<<<<<< HEAD
     /**
      * 과목 생성
      * */
@@ -86,6 +98,34 @@ public class SubjectController {
     /**
      * 과목 삭제
      * */
+=======
+    @PostMapping("/v1/subject")
+    public ResponseEntity<CommonResponse<Void>> createSubject(
+            @AuthenticationPrincipal Long memberId
+    ) {
+        subjectService.createSubject(memberId);
+        return HttpResponseUtil.created(null);
+    }
+
+    @PostMapping("/v1/subject/{subjectId}")
+    public ResponseEntity<CommonResponse<Void>> saveSession(
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable(name = "subjectId") Long subjectId
+    ) {
+        subjectService.saveSession(memberId, subjectId);
+        return HttpResponseUtil.ok(null);
+    }
+
+    @PutMapping("/v1/subject/{subjectId}")
+    public ResponseEntity<CommonResponse<Void>> updateSubject(
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable(name = "subjectId") Long subjectId
+    ) {
+        subjectService.updateSubject(memberId, subjectId);
+        return HttpResponseUtil.updated(null);
+    }
+
+>>>>>>> 5ad2a90 (feat: initial setting(controller, service, repository) 'daily', 'subject', 'todo' domain without business logic)
     @DeleteMapping("/v1/subject/{subjectId}")
     public ResponseEntity<CommonResponse<Void>> deleteSubject(
             @AuthenticationPrincipal Long memberId,

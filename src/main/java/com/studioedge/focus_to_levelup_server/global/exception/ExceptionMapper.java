@@ -3,10 +3,14 @@ package com.studioedge.focus_to_levelup_server.global.exception;
 import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
+<<<<<<< HEAD
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.AllowedAppNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectUnAuthorizedException;
+=======
+import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
+>>>>>>> 5ad2a90 (feat: initial setting(controller, service, repository) 'daily', 'subject', 'todo' domain without business logic)
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InvalidItemOptionException;
@@ -26,7 +30,11 @@ public class ExceptionMapper {
         setUpStoreException();
         setUpMemberException();
         setUpCharacterException();
+<<<<<<< HEAD
         setUpFocusException();
+=======
+        setUpDailyGoalException();
+>>>>>>> 5ad2a90 (feat: initial setting(controller, service, repository) 'daily', 'subject', 'todo' domain without business logic)
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -96,6 +104,7 @@ public class ExceptionMapper {
     }
 
     /**
+<<<<<<< HEAD
      * Focus 관련 예외 등록
      */
     private static void setUpFocusException() {
@@ -109,5 +118,12 @@ public class ExceptionMapper {
 
         mapper.put(AllowedAppNotFoundException.class,
                 ExceptionSituation.of("해당 허용가능 앱을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+=======
+     * Character 관련 예외 등록
+     */
+    private static void setUpDailyGoalException() {
+        mapper.put(DailyGoalNotFoundException.class,
+                ExceptionSituation.of("일일 목표를 찾을 수 없습니다. 일일 목표를 먼저 설정해주세요.", HttpStatus.NOT_FOUND));
+>>>>>>> 5ad2a90 (feat: initial setting(controller, service, repository) 'daily', 'subject', 'todo' domain without business logic)
     }
 }

@@ -64,6 +64,7 @@ public class DailyGoal extends BaseEntity {
 
     public void receiveReward() {
         this.isReceived = true;
+<<<<<<< HEAD
     }
 
     public void useApp(Integer usingAppSeconds) {
@@ -72,5 +73,7 @@ public class DailyGoal extends BaseEntity {
 
     public void increaseCurrentMinutes(Integer minutes) {
         this.currentMinutes += minutes;
+=======
+>>>>>>> 5ad2a90 (feat: initial setting(controller, service, repository) 'daily', 'subject', 'todo' domain without business logic)
     }
 }

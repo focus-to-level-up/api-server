@@ -49,7 +49,7 @@ public class MemberSetting {
 
     @Column(nullable = false)
     @ColumnDefault("true")
-    private Boolean isRankingctive = true; // 랭킹 활성화 여부
+    private Boolean isRankingActive = true; // 랭킹 활성화 여부
 
     private LocalDateTime isRankingCautionAt; // 경고 당한 날짜
 

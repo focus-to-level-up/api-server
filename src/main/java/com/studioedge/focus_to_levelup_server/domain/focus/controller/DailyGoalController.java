@@ -1,8 +1,14 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.controller;
 
+<<<<<<< HEAD
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateDailyGoalRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetDailyGoalResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.ReceiveDailyGoalRequest;
+=======
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.CreateDailyGoalRequest;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.GetDailyGoalResponse;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.ReceiveDailyGoalRequest;
+>>>>>>> 5ad2a90 (feat: initial setting(controller, service, repository) 'daily', 'subject', 'todo' domain without business logic)
 import com.studioedge.focus_to_levelup_server.domain.focus.service.DailyGoalService;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
