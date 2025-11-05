@@ -1,11 +1,17 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.service;
 
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.CreateSubjectRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.GetSubjectResponse;
+import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
+import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectUnAuthorizedException;
+import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -13,22 +19,29 @@ public class SubjectService {
     private final SubjectRepository subjectRepository;
 
     public List<GetSubjectResponse> getSubjectList(Long memberId) {
-        return null;
+        List<Subject> subjects = subjectRepository.findAllByMemberId(memberId);
+        return subjects.stream()
+                .map(GetSubjectResponse::of)
+                .collect(Collectors.toList());
     }
 
-    public void createSubject(Long memberId) {
-
+    public void createSubject(Member member, CreateSubjectRequest request) {
+        subjectRepository.save(CreateSubjectRequest.from(member, request));
     }
 
-    public void saveSession(Long memberId, Long subjectId) {
-
+    public void updateSubject(Long memberId, Long subjectId, CreateSubjectRequest request) {
+        Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(SubjectNotFoundException::new);
+        if (!subject.getMember().getId().equals(memberId))
+            throw new SubjectUnAuthorizedException();
+        subject.update(request);
     }
 
-    public void updateSubject(Long memberId, Long subjectId) {
-
-    }
-
-    public void  deleteSubject(Long memberId, Long subjectId) {
-
+    public void deleteSubject(Long memberId, Long subjectId) {
+        Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(SubjectNotFoundException::new);
+        if (!subject.getMember().getId().equals(memberId))
+            throw new SubjectUnAuthorizedException();
+        subjectRepository.delete(subject);
     }
 }

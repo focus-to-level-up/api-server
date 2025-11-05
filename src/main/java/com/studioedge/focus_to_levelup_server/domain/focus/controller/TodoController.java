@@ -18,7 +18,10 @@ public class TodoController {
 
     private final TodoService todoService;
 
-    // @TODO: 프론트 입장에서 과목 + 할일 조회를 한번에 하는게 좋을지 고민해봐야합니다.
+    /**
+     * 과목 내 할일 리스트 조회
+     * @TODO: 프론트 입장에서 과목 + 할일 조회를 한번에 하는게 좋을지 고민해봐야합니다.
+     * */
     @GetMapping("/v1/subject/{subjectId}/todos")
     public ResponseEntity<CommonResponse<GetTodoResponse>> getTodoList(
             @PathVariable(name = "subjectId") Long subjectId
@@ -26,6 +29,9 @@ public class TodoController {
         return HttpResponseUtil.ok(todoService.getTodoList(subjectId));
     }
 
+    /**
+     * 과목 내 할일 생성
+     * */
     @PostMapping("/v1/subject/{subjectId}/todo")
     public ResponseEntity<CommonResponse<Void>> createTodo(
             @AuthenticationPrincipal Long memberId,
@@ -36,6 +42,9 @@ public class TodoController {
         return HttpResponseUtil.created(null);
     }
 
+    /**
+     * 할일 수정
+     * */
     @PutMapping("/v1/todo/{todoId}")
     public ResponseEntity<CommonResponse<Void>> updateTodo(
             @AuthenticationPrincipal Long memberId,
@@ -46,6 +55,9 @@ public class TodoController {
         return HttpResponseUtil.updated(null);
     }
 
+    /**
+     * 할일 상태 변경
+     * */
     @PutMapping("/v1/todo/{todoId}/status")
     public ResponseEntity<CommonResponse<Boolean>> changeTodoStatus(
             @AuthenticationPrincipal Long memberId,
@@ -54,6 +66,9 @@ public class TodoController {
         return HttpResponseUtil.updated(todoService.changeTodoStatus(memberId, todoId));
     }
 
+    /**
+     * 할일 삭제
+     * */
     @DeleteMapping("/v1/todo/{todoId}")
     public ResponseEntity<CommonResponse<Void>> deleteTodo(
             @AuthenticationPrincipal Long memberId,

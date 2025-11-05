@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.entity;
 
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.CreateSubjectRequest;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -32,14 +33,23 @@ public class Subject extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int focusMinutes = 0;
+    private Integer focusSeconds = 0;
+
+    @Column(nullable = false)
+    private String color;
 
     private LocalDateTime deleteAt; // soft delete
 
     @Builder
-    public Subject(String name, Member member) {
+    public Subject(String name, Member member, String color) {
         this.name = name;
         this.member = member;
+        this.color = color;
+    }
+
+    public void update(CreateSubjectRequest request) {
+        this.name = name;
+        this.color = color;
     }
 
     public void delete() {
