@@ -6,6 +6,8 @@ import lombok.Builder;
 
 @Builder
 public record GetDailyGoalResponse (
+        @Schema(description = "일일 목표 pk", example = "1")
+        Long dailyGoalId,
         @Schema(description = "현재 집중 시간(분)", example = "260")
         Integer currentMinutes,
         @Schema(description = "목표 집중 시간(분)", example = "240")
@@ -28,6 +30,7 @@ public record GetDailyGoalResponse (
             rewardMultiplier = (float) (Math.round(rewardMultiplier * 100) / 100.0);
         }
         return GetDailyGoalResponse.builder()
+                .dailyGoalId(dailyGoal.getId())
                 .currentMinutes(dailyGoal.getCurrentMinutes())
                 .targetMinutes(dailyGoal.getTargetMinutes())
                 .rewardMultiplier(rewardMultiplier)
