@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.domain.study.entity;
+package com.studioedge.focus_to_levelup_server.domain.focus.entity;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
@@ -7,17 +7,20 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name = "allowed_apps")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "subjects")
 @Getter
-public class AllowedApp extends BaseEntity {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Subject extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "allowed_app_id")
+    @Column(name = "subject_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -25,12 +28,21 @@ public class AllowedApp extends BaseEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
 
+    private String name;
+
     @Column(nullable = false)
-    private String appIdentifier; // 앱 패키지명이나 번들ID
+    @ColumnDefault("0")
+    private int focusMinutes = 0;
+
+    private LocalDateTime deleteAt; // soft delete
 
     @Builder
-    public AllowedApp(Member member, String appIdentifier) {
+    public Subject(String name, Member member) {
+        this.name = name;
         this.member = member;
-        this.appIdentifier = appIdentifier;
+    }
+
+    public void delete() {
+        this.deleteAt = LocalDateTime.now();
     }
 }

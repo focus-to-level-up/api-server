@@ -3,6 +3,7 @@ package com.studioedge.focus_to_levelup_server.global.exception;
 import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InvalidItemOptionException;
@@ -22,6 +23,7 @@ public class ExceptionMapper {
         setUpStoreException();
         setUpMemberException();
         setUpCharacterException();
+        setUpDailyGoalException();
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -88,5 +90,13 @@ public class ExceptionMapper {
     private static void setUpCharacterException() {
         mapper.put(CharacterNotFoundException.class,
                 ExceptionSituation.of("해당 캐릭터를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * Character 관련 예외 등록
+     */
+    private static void setUpDailyGoalException() {
+        mapper.put(DailyGoalNotFoundException.class,
+                ExceptionSituation.of("일일 목표를 찾을 수 없습니다. 일일 목표를 먼저 설정해주세요.", HttpStatus.NOT_FOUND));
     }
 }

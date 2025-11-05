@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.domain.study.entity;
+package com.studioedge.focus_to_levelup_server.domain.focus.entity;
 
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;

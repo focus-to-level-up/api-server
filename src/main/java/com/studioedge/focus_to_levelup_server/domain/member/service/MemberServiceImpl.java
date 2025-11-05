@@ -18,8 +18,8 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
-import com.studioedge.focus_to_levelup_server.domain.study.dao.AllowedAppRepository;
-import com.studioedge.focus_to_levelup_server.domain.study.entity.AllowedApp;
+import com.studioedge.focus_to_levelup_server.domain.focus.dao.AllowedAppRepository;
+import com.studioedge.focus_to_levelup_server.domain.focus.entity.AllowedApp;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.AssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.ReportLogRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;

@@ -1,40 +1,36 @@
-package com.studioedge.focus_to_levelup_server.domain.study.entity;
+package com.studioedge.focus_to_levelup_server.domain.focus.entity;
 
+import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(name = "todos")
-@Getter
+@Table(name = "allowed_apps")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Todo extends BaseEntity {
+@Getter
+public class AllowedApp extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "todo_id")
+    @Column(name = "allowed_app_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subject_id")
+    @JoinColumn(name = "member_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Subject subject;
-
-    private String content;
+    private Member member;
 
     @Column(nullable = false)
-    @ColumnDefault("false")
-    private boolean isComplete = false;
+    private String appIdentifier; // 앱 패키지명이나 번들ID
 
     @Builder
-    public Todo(Subject subject, String content) {
-        this.subject = subject;
-        this.content = content;
+    public AllowedApp(Member member, String appIdentifier) {
+        this.member = member;
+        this.appIdentifier = appIdentifier;
     }
 }
