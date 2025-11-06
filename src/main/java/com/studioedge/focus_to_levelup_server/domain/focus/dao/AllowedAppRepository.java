@@ -11,4 +11,5 @@ public interface AllowedAppRepository extends JpaRepository<AllowedApp, Long> {
     List<AllowedApp> findAllByMember(Member member);
 
     Optional<AllowedApp> findByMemberAndAppIdentifier(Member member, String appIdentifier);
+    List<AllowedApp> findAllByMemberId(Long memberId);
 }
