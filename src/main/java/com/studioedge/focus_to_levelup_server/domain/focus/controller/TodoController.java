@@ -61,10 +61,9 @@ public class TodoController {
      * */
     @PutMapping("/v1/todo/{todoId}/status")
     public ResponseEntity<CommonResponse<Boolean>> changeTodoStatus(
-            @AuthenticationPrincipal Long memberId,
             @PathVariable(name = "todoId") Long todoId
     ) {
-        return HttpResponseUtil.updated(todoService.changeTodoStatus(memberId, todoId));
+        return HttpResponseUtil.updated(todoService.changeTodoStatus(todoId));
     }
     /**
      * 할일 삭제
