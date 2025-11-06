@@ -37,6 +37,7 @@ public class SubjectService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void createSubject(Member member, CreateSubjectRequest request) {
         Subject subject = subjectRepository.findByMemberAndName(member, request.name())
                 .orElse(subjectRepository.save(CreateSubjectRequest.from(member, request)));
@@ -61,10 +62,11 @@ public class SubjectService {
         subject.delete();
     }
 
-    public void saveAllowedAppTime(Member member, SaveAllowedAppRequest request) {
-        DailyGoal dailyGoal = dailyGoalRepository.findByMemberAndDailyGoalDate(member, LocalDate.now())
+    @Transactional
+    public void saveAllowedAppTime(Long memberId, SaveAllowedAppRequest request) {
+        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(memberId, LocalDate.now())
                 .orElseThrow(DailyGoalNotFoundException::new);
-        AllowedApp allowedApp = allowedAppRepository.findByMemberAndAppIdentifier(member, request.appIdentifier())
+        AllowedApp allowedApp = allowedAppRepository.findByMemberIdAndAppIdentifier(memberId, request.appIdentifier())
                 .orElseThrow(AllowedAppNotFoundException::new);
 
         dailyGoal.useApp(request.usingSeconds());

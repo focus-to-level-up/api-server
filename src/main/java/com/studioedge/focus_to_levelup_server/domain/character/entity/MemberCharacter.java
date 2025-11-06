@@ -73,4 +73,12 @@ public class MemberCharacter extends BaseEntity {
         this.character = character;
         this.floor = floor;
     }
+
+    public void increaseLevel(Integer exp) {
+        this.currentExp += exp;
+        if (this.currentExp >= 600) {
+            this.currentLevel += (this.currentExp / 600);
+            this.currentExp %= 600;
+        }
+    }
 }

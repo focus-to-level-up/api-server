@@ -42,7 +42,7 @@ public class DailyGoal extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("false")
-    private Boolean isReceived = false;
+    private Boolean isReceived = false; // 목표 완료 수령 여부
 
     @Column(nullable = false)
     private Float rewardMultiplier;
@@ -62,8 +62,12 @@ public class DailyGoal extends BaseEntity {
         this.rewardMultiplier = (float) (Math.round(rewardMultiplier * 100) / 100.0);
     }
 
-    public void receiveReward() {
+    public boolean receiveReward() {
+        if (this.isReceived) {
+            return false;
+        }
         this.isReceived = true;
+        return true;
     }
 
     public void useApp(Integer usingAppSeconds) {

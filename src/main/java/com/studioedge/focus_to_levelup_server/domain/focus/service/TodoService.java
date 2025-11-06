@@ -7,6 +7,7 @@ import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetTodoR
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Todo;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectUnAuthorizedException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.TodoNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.TodoUnAuthorizedException;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,12 @@ public class TodoService {
     private final TodoRepository todoRepository;
 
     @Transactional(readOnly = true)
-    public List<GetTodoResponse> getTodoList(Long subjectId) {
+    public List<GetTodoResponse> getTodoList(Long memberId, Long subjectId) {
+        subjectRepository.findById(subjectId).ifPresent(subject -> {
+            if (!subject.getMember().getId().equals(memberId)) {
+                throw new SubjectUnAuthorizedException();
+            }
+        });
         List<Todo> todos = todoRepository.findAllBySubjectId(subjectId);
         return todos.stream()
                 .map(GetTodoResponse::of)
@@ -30,9 +36,12 @@ public class TodoService {
     }
 
     @Transactional
-    public void createTodo(Long subjectId, CreateTodoRequest request) {
+    public void createTodo(Long memberId, Long subjectId, CreateTodoRequest request) {
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(SubjectNotFoundException::new);
+        if (!subject.getMember().getId().equals(memberId)) {
+            throw new SubjectUnAuthorizedException();
+        }
         todoRepository.save(CreateTodoRequest.from(subject, request));
     }
 

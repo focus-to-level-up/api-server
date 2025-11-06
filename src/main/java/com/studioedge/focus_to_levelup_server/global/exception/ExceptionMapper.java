@@ -1,12 +1,10 @@
 package com.studioedge.focus_to_levelup_server.global.exception;
 
 import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.AllowedAppNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectUnAuthorizedException;
+import com.studioedge.focus_to_levelup_server.domain.focus.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InvalidItemOptionException;
@@ -93,6 +91,8 @@ public class ExceptionMapper {
     private static void setUpCharacterException() {
         mapper.put(CharacterNotFoundException.class,
                 ExceptionSituation.of("해당 캐릭터를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(CharacterDefaultNotFoundException.class,
+                ExceptionSituation.of("대표 캐릭터를 찾을 수 없습니다. 대표캐릭터를 설정해주세요", HttpStatus.NOT_FOUND));
     }
 
     /**
@@ -101,6 +101,8 @@ public class ExceptionMapper {
     private static void setUpFocusException() {
         mapper.put(DailyGoalNotFoundException.class,
                 ExceptionSituation.of("일일 목표를 찾을 수 없습니다. 일일 목표를 먼저 설정해주세요.", HttpStatus.NOT_FOUND));
+        mapper.put(AlreadyReceivedDailyGoalException.class,
+                ExceptionSituation.of("해당 목표는 이미 수령하였습니다.", HttpStatus.CONFLICT));
 
         mapper.put(SubjectNotFoundException.class,
                 ExceptionSituation.of("해당 과목을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
