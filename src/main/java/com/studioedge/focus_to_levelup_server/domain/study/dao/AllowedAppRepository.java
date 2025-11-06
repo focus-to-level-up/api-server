@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface AllowedAppRepository extends JpaRepository<AllowedApp, Long> {
     List<AllowedApp> findAllByMember(Member member);
+
+    List<AllowedApp> findAllByMemberId(Long memberId);
 }

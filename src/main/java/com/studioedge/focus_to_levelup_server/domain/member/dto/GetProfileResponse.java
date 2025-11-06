@@ -26,6 +26,8 @@ public record GetProfileResponse(
         String belonging,
         @Schema(description = "부스트 여부", example = "true")
         Boolean boosted,
+        @Schema(description = "집중 여부", example = "true")
+        Boolean focusOn,
         @Schema(description = "구독 상태", example = "PREMIUM")
         SubscriptionType subscriptionType
 ) {
@@ -40,6 +42,7 @@ public record GetProfileResponse(
                 .profileBorderUrl(memberInfo.getProfileBorder().getAsset().getAssetUrl())
                 .belonging(memberInfo.getBelonging())
                 .boosted(boosted)
+                .focusOn(member.getIsFocusing())
                 .subscriptionType(subscriptionType)
                 .build();
     }
