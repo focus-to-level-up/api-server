@@ -1,8 +1,10 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.controller;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.CreateSubjectRequest;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.GetSubjectResponse;
-import com.studioedge.focus_to_levelup_server.domain.focus.service.SaveSessionService;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateSubjectRequest;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveAllowedAppRequest;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetSubjectResponse;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
+import com.studioedge.focus_to_levelup_server.domain.focus.service.SaveFocusService;
 import com.studioedge.focus_to_levelup_server.domain.focus.service.SubjectService;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
@@ -20,7 +22,7 @@ import java.util.List;
 @RequestMapping("/api")
 public class SubjectController {
     private final SubjectService subjectService;
-    private final SaveSessionService saveSessionService;
+    private final SaveFocusService saveFocusService;
     /**
      * 과목 리스트 조회
      * */
@@ -47,18 +49,26 @@ public class SubjectController {
      * 과목 공부시간 저장
      * */
     @PostMapping("/v1/subject/{subjectId}")
-    public ResponseEntity<CommonResponse<Void>> saveSession(
+    public ResponseEntity<CommonResponse<Void>> saveFocus(
             @AuthenticationPrincipal Long memberId,
-            @PathVariable(name = "subjectId") Long subjectId
+            @PathVariable(name = "subjectId") Long subjectId,
+            @Valid @RequestBody SaveFocusRequest request
     ) {
-        saveSessionService.saveSession(memberId, subjectId);
+        saveFocusService.saveFocus(memberId, subjectId, request);
         return HttpResponseUtil.ok(null);
     }
 
     /**
-     * 과목 공부 시작
-     * TODO: member 현재 공부상태임을 보여줌.
+     * 과목 집중중, 앱 사용시간 저장
      * */
+    @PostMapping("/v1/subject/app")
+    public ResponseEntity<CommonResponse<Void>> saveAllowedAppTime(
+            @AuthenticationPrincipal Member member,
+            @Valid @RequestBody SaveAllowedAppRequest request
+    ) {
+        subjectService.saveAllowedAppTime(member, request);
+        return HttpResponseUtil.ok(null);
+    }
 
     /**
      * 과목 수정

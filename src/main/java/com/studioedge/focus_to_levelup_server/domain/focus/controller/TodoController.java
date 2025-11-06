@@ -1,7 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.controller;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.CreateTodoRequest;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.GetTodoResponse;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateTodoRequest;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetTodoResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.service.TodoService;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
 import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;

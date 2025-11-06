@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.domain.focus.dto;
+package com.studioedge.focus_to_levelup_server.domain.focus.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

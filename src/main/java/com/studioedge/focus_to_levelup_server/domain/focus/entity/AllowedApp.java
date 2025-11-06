@@ -11,7 +11,12 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(name = "allowed_apps")
+@Table(
+        name = "allowed_apps",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"member_id", "app_identifier"})
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class AllowedApp extends BaseEntity {
@@ -28,9 +33,16 @@ public class AllowedApp extends BaseEntity {
     @Column(nullable = false)
     private String appIdentifier; // 앱 패키지명이나 번들ID
 
+    @Column(nullable = false)
+    private Long usingAllowedAppSeconds = 0L;
+
     @Builder
     public AllowedApp(Member member, String appIdentifier) {
         this.member = member;
         this.appIdentifier = appIdentifier;
+    }
+
+    public void useApp(Integer usingAppSeconds) {
+        this.usingAllowedAppSeconds += usingAppSeconds;
     }
 }

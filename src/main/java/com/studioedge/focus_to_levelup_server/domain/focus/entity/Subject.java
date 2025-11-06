@@ -1,6 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.CreateSubjectRequest;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateSubjectRequest;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -51,6 +51,10 @@ public class Subject extends BaseEntity {
         this.name = name;
         this.color = color;
         this.deleteAt = this.deleteAt != null ? null : null;
+    }
+
+    public void increaseFocusSeconds(Integer focusSeconds) {
+        this.focusSeconds += focusSeconds;
     }
 
     public void delete() {

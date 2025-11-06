@@ -2,8 +2,8 @@ package com.studioedge.focus_to_levelup_server.domain.focus.service;
 
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.TodoRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.CreateTodoRequest;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.GetTodoResponse;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateTodoRequest;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetTodoResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Todo;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;

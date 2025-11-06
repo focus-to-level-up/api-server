@@ -1,6 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.CreateTodoRequest;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateTodoRequest;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

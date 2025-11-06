@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.domain.focus.dto;
+package com.studioedge.focus_to_levelup_server.domain.focus.dto.request;
 
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Todo;

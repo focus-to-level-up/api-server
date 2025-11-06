@@ -1,9 +1,16 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.service;
 
+import com.studioedge.focus_to_levelup_server.domain.focus.dao.AllowedAppRepository;
+import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.CreateSubjectRequest;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.GetSubjectResponse;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateSubjectRequest;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveAllowedAppRequest;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetSubjectResponse;
+import com.studioedge.focus_to_levelup_server.domain.focus.entity.AllowedApp;
+import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
+import com.studioedge.focus_to_levelup_server.domain.focus.exception.AllowedAppNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectUnAuthorizedException;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
@@ -11,13 +18,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class SubjectService {
+    private final DailyGoalRepository dailyGoalRepository;
     private final SubjectRepository subjectRepository;
+    private final AllowedAppRepository allowedAppRepository;
 
     @Transactional(readOnly = true)
     public List<GetSubjectResponse> getSubjectList(Long memberId) {
@@ -49,5 +59,15 @@ public class SubjectService {
         if (!subject.getMember().getId().equals(memberId))
             throw new SubjectUnAuthorizedException();
         subject.delete();
+    }
+
+    public void saveAllowedAppTime(Member member, SaveAllowedAppRequest request) {
+        DailyGoal dailyGoal = dailyGoalRepository.findByMemberAndDailyGoalDate(member, LocalDate.now())
+                .orElseThrow(DailyGoalNotFoundException::new);
+        AllowedApp allowedApp = allowedAppRepository.findByMemberAndAppIdentifier(member, request.appIdentifier())
+                .orElseThrow(AllowedAppNotFoundException::new);
+
+        dailyGoal.useApp(request.usingSeconds());
+        allowedApp.useApp(request.usingSeconds());
     }
 }

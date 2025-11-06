@@ -47,6 +47,10 @@ public class DailyGoal extends BaseEntity {
     @Column(nullable = false)
     private Float rewardMultiplier;
 
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Long usingAllowedAppSeconds = 0L;
+
     @Builder
     public DailyGoal(Member member, Integer targetMinutes) {
         this.member = member;
@@ -60,5 +64,13 @@ public class DailyGoal extends BaseEntity {
 
     public void receiveReward() {
         this.isReceived = true;
+    }
+
+    public void useApp(Integer usingAppSeconds) {
+        this.usingAllowedAppSeconds += usingAppSeconds;
+    }
+
+    public void increaseCurrentMinutes(Integer minutes) {
+        this.currentMinutes += minutes;
     }
 }
