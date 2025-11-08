@@ -174,6 +174,30 @@ public class MemberController {
         return HttpResponseUtil.ok(memberService.getAllowedApps(member));
     }
 
+    @GetMapping("/v1/member/settings")
+    @Operation(summary = "유저 세팅 조회", description = """
+            ### 기능
+            - 유저가 자신의 세팅상태를 조회합니다.
+            - 아래 '유저 허용가능 앱 수정'에서 위 기능을 이용합니다.
+            """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "세팅상태 조회 완료",
+                    content = @Content(schema = @Schema(implementation = GetProfileResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "해당 유저를 찾을 수 없습니다."
+            )
+    })
+    public ResponseEntity<CommonResponse<MemberSettingDto>> getMemberSetting(
+            @AuthenticationPrincipal Member member
+    ) {
+        return HttpResponseUtil.ok(memberService.getMemberSetting(member));
+    }
+
     @PutMapping("/v1/member/profile")
     @Operation(summary = "유저 프로필 업데이트", description = """
             ### 기능
