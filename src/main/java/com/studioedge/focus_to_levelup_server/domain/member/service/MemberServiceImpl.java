@@ -152,18 +152,39 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void updateAlarmSetting(Long memberId) {
+    public void updateMemberSetting(Long memberId, MemberSettingDto request) {
         MemberSetting memberSetting = memberSettingRepository.findByMemberId(memberId)
                 .orElseThrow(InvalidMemberException::new);
-        memberSetting.updateAlarmSetting();
+        memberSetting.updateSetting(request);
+    }
+
+    @Override
+    public MemberSettingDto getMemberSetting(Long memberId) {
+        MemberSetting memberSetting = memberSettingRepository.findByMemberId(memberId)
+                .orElseThrow(InvalidMemberException::new);
+        return MemberSettingDto.of(memberSetting);
     }
 
     @Override
     @Transactional
-    public void updateAllowedApps(Member member, UpdateAllowedAppsRequest requests) {
+    public void updateAllowedApps(Member member, AllowedAppsDto requests) {
         List<AllowedApp> allowedApps = allowedAppRepository.findAllByMember(member);
         allowedAppRepository.deleteAll(allowedApps);
-        allowedAppRepository.saveAll(UpdateAllowedAppsRequest.from(member, requests));
+        allowedAppRepository.saveAll(AllowedAppsDto.from(member, requests));
+    }
+
+    @Override
+    public AllowedAppsDto getAllowedApps(Long memberId) {
+        List<AllowedApp> allowedApps = allowedAppRepository.findAllByMemberId(memberId);
+        return AllowedAppsDto.of(allowedApps);
+    }
+
+    @Override
+    @Transactional
+    public void startFocus(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(MemberNotFoundException::new);
+        member.focusOn();
     }
 
     // ----------------------------- PRIVATE METHOD ---------------------------------

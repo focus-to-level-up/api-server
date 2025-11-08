@@ -39,11 +39,15 @@ public class Member extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("1")
-    private int currentLevel = 1;
+    private Integer currentLevel = 1;
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int currentExp = 0;
+    private Integer currentExp = 0;
+
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private Boolean isFocusing = false; // 현재 집중중의 여부
 
     @Column(length = 500)
     private String refreshToken;
@@ -114,6 +118,14 @@ public class Member extends BaseEntity {
     public void updateNickname(String nickname) {
         this.nickname = nickname;
         this.nicknameUpdatedAt = LocalDateTime.now();
+    }
+
+    public void focusOn() {
+        this.isFocusing = true;
+    }
+
+    public void focusOff() {
+        this.isFocusing = false;
     }
 
     public void withdraw() {

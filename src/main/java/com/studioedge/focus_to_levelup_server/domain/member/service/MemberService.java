@@ -20,10 +20,16 @@ public interface MemberService {
 
     void updateCategory(Member member, UpdateCategoryRequest request);
 
-    void updateAlarmSetting(Long memberId);
-
-    void updateAllowedApps(Member member, UpdateAllowedAppsRequest requests);
+    void updateMemberSetting(Long memberId, MemberSettingDto request);
 
     // 테스트용
     void updateCurrency(Long memberId, Integer gold, Integer diamond);
+
+    MemberSettingDto getMemberSetting(Long memberId);
+
+    void updateAllowedApps(Member member, AllowedAppsDto requests);
+
+    AllowedAppsDto getAllowedApps(Long memberId);
+
+    void startFocus(Long memberId);
 }
