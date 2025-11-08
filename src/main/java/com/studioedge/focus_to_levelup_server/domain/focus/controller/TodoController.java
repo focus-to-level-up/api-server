@@ -3,6 +3,7 @@ package com.studioedge.focus_to_levelup_server.domain.focus.controller;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateTodoRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetTodoResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.service.TodoService;
+import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
 import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,10 +59,10 @@ public class TodoController {
             )
     })
     public ResponseEntity<CommonResponse<List<GetTodoResponse>>> getTodoList(
-            @AuthenticationPrincipal Long memberId,
+            @AuthenticationPrincipal Member member,
             @PathVariable(name = "subjectId") Long subjectId
     ) {
-        return HttpResponseUtil.ok(todoService.getTodoList(memberId, subjectId));
+        return HttpResponseUtil.ok(todoService.getTodoList(member, subjectId));
     }
 
     /**
@@ -96,11 +97,11 @@ public class TodoController {
             )
     })
     public ResponseEntity<CommonResponse<Void>> createTodo(
-            @AuthenticationPrincipal Long memberId,
+            @AuthenticationPrincipal Member member,
             @PathVariable(name = "subjectId") Long subjectId,
             @Valid @RequestBody CreateTodoRequest request
     ) {
-        todoService.createTodo(memberId, subjectId, request);
+        todoService.createTodo(member, subjectId, request);
         return HttpResponseUtil.created(null);
     }
 
@@ -136,11 +137,11 @@ public class TodoController {
             )
     })
     public ResponseEntity<CommonResponse<Void>> updateTodo(
-            @AuthenticationPrincipal Long memberId,
+            @AuthenticationPrincipal Member member,
             @PathVariable(name = "todoId") Long todoId,
             @Valid @RequestBody CreateTodoRequest request
     ) {
-        todoService.updateTodo(memberId, todoId, request);
+        todoService.updateTodo(member, todoId, request);
         return HttpResponseUtil.updated(null);
     }
 
@@ -202,10 +203,10 @@ public class TodoController {
             )
     })
     public ResponseEntity<CommonResponse<Void>> deleteTodo(
-            @AuthenticationPrincipal Long memberId,
+            @AuthenticationPrincipal Member member,
             @PathVariable(name = "todoId") Long todoId
     ) {
-        todoService.deleteTodo(memberId, todoId);
+        todoService.deleteTodo(member, todoId);
         return HttpResponseUtil.delete(null);
     }
 }

@@ -6,10 +6,12 @@ import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.ReceiveDa
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetDailyGoalResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.AlreadyReceivedDailyGoalException;
+import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalDuplicatedException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
+import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,16 +26,22 @@ public class DailyGoalService {
     /**
      * 목표 시간 설정
      * */
+    @Transactional
     public void createDailyGoal(Member member, CreateDailyGoalRequest request) {
-        dailyGoalRepository.save(CreateDailyGoalRequest.from(member, request));
+        LocalDate serviceDate = AppConstants.getServiceDate();
+        if (dailyGoalRepository.findByMemberIdAndDailyGoalDate(member.getId(), serviceDate).isPresent()) {
+            throw new DailyGoalDuplicatedException();
+        }
+        dailyGoalRepository.save(CreateDailyGoalRequest.from(member, request, serviceDate));
     }
 
     /**
      * 목표 시간 조회
      * */
     @Transactional(readOnly = true)
-    public GetDailyGoalResponse getTodayDailyGoal(Long memberId) {
-        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(memberId, LocalDate.now())
+    public GetDailyGoalResponse getTodayDailyGoal(Member member) {
+        LocalDate serviceDate = AppConstants.getServiceDate();
+        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(member.getId(), serviceDate)
                 .orElseThrow(DailyGoalNotFoundException::new);
         return GetDailyGoalResponse.of(dailyGoal);
     }
@@ -42,10 +50,11 @@ public class DailyGoalService {
      * 목표 보상 수령
      * */
     @Transactional
-    public void receiveDailyGoal(Long memberId, ReceiveDailyGoalRequest request) {
-        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(memberId, LocalDate.now())
+    public void receiveDailyGoal(Member m, ReceiveDailyGoalRequest request) {
+        LocalDate serviceDate = AppConstants.getServiceDate();
+        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), serviceDate)
                 .orElseThrow(DailyGoalNotFoundException::new);
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
 
         if (dailyGoal.receiveReward()) {

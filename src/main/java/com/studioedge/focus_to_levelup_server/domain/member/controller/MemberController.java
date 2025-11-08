@@ -168,10 +168,10 @@ public class MemberController {
                     description = "해당 유저를 찾을 수 없습니다."
             )
     })
-    public ResponseEntity<CommonResponse<GetProfileResponse>> getAllowedApps(
-            @AuthenticationPrincipal Long memberId
+    public ResponseEntity<CommonResponse<AllowedAppsDto>> getAllowedApps(
+            @AuthenticationPrincipal Member member
     ) {
-        return HttpResponseUtil.ok(memberService.getMemberProfile(memberId));
+        return HttpResponseUtil.ok(memberService.getAllowedApps(member));
     }
 
     @PutMapping("/v1/member/profile")
@@ -281,10 +281,10 @@ public class MemberController {
             )
     })
     public ResponseEntity<CommonResponse<Void>> updateMemberSetting(
-            @AuthenticationPrincipal Long memberId,
+            @AuthenticationPrincipal Member member,
             @Valid @RequestBody MemberSettingDto request
     ) {
-        memberService.updateMemberSetting(memberId, request);
+        memberService.updateMemberSetting(member, request);
         return HttpResponseUtil.updated(null);
     }
 
@@ -302,9 +302,9 @@ public class MemberController {
             )
     })
     public ResponseEntity<CommonResponse<Void>> startFocus(
-            @AuthenticationPrincipal Long memberId
+            @AuthenticationPrincipal Member member
     ) {
-        memberService.startFocus(memberId);
+        memberService.startFocus(member);
         return HttpResponseUtil.updated(null);
     }
 

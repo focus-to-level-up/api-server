@@ -48,8 +48,8 @@ public class Subject extends BaseEntity {
     }
 
     public void update(CreateSubjectRequest request) {
-        this.name = name;
-        this.color = color;
+        this.name = request.name();
+        this.color = request.color();
         this.deleteAt = this.deleteAt != null ? null : null;
     }
 

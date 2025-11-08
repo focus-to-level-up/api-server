@@ -29,7 +29,7 @@ public class SaveFocusService {
     private final MemberCharacterRepository memberCharacterRepository;
 
     @Transactional
-    public void saveFocus(Long memberId, Long subjectId, SaveFocusRequest request) {
+    public void saveFocus(Member m, Long subjectId, SaveFocusRequest request) {
         /**
          * member 레벨업 -> member.levelUp()
          * subject 공부 시간 누적
@@ -42,20 +42,20 @@ public class SaveFocusService {
 
         Subject subject = subjectStatRepository.findById(subjectId)
                 .orElseThrow(SubjectNotFoundException::new);
-        if (!subject.getMember().getId().equals(memberId)) {
+        if (!subject.getMember().getId().equals(m.getId())) {
             throw new SubjectUnAuthorizedException();
         }
         subject.increaseFocusSeconds(request.focusSeconds());
 
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
         member.levelUp(focusMinutes * 10);
 
-        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(memberId, LocalDate.now())
+        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), LocalDate.now())
                 .orElseThrow(DailyGoalNotFoundException::new);
         dailyGoal.increaseCurrentMinutes(focusMinutes);
 
-        MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefault(memberId, true)
+        MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefault(m.getId(), true)
                 .orElseThrow(CharacterDefaultNotFoundException::new);
         memberCharacter.increaseLevel(focusMinutes * 10);
 

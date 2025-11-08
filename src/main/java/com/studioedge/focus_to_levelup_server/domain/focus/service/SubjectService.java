@@ -30,8 +30,8 @@ public class SubjectService {
     private final AllowedAppRepository allowedAppRepository;
 
     @Transactional(readOnly = true)
-    public List<GetSubjectResponse> getSubjectList(Long memberId) {
-        List<Subject> subjects = subjectRepository.findAllByMemberId(memberId);
+    public List<GetSubjectResponse> getSubjectList(Member member) {
+        List<Subject> subjects = subjectRepository.findAllByMemberId(member.getId());
         return subjects.stream()
                 .map(GetSubjectResponse::of)
                 .collect(Collectors.toList());
@@ -40,33 +40,35 @@ public class SubjectService {
     @Transactional
     public void createSubject(Member member, CreateSubjectRequest request) {
         Subject subject = subjectRepository.findByMemberAndName(member, request.name())
-                .orElse(subjectRepository.save(CreateSubjectRequest.from(member, request)));
+                .orElseGet(() -> {
+                    return subjectRepository.save(CreateSubjectRequest.from(member, request));
+                });
         subject.update(request);
     }
 
     @Transactional
-    public void updateSubject(Long memberId, Long subjectId, CreateSubjectRequest request) {
+    public void updateSubject(Member member, Long subjectId, CreateSubjectRequest request) {
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(SubjectNotFoundException::new);
-        if (!subject.getMember().getId().equals(memberId))
+        if (!subject.getMember().getId().equals(member.getId()))
             throw new SubjectUnAuthorizedException();
         subject.update(request);
     }
 
     @Transactional
-    public void deleteSubject(Long memberId, Long subjectId) {
+    public void deleteSubject(Member member, Long subjectId) {
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(SubjectNotFoundException::new);
-        if (!subject.getMember().getId().equals(memberId))
+        if (!subject.getMember().getId().equals(member.getId()))
             throw new SubjectUnAuthorizedException();
         subject.delete();
     }
 
     @Transactional
-    public void saveAllowedAppTime(Long memberId, SaveAllowedAppRequest request) {
-        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(memberId, LocalDate.now())
+    public void saveAllowedAppTime(Member member, SaveAllowedAppRequest request) {
+        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(member.getId(), LocalDate.now())
                 .orElseThrow(DailyGoalNotFoundException::new);
-        AllowedApp allowedApp = allowedAppRepository.findByMemberIdAndAppIdentifier(memberId, request.appIdentifier())
+        AllowedApp allowedApp = allowedAppRepository.findByMemberIdAndAppIdentifier(member.getId(), request.appIdentifier())
                 .orElseThrow(AllowedAppNotFoundException::new);
 
         dailyGoal.useApp(request.usingSeconds());

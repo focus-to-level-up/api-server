@@ -48,9 +48,9 @@ public class DailyGoalController {
             )
     })
     public ResponseEntity<CommonResponse<GetDailyGoalResponse>> getTodayDailyGoal(
-            @AuthenticationPrincipal Long memberId
+            @AuthenticationPrincipal Member member
     ) {
-        return HttpResponseUtil.ok(dailyGoalService.getTodayDailyGoal(memberId));
+        return HttpResponseUtil.ok(dailyGoalService.getTodayDailyGoal(member));
     }
 
     /**
@@ -109,10 +109,10 @@ public class DailyGoalController {
             )
     })
     public ResponseEntity<CommonResponse<Void>> receiveDailyGoal(
-            @AuthenticationPrincipal Long memberId,
+            @AuthenticationPrincipal Member member,
             @Valid @RequestBody ReceiveDailyGoalRequest request
     ) {
-        dailyGoalService.receiveDailyGoal(memberId, request);
+        dailyGoalService.receiveDailyGoal(member, request);
         return HttpResponseUtil.ok(null);
     }
 }

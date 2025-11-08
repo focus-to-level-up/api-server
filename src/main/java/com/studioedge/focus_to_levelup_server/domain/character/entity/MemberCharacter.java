@@ -81,4 +81,9 @@ public class MemberCharacter extends BaseEntity {
             this.currentExp %= 600;
         }
     }
+
+    public void setAsDefault(Integer defaultEvolution) {
+        this.isDefault = true;
+        this.defaultEvolution = defaultEvolution;
+    }
 }

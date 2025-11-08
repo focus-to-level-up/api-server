@@ -48,9 +48,9 @@ public class SubjectController {
             )
     })
     public ResponseEntity<CommonResponse<List<GetSubjectResponse>>> getSubjectList(
-            @AuthenticationPrincipal Long memberId
+            @AuthenticationPrincipal Member member
     ) {
-        return HttpResponseUtil.ok(subjectService.getSubjectList(memberId));
+        return HttpResponseUtil.ok(subjectService.getSubjectList(member));
     }
 
     /**
@@ -60,6 +60,7 @@ public class SubjectController {
     @Operation(summary = "과목 생성", description = """
             ### 기능
             - 새로운 과목을 생성합니다.
+            - 만약 기존에 있는 과목이 요청들어온다면, 해당 과목의 요청 색상만 변경합니다.
             
             ### 요청
             - `name`: [필수] 과목 이름
@@ -122,11 +123,11 @@ public class SubjectController {
             )
     })
     public ResponseEntity<CommonResponse<Void>> saveFocus(
-            @AuthenticationPrincipal Long memberId,
+            @AuthenticationPrincipal Member member,
             @PathVariable(name = "subjectId") Long subjectId,
             @Valid @RequestBody SaveFocusRequest request
     ) {
-        saveFocusService.saveFocus(memberId, subjectId, request);
+        saveFocusService.saveFocus(member, subjectId, request);
         return HttpResponseUtil.ok(null);
     }
 
@@ -159,10 +160,10 @@ public class SubjectController {
             )
     })
     public ResponseEntity<CommonResponse<Void>> saveAllowedAppTime(
-            @AuthenticationPrincipal Long memberId,
+            @AuthenticationPrincipal Member member,
             @Valid @RequestBody SaveAllowedAppRequest request
     ) {
-        subjectService.saveAllowedAppTime(memberId, request);
+        subjectService.saveAllowedAppTime(member, request);
         return HttpResponseUtil.ok(null);
     }
 
@@ -199,11 +200,11 @@ public class SubjectController {
             )
     })
     public ResponseEntity<CommonResponse<Void>> updateSubject(
-            @AuthenticationPrincipal Long memberId,
+            @AuthenticationPrincipal Member member,
             @PathVariable(name = "subjectId") Long subjectId,
             @Valid @RequestBody CreateSubjectRequest request
     ) {
-        subjectService.updateSubject(memberId, subjectId, request);
+        subjectService.updateSubject(member, subjectId, request);
         return HttpResponseUtil.updated(null);
     }
 
@@ -235,10 +236,10 @@ public class SubjectController {
             )
     })
     public ResponseEntity<CommonResponse<Void>> deleteSubject(
-            @AuthenticationPrincipal Long memberId,
+            @AuthenticationPrincipal Member member,
             @PathVariable(name = "subjectId") Long subjectId
     ) {
-        subjectService.deleteSubject(memberId, subjectId);
+        subjectService.deleteSubject(member, subjectId);
         return HttpResponseUtil.delete(null);
     }
 }

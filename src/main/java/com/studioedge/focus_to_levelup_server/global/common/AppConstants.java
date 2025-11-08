@@ -1,5 +1,7 @@
 package com.studioedge.focus_to_levelup_server.global.common;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public final class AppConstants {
@@ -19,4 +21,12 @@ public final class AppConstants {
      * @TODO: 에셋 이름 변경 필요할 수 있음.
      */
     public static final String DEFAULT_CHARACTER_NAME = "양동동";
+
+    public static LocalDate getServiceDate() {
+        LocalDateTime now = LocalDateTime.now();
+        if (now.getHour() < 4) {
+            return now.toLocalDate().minusDays(1);
+        }
+        return now.toLocalDate();
+    }
 }

@@ -151,15 +151,15 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void updateMemberSetting(Long memberId, MemberSettingDto request) {
-        MemberSetting memberSetting = memberSettingRepository.findByMemberId(memberId)
+    public void updateMemberSetting(Member member, MemberSettingDto request) {
+        MemberSetting memberSetting = memberSettingRepository.findByMemberId(member.getId())
                 .orElseThrow(InvalidMemberException::new);
         memberSetting.updateSetting(request);
     }
 
     @Override
-    public MemberSettingDto getMemberSetting(Long memberId) {
-        MemberSetting memberSetting = memberSettingRepository.findByMemberId(memberId)
+    public MemberSettingDto getMemberSetting(Member member) {
+        MemberSetting memberSetting = memberSettingRepository.findByMemberId(member.getId())
                 .orElseThrow(InvalidMemberException::new);
         return MemberSettingDto.of(memberSetting);
     }
@@ -173,15 +173,15 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public AllowedAppsDto getAllowedApps(Long memberId) {
-        List<AllowedApp> allowedApps = allowedAppRepository.findAllByMemberId(memberId);
+    public AllowedAppsDto getAllowedApps(Member member) {
+        List<AllowedApp> allowedApps = allowedAppRepository.findAllByMemberId(member.getId());
         return AllowedAppsDto.of(allowedApps);
     }
 
     @Override
     @Transactional
-    public void startFocus(Long memberId) {
-        Member member = memberRepository.findById(memberId)
+    public void startFocus(Member m) {
+        Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
         member.focusOn();
     }
@@ -251,12 +251,14 @@ public class MemberServiceImpl implements MemberService {
     private void saveInitialCharacter(Member member) {
         Character defaultCharacter = characterRepository.findByName(AppConstants.DEFAULT_CHARACTER_NAME)
                 .orElseThrow(CharacterNotFoundException::new);
-        memberCharacterRepository.save(
+        MemberCharacter memberCharacter = memberCharacterRepository.save(
                 MemberCharacter.builder()
                         .character(defaultCharacter)
                         .member(member)
+                        .floor(1)
                         .build()
         );
+        memberCharacter.setAsDefault(1);
     }
 
     private SubscriptionState getSubscriptionState(Long memberId) {

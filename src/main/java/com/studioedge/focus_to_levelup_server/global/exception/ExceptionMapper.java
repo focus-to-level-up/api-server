@@ -101,6 +101,8 @@ public class ExceptionMapper {
     private static void setUpFocusException() {
         mapper.put(DailyGoalNotFoundException.class,
                 ExceptionSituation.of("일일 목표를 찾을 수 없습니다. 일일 목표를 먼저 설정해주세요.", HttpStatus.NOT_FOUND));
+        mapper.put(DailyGoalDuplicatedException.class,
+                ExceptionSituation.of("일일 목표를 이미 설정했습니다.", HttpStatus.CONFLICT));
         mapper.put(AlreadyReceivedDailyGoalException.class,
                 ExceptionSituation.of("해당 목표는 이미 수령하였습니다.", HttpStatus.CONFLICT));
 

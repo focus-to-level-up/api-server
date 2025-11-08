@@ -10,6 +10,7 @@ import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotF
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectUnAuthorizedException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.TodoNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.TodoUnAuthorizedException;
+import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +24,9 @@ public class TodoService {
     private final TodoRepository todoRepository;
 
     @Transactional(readOnly = true)
-    public List<GetTodoResponse> getTodoList(Long memberId, Long subjectId) {
+    public List<GetTodoResponse> getTodoList(Member member, Long subjectId) {
         subjectRepository.findById(subjectId).ifPresent(subject -> {
-            if (!subject.getMember().getId().equals(memberId)) {
+            if (!subject.getMember().getId().equals(member.getId())) {
                 throw new SubjectUnAuthorizedException();
             }
         });
@@ -36,20 +37,20 @@ public class TodoService {
     }
 
     @Transactional
-    public void createTodo(Long memberId, Long subjectId, CreateTodoRequest request) {
+    public void createTodo(Member member, Long subjectId, CreateTodoRequest request) {
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(SubjectNotFoundException::new);
-        if (!subject.getMember().getId().equals(memberId)) {
+        if (!subject.getMember().getId().equals(member.getId())) {
             throw new SubjectUnAuthorizedException();
         }
         todoRepository.save(CreateTodoRequest.from(subject, request));
     }
 
     @Transactional
-    public void updateTodo(Long memberId, Long todoId, CreateTodoRequest request) {
+    public void updateTodo(Member member, Long todoId, CreateTodoRequest request) {
         Todo todo = todoRepository.findById(todoId)
                 .orElseThrow(TodoNotFoundException::new);
-        if (!todo.getSubject().getMember().getId().equals(memberId))
+        if (!todo.getSubject().getMember().getId().equals(member.getId()))
             throw new TodoUnAuthorizedException();
         todo.update(request);
     }
@@ -62,10 +63,11 @@ public class TodoService {
     }
 
     @Transactional
-    public void deleteTodo(Long memberId, Long todoId) {
+    public void deleteTodo(Member member, Long todoId) {
         Todo todo = todoRepository.findById(todoId)
                 .orElseThrow(TodoNotFoundException::new);
-        if (!todo.getSubject().getMember().getId().equals(memberId))
+        if (!todo.getSubject().getMember().getId().equals(member.getId()))
             throw new TodoUnAuthorizedException();
+        todoRepository.delete(todo);
     }
 }

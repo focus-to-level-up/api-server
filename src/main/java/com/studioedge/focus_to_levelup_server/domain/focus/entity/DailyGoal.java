@@ -52,10 +52,10 @@ public class DailyGoal extends BaseEntity {
     private Long usingAllowedAppSeconds = 0L;
 
     @Builder
-    public DailyGoal(Member member, Integer targetMinutes) {
+    public DailyGoal(Member member, Integer targetMinutes, LocalDate serviceDate) {
         this.member = member;
         this.targetMinutes = targetMinutes;
-        this.dailyGoalDate = LocalDate.now();
+        this.dailyGoalDate = serviceDate;
 
         float exponent = (float) ((targetMinutes / 60.0) - 2.0);
         float rewardMultiplier = (float) Math.pow(1.1, Math.max(0.0, exponent));

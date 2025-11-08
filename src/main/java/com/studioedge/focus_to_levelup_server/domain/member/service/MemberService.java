@@ -20,13 +20,13 @@ public interface MemberService {
 
     void updateCategory(Member member, UpdateCategoryRequest request);
 
-    void updateMemberSetting(Long memberId, MemberSettingDto request);
+    void updateMemberSetting(Member member, MemberSettingDto request);
 
-    MemberSettingDto getMemberSetting(Long memberId);
+    MemberSettingDto getMemberSetting(Member member);
 
     void updateAllowedApps(Member member, AllowedAppsDto requests);
 
-    AllowedAppsDto getAllowedApps(Long memberId);
+    AllowedAppsDto getAllowedApps(Member member);
 
-    void startFocus(Long memberId);
+    void startFocus(Member member);
 }
