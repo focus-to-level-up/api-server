@@ -5,3 +5,10 @@ spring:
     username: focus
     password: focus
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+# Hibernate SQL 로깅 (파라미터 값 포함)
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.orm.jdbc.bind: TRACE

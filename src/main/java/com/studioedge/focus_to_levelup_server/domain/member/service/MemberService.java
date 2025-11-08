@@ -23,4 +23,7 @@ public interface MemberService {
     void updateAlarmSetting(Long memberId);
 
     void updateAllowedApps(Member member, UpdateAllowedAppsRequest requests);
+
+    // 테스트용
+    void updateCurrency(Long memberId, Integer gold, Integer diamond);
 }

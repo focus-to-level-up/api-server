@@ -1,7 +1,7 @@
 package com.studioedge.focus_to_levelup_server.global.exception;
 
 import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
-import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.character.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
@@ -88,5 +88,13 @@ public class ExceptionMapper {
     private static void setUpCharacterException() {
         mapper.put(CharacterNotFoundException.class,
                 ExceptionSituation.of("해당 캐릭터를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(CharacterAlreadyPurchasedException.class,
+                ExceptionSituation.of("이미 보유한 캐릭터입니다.", HttpStatus.CONFLICT));
+        mapper.put(InsufficientDiamondException.class,
+                ExceptionSituation.of("다이아가 부족합니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(InvalidDefaultEvolutionException.class,
+                ExceptionSituation.of("유효하지 않은 진화 단계입니다. 보유한 진화 단계만 선택할 수 있습니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(MemberCharacterNotFoundException.class,
+                ExceptionSituation.of("보유하지 않은 캐릭터입니다.", HttpStatus.NOT_FOUND));
     }
 }
