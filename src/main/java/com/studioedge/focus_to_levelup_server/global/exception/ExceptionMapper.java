@@ -1,9 +1,10 @@
 package com.studioedge.focus_to_levelup_server.global.exception;
 
 import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
-import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.character.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.payment.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InvalidItemOptionException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.ItemAlreadyPurchasedException;
@@ -22,6 +23,7 @@ public class ExceptionMapper {
         setUpStoreException();
         setUpMemberException();
         setUpCharacterException();
+        setUpPaymentException();
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -88,5 +90,50 @@ public class ExceptionMapper {
     private static void setUpCharacterException() {
         mapper.put(CharacterNotFoundException.class,
                 ExceptionSituation.of("해당 캐릭터를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(CharacterAlreadyPurchasedException.class,
+                ExceptionSituation.of("이미 보유한 캐릭터입니다.", HttpStatus.CONFLICT));
+        mapper.put(InsufficientDiamondException.class,
+                ExceptionSituation.of("다이아가 부족합니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(InvalidDefaultEvolutionException.class,
+                ExceptionSituation.of("유효하지 않은 진화 단계입니다. 보유한 진화 단계만 선택할 수 있습니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(MemberCharacterNotFoundException.class,
+                ExceptionSituation.of("보유하지 않은 캐릭터입니다.", HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * Payment 관련 예외 등록
+     */
+    private static void setUpPaymentException() {
+        // 상품 관련 예외
+        mapper.put(ProductNotFoundException.class,
+                ExceptionSituation.of("존재하지 않는 상품입니다.", HttpStatus.NOT_FOUND));
+        mapper.put(DuplicatePurchaseException.class,
+                ExceptionSituation.of("이미 처리된 결제입니다.", HttpStatus.CONFLICT));
+        mapper.put(InvalidReceiptException.class,
+                ExceptionSituation.of("유효하지 않은 영수증입니다.", HttpStatus.BAD_REQUEST));
+
+        // 환불 관련 예외
+        mapper.put(PurchaseNotFoundException.class,
+                ExceptionSituation.of("결제 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(UnauthorizedRefundException.class,
+                ExceptionSituation.of("환불 권한이 없습니다.", HttpStatus.FORBIDDEN));
+        mapper.put(RefundNotAllowedException.class,
+                ExceptionSituation.of("환불이 불가능합니다. (7일 경과 또는 재화 사용)", HttpStatus.BAD_REQUEST));
+        mapper.put(InsufficientDiamondForRefundException.class,
+                ExceptionSituation.of("환불을 위한 다이아가 부족합니다.", HttpStatus.BAD_REQUEST));
+
+        // 구독권 관련 예외
+        mapper.put(SubscriptionNotFoundException.class,
+                ExceptionSituation.of("구독권을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(PremiumSubscriptionRequiredException.class,
+                ExceptionSituation.of("프리미엄 구독권이 필요합니다.", HttpStatus.FORBIDDEN));
+
+        // 선물 티켓 관련 예외
+        mapper.put(NoAvailableGiftTicketException.class,
+                ExceptionSituation.of("사용 가능한 선물 티켓이 없습니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(TicketAlreadyUsedException.class,
+                ExceptionSituation.of("이미 사용된 티켓입니다.", HttpStatus.CONFLICT));
+        mapper.put(RecipientAlreadyHasPremiumException.class,
+                ExceptionSituation.of("상대방이 이미 프리미엄 구독권을 보유하고 있습니다.", HttpStatus.BAD_REQUEST));
     }
 }

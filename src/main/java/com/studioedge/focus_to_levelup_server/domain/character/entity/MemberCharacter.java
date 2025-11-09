@@ -7,8 +7,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -21,7 +19,6 @@ import org.hibernate.annotations.OnDeleteAction;
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@DynamicInsert
 public class MemberCharacter extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,32 +36,26 @@ public class MemberCharacter extends BaseEntity {
     private Character character;
 
     @Column(nullable = false)
-    @ColumnDefault("1")
-    private Integer currentLevel = 1;
+    private Integer currentLevel;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
-    private Integer currentExp = 0;
+    private Integer currentExp;
 
     @Column(nullable = false)
-    @ColumnDefault("1")
-    private Integer evolution = 1;
+    private Integer evolution;
 
     // TODO: 기능 정리 참고
     @Column(nullable = false)
     private Integer floor; // 캐릭터 층수
 
     @Column(nullable = false)
-    @ColumnDefault("0")
-    private Integer remainReward = 0; // 남아있는 훈련보상. 수령받으면 0개
+    private Integer remainReward; // 남아있는 훈련보상. 수령받으면 0개
 
     @Column(nullable = false)
-    @ColumnDefault("false")
-    private Boolean isDefault = false; // 대표 캐릭터 여부
+    private Boolean isDefault; // 대표 캐릭터 여부
 
     @Column(nullable = false)
-    @ColumnDefault("1")
-    private Integer defaultEvolution = 1; // 대표 캐릭터의 진화단계 여부
+    private Integer defaultEvolution; // 대표 캐릭터의 진화단계 여부
 
     @Builder
     public MemberCharacter(Member member, Character character, Integer floor)
@@ -72,5 +63,21 @@ public class MemberCharacter extends BaseEntity {
         this.member = member;
         this.character = character;
         this.floor = floor;
+        this.currentLevel = 1;
+        this.currentExp = 0;
+        this.evolution = 1;
+        this.remainReward = 0;
+        this.isDefault = false;
+        this.defaultEvolution = 1;
+    }
+
+    // 비즈니스 메서드
+    public void setAsDefault(Integer defaultEvolution) {
+        this.isDefault = true;
+        this.defaultEvolution = defaultEvolution;
+    }
+
+    public void unsetAsDefault() {
+        this.isDefault = false;
     }
 }
