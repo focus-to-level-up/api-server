@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.store.controller;
 
+import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.store.dto.request.ItemPurchaseRequest;
 import com.studioedge.focus_to_levelup_server.domain.store.dto.response.ItemListResponse;
 import com.studioedge.focus_to_levelup_server.domain.store.dto.response.ItemResponse;
@@ -50,10 +51,10 @@ public class ItemController {
     @Operation(summary = "아이템 구매", description = "아이템을 구매합니다")
     @PostMapping("/purchase")
     public ResponseEntity<CommonResponse<Void>> purchaseItem(
-            @AuthenticationPrincipal Long memberId,
+            @AuthenticationPrincipal Member member,
             @Valid @RequestBody ItemPurchaseRequest request
     ) {
-        itemPurchaseService.purchaseItem(memberId, request);
+        itemPurchaseService.purchaseItem(member.getId(), request);
         return HttpResponseUtil.created(null);
     }
 }

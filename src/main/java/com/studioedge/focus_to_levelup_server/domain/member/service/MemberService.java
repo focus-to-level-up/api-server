@@ -23,4 +23,7 @@ public interface MemberService {
     void updateMemberSetting(Member member, MemberSettingDto request);
 
     MemberSettingDto getMemberSetting(Member member);
+    // 테스트용
+    void updateCurrency(Long memberId, Integer gold, Integer diamond);
+
 }

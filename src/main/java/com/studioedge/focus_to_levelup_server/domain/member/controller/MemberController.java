@@ -290,4 +290,15 @@ public class MemberController {
         return HttpResponseUtil.updated(null);
     }
 
+    // ============= 테스트용 API =============
+    @PutMapping("/v1/member/test/currency")
+    @Operation(summary = "[테스트용] 골드/다이아 수정", description = "테스트를 위해 골드와 다이아를 수정합니다.")
+    public ResponseEntity<CommonResponse<Void>> updateCurrency(
+            @AuthenticationPrincipal Member member,
+            @RequestParam(required = false) Integer gold,
+            @RequestParam(required = false) Integer diamond
+    ) {
+        memberService.updateCurrency(member.getId(), gold, diamond);
+        return HttpResponseUtil.updated(null);
+    }
 }

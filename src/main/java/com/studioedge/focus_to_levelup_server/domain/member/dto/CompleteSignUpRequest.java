@@ -43,15 +43,21 @@ public record CompleteSignUpRequest(
 
 ) {
     public static MemberInfo from(Member member, List<MemberAsset> initialAssets, CompleteSignUpRequest request) {
-            MemberAsset imageAsset = initialAssets.stream()
-                    .filter(ma -> ma.getAsset().getType() == AssetType.CHARACTER_PROFILE_IMAGE)
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("기본 프로필 이미지를 찾을 수 없습니다."));
+            // TODO: Asset 마스터 데이터 삽입 후 활성화
+            MemberAsset imageAsset = null;
+            MemberAsset borderAsset = null;
 
-            MemberAsset borderAsset = initialAssets.stream()
-                    .filter(ma -> ma.getAsset().getType() == AssetType.CHARACTER_PROFILE_BORDER)
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("기본 프로필 테두리를 찾을 수 없습니다."));
+            if (!initialAssets.isEmpty()) {
+                imageAsset = initialAssets.stream()
+                        .filter(ma -> ma.getAsset().getType() == AssetType.CHARACTER_PROFILE_IMAGE)
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException("기본 프로필 이미지를 찾을 수 없습니다."));
+
+                borderAsset = initialAssets.stream()
+                        .filter(ma -> ma.getAsset().getType() == AssetType.CHARACTER_PROFILE_BORDER)
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException("기본 프로필 테두리를 찾을 수 없습니다."));
+            }
 
             return MemberInfo.builder()
                     .member(member)

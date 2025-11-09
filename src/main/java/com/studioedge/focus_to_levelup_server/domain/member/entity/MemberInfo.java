@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.member.entity;
 
+import com.studioedge.focus_to_levelup_server.domain.character.exception.InsufficientDiamondException;
 import com.studioedge.focus_to_levelup_server.domain.member.dto.UpdateCategoryRequest;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.Gender;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
@@ -124,6 +125,13 @@ public class MemberInfo {
         this.diamond += amount;
     }
 
+    public void decreaseDiamond(Integer amount) {
+        if (this.diamond < amount) {
+            throw new InsufficientDiamondException();
+        }
+        this.diamond -= amount;
+    }
+
     public void updateCategory(UpdateCategoryRequest request) {
         this.categoryMain = request.categoryMain();
         this.categorySub = request.categorySub();
@@ -140,5 +148,14 @@ public class MemberInfo {
         this.profileMessage = profileMessage;
         this.profileImage = updateImage;
         this.profileBorder = updateBorder;
+    }
+
+    // 테스트용 메서드
+    public void setGold(Integer gold) {
+        this.gold = gold;
+    }
+
+    public void setDiamond(Integer diamond) {
+        this.diamond = diamond;
     }
 }

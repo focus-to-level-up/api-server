@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.store.controller;
 
+import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.store.dto.response.MemberItemListResponse;
 import com.studioedge.focus_to_levelup_server.domain.store.service.MemberItemQueryService;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
@@ -27,24 +28,24 @@ public class MemberItemController {
     @Operation(summary = "내 아이템 목록 조회", description = "구매한 모든 아이템을 조회합니다")
     @GetMapping
     public ResponseEntity<CommonResponse<MemberItemListResponse>> getMyItems(
-            @AuthenticationPrincipal Long memberId
+            @AuthenticationPrincipal Member member
     ) {
-        return HttpResponseUtil.ok(memberItemQueryService.getAllMemberItems(memberId));
+        return HttpResponseUtil.ok(memberItemQueryService.getAllMemberItems(member.getId()));
     }
 
     @Operation(summary = "미완료 아이템 조회", description = "아직 달성하지 못한 아이템을 조회합니다")
     @GetMapping("/incomplete")
     public ResponseEntity<CommonResponse<MemberItemListResponse>> getIncompleteItems(
-            @AuthenticationPrincipal Long memberId
+            @AuthenticationPrincipal Member member
     ) {
-        return HttpResponseUtil.ok(memberItemQueryService.getIncompleteMemberItems(memberId));
+        return HttpResponseUtil.ok(memberItemQueryService.getIncompleteMemberItems(member.getId()));
     }
 
     @Operation(summary = "보상 미수령 아이템 조회", description = "달성했지만 보상을 받지 않은 아이템을 조회합니다")
     @GetMapping("/pending-reward")
     public ResponseEntity<CommonResponse<MemberItemListResponse>> getPendingRewardItems(
-            @AuthenticationPrincipal Long memberId
+            @AuthenticationPrincipal Member member
     ) {
-        return HttpResponseUtil.ok(memberItemQueryService.getPendingRewardMemberItems(memberId));
+        return HttpResponseUtil.ok(memberItemQueryService.getPendingRewardMemberItems(member.getId()));
     }
 }

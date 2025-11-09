@@ -1,7 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.member.service;
 
-import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterRepository;
-import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.repository.CharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.repository.MemberCharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
@@ -17,7 +17,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
-import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
+import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.AssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.ReportLogRepository;
@@ -52,7 +52,6 @@ public class MemberServiceImpl implements MemberService {
     private final MemberInfoRepository memberInfoRepository;
     private final MemberAssetRepository memberAssetRepository;
     private final MemberSettingRepository memberSettingRepository;
-    private final AllowedAppRepository allowedAppRepository;
     private final SchoolRepository schoolRepository;
     private final AssetRepository assetRepository;
     private final SubscriptionRepository subscriptionRepository;
@@ -68,6 +67,7 @@ public class MemberServiceImpl implements MemberService {
         saveInitialCharacter(member);
         List<MemberAsset> memberAssets = saveInitialMemberAsset(member);
         memberInfoRepository.save(CompleteSignUpRequest.from(member, memberAssets, request));
+
         memberRepository.findById(member.getId())
                 .orElseThrow(MemberNotFoundException::new)
                 .updateNickname(request.nickname());
@@ -226,16 +226,25 @@ public class MemberServiceImpl implements MemberService {
     }
 
     private void saveInitialCharacter(Member member) {
+        // 이미 대표 캐릭터가 있으면 예외
+        if (memberCharacterRepository.existsByMemberIdAndIsDefaultTrue(member.getId())) {
+            throw new IllegalStateException("이미 대표 캐릭터가 설정되어 있습니다.");
+        }
+
         Character defaultCharacter = characterRepository.findByName(AppConstants.DEFAULT_CHARACTER_NAME)
                 .orElseThrow(CharacterNotFoundException::new);
-        MemberCharacter memberCharacter = memberCharacterRepository.save(
-                MemberCharacter.builder()
-                        .character(defaultCharacter)
-                        .member(member)
-                        .floor(1)
-                        .build()
-        );
+
+        MemberCharacter memberCharacter = MemberCharacter.builder()
+                .character(defaultCharacter)
+                .member(member)
+                .floor(1)  // 초기 층수
+                .build();
+
+        // 양동동을 대표 캐릭터로 설정 (진화 단계 1)
         memberCharacter.setAsDefault(1);
+
+        // 대표 캐릭터로 설정 후 저장
+        memberCharacterRepository.save(memberCharacter);
     }
 
     private SubscriptionState getSubscriptionState(Long memberId) {
@@ -245,6 +254,20 @@ public class MemberServiceImpl implements MemberService {
                     return new SubscriptionState(sub.getType(), isPremium);
                 })
                 .orElse(new SubscriptionState(SubscriptionType.NONE, false));
+    }
+
+    @Override
+    @Transactional
+    public void updateCurrency(Long memberId, Integer gold, Integer diamond) {
+        MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
+                .orElseThrow(InvalidMemberException::new);
+
+        if (gold != null) {
+            memberInfo.setGold(gold);
+        }
+        if (diamond != null) {
+            memberInfo.setDiamond(diamond);
+        }
     }
 
     // ----------------------------- PRIVATE CLASS ---------------------------------
