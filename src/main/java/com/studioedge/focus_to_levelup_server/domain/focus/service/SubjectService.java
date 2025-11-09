@@ -64,14 +64,5 @@ public class SubjectService {
         subject.delete();
     }
 
-    @Transactional
-    public void saveAllowedAppTime(Member member, SaveAllowedAppRequest request) {
-        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(member.getId(), LocalDate.now())
-                .orElseThrow(DailyGoalNotFoundException::new);
-        AllowedApp allowedApp = allowedAppRepository.findByMemberIdAndAppIdentifier(member.getId(), request.appIdentifier())
-                .orElseThrow(AllowedAppNotFoundException::new);
 
-        dailyGoal.useApp(request.usingSeconds());
-        allowedApp.useApp(request.usingSeconds());
-    }
 }

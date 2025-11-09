@@ -7,6 +7,7 @@ import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberChar
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
 import com.studioedge.focus_to_levelup_server.domain.event.entity.School;
+import com.studioedge.focus_to_levelup_server.domain.focus.dao.AllowedAppRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberAssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
@@ -18,8 +19,6 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.AllowedAppRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.AllowedApp;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.AssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.ReportLogRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
@@ -162,28 +161,6 @@ public class MemberServiceImpl implements MemberService {
         MemberSetting memberSetting = memberSettingRepository.findByMemberId(member.getId())
                 .orElseThrow(InvalidMemberException::new);
         return MemberSettingDto.of(memberSetting);
-    }
-
-    @Override
-    @Transactional
-    public void updateAllowedApps(Member member, AllowedAppsDto requests) {
-        List<AllowedApp> allowedApps = allowedAppRepository.findAllByMember(member);
-        allowedAppRepository.deleteAll(allowedApps);
-        allowedAppRepository.saveAll(AllowedAppsDto.from(member, requests));
-    }
-
-    @Override
-    public AllowedAppsDto getAllowedApps(Member member) {
-        List<AllowedApp> allowedApps = allowedAppRepository.findAllByMemberId(member.getId());
-        return AllowedAppsDto.of(allowedApps);
-    }
-
-    @Override
-    @Transactional
-    public void startFocus(Member m) {
-        Member member = memberRepository.findById(m.getId())
-                .orElseThrow(MemberNotFoundException::new);
-        member.focusOn();
     }
 
     // ----------------------------- PRIVATE METHOD ---------------------------------

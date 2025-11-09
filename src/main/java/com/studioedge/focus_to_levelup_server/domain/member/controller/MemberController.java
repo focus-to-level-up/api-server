@@ -150,29 +150,7 @@ public class MemberController {
         return HttpResponseUtil.ok(memberService.getMemberProfile(memberId));
     }
 
-    @GetMapping("/v1/member/apps")
-    @Operation(summary = "유저 허용가능 앱 조회", description = """
-            ### 기능
-            - 유저가 자신의 허용가능 앱을 조회합니다.
-            - 아래 '유저 허용가능 앱 수정'에서 위 기능을 이용합니다.
-            """
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "허용가능 앱 조회 완료",
-                    content = @Content(schema = @Schema(implementation = GetProfileResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "해당 유저를 찾을 수 없습니다."
-            )
-    })
-    public ResponseEntity<CommonResponse<AllowedAppsDto>> getAllowedApps(
-            @AuthenticationPrincipal Member member
-    ) {
-        return HttpResponseUtil.ok(memberService.getAllowedApps(member));
-    }
+
 
     @GetMapping("/v1/member/settings")
     @Operation(summary = "유저 세팅 조회", description = """
@@ -312,47 +290,4 @@ public class MemberController {
         return HttpResponseUtil.updated(null);
     }
 
-    @PutMapping("/v1/member/focus")
-    @Operation(summary = "유저 집중 시작(집중 시작)", description = """
-            ### 기능
-            - 유저가 과목에서 공부를 시작합니다.
-            - 집중중인 상태로 만들어줍니다.
-            """
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "알람 on/off 성공"
-            )
-    })
-    public ResponseEntity<CommonResponse<Void>> startFocus(
-            @AuthenticationPrincipal Member member
-    ) {
-        memberService.startFocus(member);
-        return HttpResponseUtil.updated(null);
-    }
-
-    @PutMapping("/v1/member/apps")
-    @Operation(summary = "유저 허용가능 앱 업데이트", description = """
-            ### 기능
-            - 유저의 집중 시 허용가능한 앱 목록을 클라이언트가 보낸 목록으로 설정합니다.
-            - 빈 리스트를 보낼 경우, 모든 허용가능한 앱이 삭제됩니다.
-            
-            ### 요청
-            - `appIdentifier`: 앱 식별자(패키지명/번들ID) (-> 해당 정보 외에도 추가적인 정보를 저장해야한다면 말씀해주세요!)
-            """
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "허용가능앱 업데이트 성공"
-            )
-    })
-    public ResponseEntity<CommonResponse<Void>> updateAllowedApps(
-            @AuthenticationPrincipal Member member,
-            @Valid @RequestBody AllowedAppsDto requests
-    ) {
-        memberService.updateAllowedApps(member, requests);
-        return HttpResponseUtil.updated(null);
-    }
 }

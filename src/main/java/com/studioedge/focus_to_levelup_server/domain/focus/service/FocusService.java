@@ -6,6 +6,7 @@ import com.studioedge.focus_to_levelup_server.domain.character.exception.Charact
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.FocusModeAnimationResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
@@ -22,12 +23,11 @@ import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
-public class SaveFocusService {
+public class FocusService {
     private final MemberRepository memberRepository;
     private final SubjectRepository subjectStatRepository;
     private final DailyGoalRepository dailyGoalRepository;
     private final MemberCharacterRepository memberCharacterRepository;
-
     @Transactional
     public void saveFocus(Member m, Long subjectId, SaveFocusRequest request) {
         /**
@@ -61,4 +61,19 @@ public class SaveFocusService {
 
         member.focusOff();
     }
+
+    @Transactional
+    public void startFocus(Member m) {
+        Member member = memberRepository.findById(m.getId())
+                .orElseThrow(MemberNotFoundException::new);
+        member.focusOn();
+    }
+
+    @Transactional(readOnly = true)
+    public FocusModeAnimationResponse getFocusAnimation(Member member) {
+        MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefault(member.getId(), true)
+                .orElseThrow(CharacterDefaultNotFoundException::new);
+        return null;
+    }
+
 }

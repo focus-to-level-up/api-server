@@ -23,10 +23,4 @@ public interface MemberService {
     void updateMemberSetting(Member member, MemberSettingDto request);
 
     MemberSettingDto getMemberSetting(Member member);
-
-    void updateAllowedApps(Member member, AllowedAppsDto requests);
-
-    AllowedAppsDto getAllowedApps(Member member);
-
-    void startFocus(Member member);
 }

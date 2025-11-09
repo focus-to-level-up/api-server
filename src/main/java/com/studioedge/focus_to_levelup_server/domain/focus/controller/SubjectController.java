@@ -1,10 +1,9 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.controller;
 
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateSubjectRequest;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveAllowedAppRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetSubjectResponse;
-import com.studioedge.focus_to_levelup_server.domain.focus.service.SaveFocusService;
+import com.studioedge.focus_to_levelup_server.domain.focus.service.FocusService;
 import com.studioedge.focus_to_levelup_server.domain.focus.service.SubjectService;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
@@ -29,7 +28,7 @@ import java.util.List;
 @RequestMapping("/api")
 public class SubjectController {
     private final SubjectService subjectService;
-    private final SaveFocusService saveFocusService;
+    private final FocusService focusService;
     /**
      * 과목 리스트 조회
      * */
@@ -127,43 +126,7 @@ public class SubjectController {
             @PathVariable(name = "subjectId") Long subjectId,
             @Valid @RequestBody SaveFocusRequest request
     ) {
-        saveFocusService.saveFocus(member, subjectId, request);
-        return HttpResponseUtil.ok(null);
-    }
-
-    /**
-     * 과목 집중중, 앱 사용시간 저장
-     * */
-    @PostMapping("/v1/subject/app")
-    @Operation(summary = "허용 앱 사용 시간 저장", description = """
-            ### 기능
-            - 학습 중 '허용 앱'을 사용한 시간을 저장합니다.
-            - 해당 사용앱과 총 사용한 허용 앱 총 사용시간에 저장합니다.
-            
-            ### 요청
-            - `appIdentifier`: [필수] 사용한 앱 식별자 (패키지명/번들ID)
-            - `durationMinutes`: [필수] 사용한 시간(분)
-            """
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "허용 앱 사용 시간 저장 성공"
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "DTO 유효성 검사 실패"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "허용 앱 목록에 해당 앱이 등록되어 있지 않습니다."
-            )
-    })
-    public ResponseEntity<CommonResponse<Void>> saveAllowedAppTime(
-            @AuthenticationPrincipal Member member,
-            @Valid @RequestBody SaveAllowedAppRequest request
-    ) {
-        subjectService.saveAllowedAppTime(member, request);
+        focusService.saveFocus(member, subjectId, request);
         return HttpResponseUtil.ok(null);
     }
 
