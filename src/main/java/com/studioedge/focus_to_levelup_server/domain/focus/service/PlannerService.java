@@ -11,6 +11,7 @@ import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Planner;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectUnAuthorizedException;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
@@ -59,13 +60,12 @@ public class PlannerService {
                 .map(CreatePlannerRequest::subjectId)
                 .collect(Collectors.toSet());
 
-        if (subjectIds.isEmpty()) {
-            return;
-        }
-
         // 3. (최적화) Subject 목록을 DB에서 한 번에 조회
         Map<Long, Subject> subjectMap = subjectRepository.findAllById(subjectIds).stream()
                 .collect(Collectors.toMap(Subject::getId, Function.identity()));
+        if (subjectMap.size() != subjectIds.size()) {
+            throw new SubjectNotFoundException();
+        }
 
         // 4. Planner 엔티티 리스트 생성
         List<Planner> plannersToSave = new ArrayList<>();
