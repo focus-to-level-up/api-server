@@ -39,7 +39,6 @@ public class SubscriptionDetailResponse {
         private SubscriptionSource source;
         private Long giftedByMemberId;
         private Integer remainingDays;
-        private Integer giftCount;
 
         public static SubscriptionInfo from(Subscription subscription) {
             return SubscriptionInfo.builder()
@@ -54,7 +53,6 @@ public class SubscriptionDetailResponse {
                     .source(subscription.getSource())
                     .giftedByMemberId(subscription.getGiftedByMemberId())
                     .remainingDays(subscription.calculateRemainingDays())
-                    .giftCount(subscription.getGiftCount())
                     .build();
         }
 

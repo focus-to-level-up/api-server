@@ -1,11 +1,8 @@
 package com.studioedge.focus_to_levelup_server.domain.payment.controller;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.gift.GiftSubscriptionRequest;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.gift.GiftSubscriptionResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.subscription.ActivateGuildBoostRequest;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.subscription.SubscriptionDetailResponse;
-import com.studioedge.focus_to_levelup_server.domain.payment.service.gift.SubscriptionGiftService;
 import com.studioedge.focus_to_levelup_server.domain.payment.service.subscription.SubscriptionCommandService;
 import com.studioedge.focus_to_levelup_server.domain.payment.service.subscription.SubscriptionQueryService;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
@@ -26,7 +23,6 @@ public class SubscriptionController {
 
     private final SubscriptionQueryService subscriptionQueryService;
     private final SubscriptionCommandService subscriptionCommandService;
-    private final SubscriptionGiftService subscriptionGiftService;
 
     @GetMapping
     @Operation(summary = "내 구독권 상세 조회", description = "유저가 보유한 모든 구독권을 조회합니다")
@@ -64,15 +60,5 @@ public class SubscriptionController {
     ) {
         subscriptionCommandService.deactivateGuildBoost(member.getId());
         return HttpResponseUtil.ok(null);
-    }
-
-    @PostMapping("/gift")
-    @Operation(summary = "프리미엄 구독권 선물하기", description = "프리미엄 구독권을 다른 유저에게 선물합니다 (1주일 유효)")
-    public ResponseEntity<CommonResponse<GiftSubscriptionResponse>> giftSubscription(
-            @AuthenticationPrincipal Member member,
-            @RequestBody @Valid GiftSubscriptionRequest request
-    ) {
-        GiftSubscriptionResponse response = subscriptionGiftService.giftPremiumSubscription(member.getId(), request);
-        return HttpResponseUtil.created(response);
     }
 }

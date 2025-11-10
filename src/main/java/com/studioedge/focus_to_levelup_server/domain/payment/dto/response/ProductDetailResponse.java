@@ -8,8 +8,6 @@ public record ProductDetailResponse(
         String name,
         ProductType type,
         Integer diamondReward,
-        Integer bonusTicketCount,
-        Integer giftTicketCount,
         String price,
         String description
 ) {
@@ -19,8 +17,6 @@ public record ProductDetailResponse(
                 product.getName(),
                 product.getType(),
                 product.getDiamondReward(),
-                product.getBonusTicketCount(),
-                product.getGiftTicketCount(),
                 product.getPrice().toString(),
                 product.getDescription()
         );

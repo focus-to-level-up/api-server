@@ -12,6 +12,7 @@ import com.studioedge.focus_to_levelup_server.domain.store.exception.Insufficien
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InvalidItemOptionException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.ItemAlreadyPurchasedException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.ItemNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.system.exception.*;
 import org.springframework.http.HttpStatus;
 
 import java.util.LinkedHashMap;
@@ -28,6 +29,8 @@ public class ExceptionMapper {
         setUpCharacterException();
         setUpPaymentException();
         setUpFocusException();
+        setUpMailException();
+        setUpCouponException();
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -166,5 +169,31 @@ public class ExceptionMapper {
 
         mapper.put(AllowedAppNotFoundException.class,
                 ExceptionSituation.of("해당 허용가능 앱을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * Mail 관련 예외 등록
+     */
+    private static void setUpMailException() {
+        mapper.put(MailNotFoundException.class,
+                ExceptionSituation.of("존재하지 않는 우편입니다.", HttpStatus.NOT_FOUND));
+        mapper.put(UnauthorizedMailAccessException.class,
+                ExceptionSituation.of("우편에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN));
+        mapper.put(MailAlreadyReceivedException.class,
+                ExceptionSituation.of("이미 수령한 우편입니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(MailExpiredException.class,
+                ExceptionSituation.of("만료된 우편입니다.", HttpStatus.BAD_REQUEST));
+    }
+
+    /**
+     * Coupon 관련 예외 등록
+     */
+    private static void setUpCouponException() {
+        mapper.put(CouponNotFoundException.class,
+                ExceptionSituation.of("존재하지 않는 쿠폰입니다.", HttpStatus.NOT_FOUND));
+        mapper.put(CouponExpiredException.class,
+                ExceptionSituation.of("만료된 쿠폰입니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(CouponAlreadyUsedException.class,
+                ExceptionSituation.of("이미 사용한 쿠폰입니다.", HttpStatus.BAD_REQUEST));
     }
 }

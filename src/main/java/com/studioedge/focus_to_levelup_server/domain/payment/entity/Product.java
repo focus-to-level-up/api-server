@@ -34,25 +34,18 @@ public class Product {
 
     private Integer diamondReward;
 
-    private Integer bonusTicketCount;
-
-    private Integer giftTicketCount;
-
     @Column(nullable = false)
     @ColumnDefault("true")
     private Boolean isActive = true;
 
     @Builder
     public Product(String name, String description, BigDecimal price, ProductType type,
-                   Integer diamondReward, Integer bonusTicketCount, Integer giftTicketCount,
-                   Boolean isActive) {
+                   Integer diamondReward, Boolean isActive) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.type = type;
         this.diamondReward = diamondReward;
-        this.bonusTicketCount = bonusTicketCount;
-        this.giftTicketCount = giftTicketCount;
         this.isActive = isActive != null ? isActive : true;
     }
 }

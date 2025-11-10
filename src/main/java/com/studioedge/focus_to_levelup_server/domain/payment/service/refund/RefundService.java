@@ -77,15 +77,6 @@ public class RefundService {
             }
 
             subscription.deactivate();
-
-            // 선물 티켓 회수 (프리미엄 구독권인 경우)
-            Integer giftTicketCount = product.getGiftTicketCount();
-            if (giftTicketCount != null && giftTicketCount > 0) {
-                if (subscription.getGiftCount() < giftTicketCount) {
-                    throw new RefundNotAllowedException(); // 이미 선물 티켓을 사용함
-                }
-                subscription.increaseGiftCount(-giftTicketCount); // 선물 횟수 감소
-            }
         }
 
         // 5. PaymentLog 환불 처리

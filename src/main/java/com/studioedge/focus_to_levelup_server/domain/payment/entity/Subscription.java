@@ -37,10 +37,6 @@ public class Subscription extends BaseEntity {
     private SubscriptionType type;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
-    private Integer giftCount = 0;
-
-    @Column(nullable = false)
     private LocalDate startDate;
 
     @Column(nullable = false)
@@ -181,29 +177,5 @@ public class Subscription extends BaseEntity {
      */
     public boolean isGifted() {
         return this.source == SubscriptionSource.GIFT || this.source == SubscriptionSource.PREMIUM_GIFT;
-    }
-
-    /**
-     * 선물 가능 횟수 증가
-     */
-    public void increaseGiftCount(int count) {
-        this.giftCount += count;
-    }
-
-    /**
-     * 선물 가능 횟수 감소
-     */
-    public void decreaseGiftCount() {
-        if (this.giftCount <= 0) {
-            throw new IllegalStateException("선물 가능 횟수가 부족합니다");
-        }
-        this.giftCount--;
-    }
-
-    /**
-     * 선물 가능 여부 확인
-     */
-    public boolean canGift() {
-        return isPremium() && this.giftCount > 0;
     }
 }

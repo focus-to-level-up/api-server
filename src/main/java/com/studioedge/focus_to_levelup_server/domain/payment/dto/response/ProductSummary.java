@@ -8,7 +8,6 @@ public record ProductSummary(
         String name,
         ProductType type,
         Integer diamondReward,
-        Integer bonusTicketCount,
         String price,
         String description
 ) {
@@ -18,7 +17,6 @@ public record ProductSummary(
                 product.getName(),
                 product.getType(),
                 product.getDiamondReward(),
-                product.getBonusTicketCount(),
                 product.getPrice().toString(),
                 product.getDescription()
         );
