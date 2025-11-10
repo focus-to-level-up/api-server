@@ -71,13 +71,20 @@ public class MemberCharacter extends BaseEntity {
         this.defaultEvolution = 1;
     }
 
-    // 비즈니스 메서드
+    public void unsetAsDefault() {
+        this.isDefault = false;
+    }
+
+    public void increaseLevel(Integer exp) {
+        this.currentExp += exp;
+        if (this.currentExp >= 600) {
+            this.currentLevel += (this.currentExp / 600);
+            this.currentExp %= 600;
+        }
+    }
+
     public void setAsDefault(Integer defaultEvolution) {
         this.isDefault = true;
         this.defaultEvolution = defaultEvolution;
-    }
-
-    public void unsetAsDefault() {
-        this.isDefault = false;
     }
 }

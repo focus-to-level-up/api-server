@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.domain.study.entity;
+package com.studioedge.focus_to_levelup_server.domain.focus.entity;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
@@ -33,7 +33,7 @@ public class DailyGoal extends BaseEntity {
     @Column(nullable = false)
     private LocalDate dailyGoalDate;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private Integer targetMinutes;
 
     @Column(nullable = false)
@@ -42,18 +42,39 @@ public class DailyGoal extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("false")
-    private Boolean isArchive = false;
+    private Boolean isReceived = false; // 목표 완료 수령 여부
 
     @Column(nullable = false)
     private Float rewardMultiplier;
 
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Long usingAllowedAppSeconds = 0L;
+
     @Builder
-    public DailyGoal(Member member, Integer targetMinutes) {
+    public DailyGoal(Member member, Integer targetMinutes, LocalDate serviceDate) {
         this.member = member;
         this.targetMinutes = targetMinutes;
+        this.dailyGoalDate = serviceDate;
 
-        int number = (targetMinutes / 60) - 2;
-        this.rewardMultiplier = (float) Math.pow(1.1, Math.max(0, number));
-        this.dailyGoalDate = LocalDate.now();
+        float exponent = (float) ((targetMinutes / 60.0) - 2.0);
+        float rewardMultiplier = (float) Math.pow(1.1, Math.max(0.0, exponent));
+        this.rewardMultiplier = (float) (Math.round(rewardMultiplier * 100) / 100.0);
+    }
+
+    public boolean receiveReward() {
+        if (this.isReceived) {
+            return false;
+        }
+        this.isReceived = true;
+        return true;
+    }
+
+    public void useApp(Integer usingAppSeconds) {
+        this.usingAllowedAppSeconds += usingAppSeconds;
+    }
+
+    public void increaseCurrentMinutes(Integer minutes) {
+        this.currentMinutes += minutes;
     }
 }

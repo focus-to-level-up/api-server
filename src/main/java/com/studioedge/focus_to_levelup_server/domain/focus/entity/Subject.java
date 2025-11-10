@@ -1,5 +1,6 @@
-package com.studioedge.focus_to_levelup_server.domain.study.entity;
+package com.studioedge.focus_to_levelup_server.domain.focus.entity;
 
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateSubjectRequest;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -8,7 +9,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -33,14 +33,28 @@ public class Subject extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int focusMinutes = 0;
+    private Integer focusSeconds = 0;
+
+    @Column(nullable = false)
+    private String color;
 
     private LocalDateTime deleteAt; // soft delete
 
     @Builder
-    public Subject(String name, Member member) {
+    public Subject(String name, Member member, String color) {
         this.name = name;
         this.member = member;
+        this.color = color;
+    }
+
+    public void update(CreateSubjectRequest request) {
+        this.name = request.name();
+        this.color = request.color();
+        this.deleteAt = this.deleteAt != null ? null : null;
+    }
+
+    public void increaseFocusSeconds(Integer focusSeconds) {
+        this.focusSeconds += focusSeconds;
     }
 
     public void delete() {

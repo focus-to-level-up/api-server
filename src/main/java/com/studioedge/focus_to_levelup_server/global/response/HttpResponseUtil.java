@@ -38,7 +38,7 @@ public class HttpResponseUtil {
     }
 
     public static <T> ResponseEntity<CommonResponse<T>> created(T data) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.ok(data));
+        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.created(data));
     }
 
     public static <T> ResponseEntity<CommonResponse<T>> updated(T data) {

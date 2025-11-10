@@ -2,8 +2,7 @@ package com.studioedge.focus_to_levelup_server.global.exception;
 
 public abstract class CommonException extends RuntimeException {
 
-    protected CommonException() {
-    }
+    protected CommonException() {}
 
     protected CommonException(Exception e) {
         super(e);

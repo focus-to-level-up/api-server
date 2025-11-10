@@ -37,7 +37,7 @@ public class RankingResult extends BaseEntity {
     private Integer ranking;
 
     @Column(nullable = false)
-    private Integer totalCount;
+    private Integer totalCount; // 총인원?
 
     @Column(nullable = false)
     private Integer reward;
