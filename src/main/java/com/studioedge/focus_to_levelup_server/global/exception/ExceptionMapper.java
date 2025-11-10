@@ -7,6 +7,7 @@ import com.studioedge.focus_to_levelup_server.domain.character.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InvalidItemOptionException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.ItemAlreadyPurchasedException;
@@ -26,6 +27,7 @@ public class ExceptionMapper {
         setUpMemberException();
         setUpCharacterException();
         setUpFocusException();
+        setUpRankingException();
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -127,5 +129,13 @@ public class ExceptionMapper {
 
         mapper.put(AllowedAppNotFoundException.class,
                 ExceptionSituation.of("해당 허용가능 앱을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * Ranking 관련 예외 등록
+     */
+    private static void setUpRankingException() {
+        mapper.put(RankingNotFoundException.class,
+                ExceptionSituation.of("랭킹에 해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 }

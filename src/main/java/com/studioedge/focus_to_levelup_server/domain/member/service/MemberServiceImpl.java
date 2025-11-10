@@ -1,13 +1,12 @@
 package com.studioedge.focus_to_levelup_server.domain.member.service;
 
-import com.studioedge.focus_to_levelup_server.domain.character.repository.CharacterRepository;
-import com.studioedge.focus_to_levelup_server.domain.character.repository.MemberCharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.character.repository.CharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.repository.MemberCharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
 import com.studioedge.focus_to_levelup_server.domain.event.entity.School;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.AllowedAppRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberAssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
@@ -17,8 +16,8 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
-import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
+import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.AssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.ReportLogRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
@@ -36,17 +35,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
-    private static final Set<CategoryMainType> SCHOOL_CATEGORIES = Set.of(
-            CategoryMainType.ELEMENTARY_SCHOOL,
-            CategoryMainType.MIDDLE_SCHOOL,
-            CategoryMainType.HIGH_SCHOOL
-    );
 
     private final MemberRepository memberRepository;
     private final MemberInfoRepository memberInfoRepository;
@@ -66,11 +59,12 @@ public class MemberServiceImpl implements MemberService {
         saveMemberSetting(member);
         saveInitialCharacter(member);
         List<MemberAsset> memberAssets = saveInitialMemberAsset(member);
-        memberInfoRepository.save(CompleteSignUpRequest.from(member, memberAssets, request));
+        MemberInfo memberInfo = memberInfoRepository
+                .save(CompleteSignUpRequest.from(member, memberAssets, request));
 
         memberRepository.findById(member.getId())
                 .orElseThrow(MemberNotFoundException::new)
-                .updateNickname(request.nickname());
+                .completeSignUp(request.nickname(), memberInfo);
     }
 
     @Override
@@ -169,7 +163,7 @@ public class MemberServiceImpl implements MemberService {
         CategoryMainType mainCategory = request.categoryMain();
         CategorySubType subCategory = request.categorySub();
 
-        if (SCHOOL_CATEGORIES.contains(mainCategory)) {
+        if (AppConstants.SCHOOL_CATEGORIES.contains(mainCategory)) {
             // 1-1. 초/중/고 카테고리인데 학교 이름이 없는 경우
             if (request.schoolName() == null || request.schoolName().isBlank()) {
                 throw new InvalidSignUpException();
