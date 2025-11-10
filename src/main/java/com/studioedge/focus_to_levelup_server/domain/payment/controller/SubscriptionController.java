@@ -19,7 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/members/me/subscriptions")
+@RequestMapping("/api/v1/members/me/subscriptions")
 @RequiredArgsConstructor
 @Tag(name = "Subscription", description = "구독권 관리 API")
 public class SubscriptionController {

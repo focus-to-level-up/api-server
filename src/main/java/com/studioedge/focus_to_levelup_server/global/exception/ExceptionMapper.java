@@ -141,6 +141,8 @@ public class ExceptionMapper {
                 ExceptionSituation.of("이미 사용된 티켓입니다.", HttpStatus.CONFLICT));
         mapper.put(RecipientAlreadyHasPremiumException.class,
                 ExceptionSituation.of("상대방이 이미 프리미엄 구독권을 보유하고 있습니다.", HttpStatus.BAD_REQUEST));
+    }
+
     /**
      * Focus 관련 예외 등록
      */
