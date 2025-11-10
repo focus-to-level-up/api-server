@@ -48,7 +48,7 @@ public class AllowedAppController {
     ) {
         return HttpResponseUtil.ok(allowedAppService.getAllowedApps(member));
     }
-    @PutMapping("/v1//apps")
+    @PutMapping("/v1/apps")
     @Operation(summary = "허용가능 앱 생성 및 수정(덮어쓰기)", description = """
             ### 기능
             - 유저의 집중 시 허용가능한 앱 목록을 클라이언트가 보낸 목록으로 설정합니다.

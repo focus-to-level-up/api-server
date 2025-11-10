@@ -12,8 +12,11 @@ import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectUnAuthorizedException;
+import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
+import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,7 +28,8 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class FocusService {
     private final MemberRepository memberRepository;
-    private final SubjectRepository subjectStatRepository;
+    private final MemberInfoRepository memberInfoRepository;
+    private final SubjectRepository subjectRepository;
     private final DailyGoalRepository dailyGoalRepository;
     private final MemberCharacterRepository memberCharacterRepository;
     @Transactional
@@ -40,7 +44,7 @@ public class FocusService {
 
         int focusMinutes = request.focusSeconds() / 60;
 
-        Subject subject = subjectStatRepository.findById(subjectId)
+        Subject subject = this.subjectRepository.findById(subjectId)
                 .orElseThrow(SubjectNotFoundException::new);
         if (!subject.getMember().getId().equals(m.getId())) {
             throw new SubjectUnAuthorizedException();
@@ -49,7 +53,10 @@ public class FocusService {
 
         Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
+        MemberInfo memberInfo = memberInfoRepository.findByMemberId(m.getId())
+                .orElseThrow(InvalidMemberException::new);
         member.levelUp(focusMinutes * 10);
+        memberInfo.addGold(focusMinutes * 10);
 
         DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), LocalDate.now())
                 .orElseThrow(DailyGoalNotFoundException::new);

@@ -57,7 +57,7 @@ public class DailyGoalService {
         Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
 
-        if (dailyGoal.receiveReward()) {
+        if (!dailyGoal.receiveReward()) {
             throw new AlreadyReceivedDailyGoalException();
         }
         member.levelUp(request.rewardExp());
