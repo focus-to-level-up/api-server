@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.domain.study.entity;
+package com.studioedge.focus_to_levelup_server.domain.focus.entity;
 
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -17,7 +17,7 @@ public class Planner extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "planner")
-    private Long memberId;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "daily_goal_id")

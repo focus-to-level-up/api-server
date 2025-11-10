@@ -1,5 +1,7 @@
+
 package com.studioedge.focus_to_levelup_server.domain.member.entity;
 
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.ReceiveDailyGoalRequest;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
@@ -126,6 +128,17 @@ public class Member extends BaseEntity {
 
     public void focusOff() {
         this.isFocusing = false;
+    }
+    public void receiveDailyGoal(ReceiveDailyGoalRequest request) {
+        this.currentExp += request.rewardExp();
+    }
+
+    public void levelUp(Integer exp) {
+        this.currentExp += exp;
+        if (this.currentExp >= 600) {
+            this.currentLevel += (this.currentExp / 600);
+            this.currentExp %= 600;
+        }
     }
 
     public void withdraw() {

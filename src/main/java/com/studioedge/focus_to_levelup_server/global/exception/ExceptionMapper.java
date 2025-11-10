@@ -1,8 +1,11 @@
 package com.studioedge.focus_to_levelup_server.global.exception;
 
 import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.focus.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InvalidItemOptionException;
@@ -22,6 +25,7 @@ public class ExceptionMapper {
         setUpStoreException();
         setUpMemberException();
         setUpCharacterException();
+        setUpFocusException();
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -88,6 +92,8 @@ public class ExceptionMapper {
     private static void setUpCharacterException() {
         mapper.put(CharacterNotFoundException.class,
                 ExceptionSituation.of("해당 캐릭터를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(CharacterDefaultNotFoundException.class,
+                ExceptionSituation.of("대표 캐릭터를 찾을 수 없습니다. 대표캐릭터를 설정해주세요", HttpStatus.NOT_FOUND));
         mapper.put(CharacterAlreadyPurchasedException.class,
                 ExceptionSituation.of("이미 보유한 캐릭터입니다.", HttpStatus.CONFLICT));
         mapper.put(InsufficientDiamondException.class,
@@ -96,5 +102,30 @@ public class ExceptionMapper {
                 ExceptionSituation.of("유효하지 않은 진화 단계입니다. 보유한 진화 단계만 선택할 수 있습니다.", HttpStatus.BAD_REQUEST));
         mapper.put(MemberCharacterNotFoundException.class,
                 ExceptionSituation.of("보유하지 않은 캐릭터입니다.", HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * Focus 관련 예외 등록
+     */
+    private static void setUpFocusException() {
+        mapper.put(DailyGoalNotFoundException.class,
+                ExceptionSituation.of("일일 목표를 찾을 수 없습니다. 일일 목표를 먼저 설정해주세요.", HttpStatus.NOT_FOUND));
+        mapper.put(DailyGoalDuplicatedException.class,
+                ExceptionSituation.of("일일 목표를 이미 설정했습니다.", HttpStatus.CONFLICT));
+        mapper.put(AlreadyReceivedDailyGoalException.class,
+                ExceptionSituation.of("해당 목표는 이미 수령하였습니다.", HttpStatus.CONFLICT));
+
+        mapper.put(SubjectNotFoundException.class,
+                ExceptionSituation.of("해당 과목을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(SubjectUnAuthorizedException.class,
+                ExceptionSituation.of("해당 과목에 접근할 권한이 없습니다.", HttpStatus.UNAUTHORIZED));
+
+        mapper.put(TodoNotFoundException.class,
+                ExceptionSituation.of("해당 할일을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(TodoUnAuthorizedException.class,
+                ExceptionSituation.of("해당 할일에 접근할 권한이 없습니다.", HttpStatus.UNAUTHORIZED));
+
+        mapper.put(AllowedAppNotFoundException.class,
+                ExceptionSituation.of("해당 허용가능 앱을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 }

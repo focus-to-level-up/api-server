@@ -7,6 +7,7 @@ import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberChar
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
 import com.studioedge.focus_to_levelup_server.domain.event.entity.School;
+import com.studioedge.focus_to_levelup_server.domain.focus.dao.AllowedAppRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberAssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
@@ -18,8 +19,6 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
-import com.studioedge.focus_to_levelup_server.domain.study.dao.AllowedAppRepository;
-import com.studioedge.focus_to_levelup_server.domain.study.entity.AllowedApp;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.AssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.ReportLogRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
@@ -53,7 +52,6 @@ public class MemberServiceImpl implements MemberService {
     private final MemberInfoRepository memberInfoRepository;
     private final MemberAssetRepository memberAssetRepository;
     private final MemberSettingRepository memberSettingRepository;
-    private final AllowedAppRepository allowedAppRepository;
     private final SchoolRepository schoolRepository;
     private final AssetRepository assetRepository;
     private final SubscriptionRepository subscriptionRepository;
@@ -152,39 +150,17 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void updateMemberSetting(Long memberId, MemberSettingDto request) {
-        MemberSetting memberSetting = memberSettingRepository.findByMemberId(memberId)
+    public void updateMemberSetting(Member member, MemberSettingDto request) {
+        MemberSetting memberSetting = memberSettingRepository.findByMemberId(member.getId())
                 .orElseThrow(InvalidMemberException::new);
         memberSetting.updateSetting(request);
     }
 
     @Override
-    public MemberSettingDto getMemberSetting(Long memberId) {
-        MemberSetting memberSetting = memberSettingRepository.findByMemberId(memberId)
+    public MemberSettingDto getMemberSetting(Member member) {
+        MemberSetting memberSetting = memberSettingRepository.findByMemberId(member.getId())
                 .orElseThrow(InvalidMemberException::new);
         return MemberSettingDto.of(memberSetting);
-    }
-
-    @Override
-    @Transactional
-    public void updateAllowedApps(Member member, AllowedAppsDto requests) {
-        List<AllowedApp> allowedApps = allowedAppRepository.findAllByMember(member);
-        allowedAppRepository.deleteAll(allowedApps);
-        allowedAppRepository.saveAll(AllowedAppsDto.from(member, requests));
-    }
-
-    @Override
-    public AllowedAppsDto getAllowedApps(Long memberId) {
-        List<AllowedApp> allowedApps = allowedAppRepository.findAllByMemberId(memberId);
-        return AllowedAppsDto.of(allowedApps);
-    }
-
-    @Override
-    @Transactional
-    public void startFocus(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(MemberNotFoundException::new);
-        member.focusOn();
     }
 
     // ----------------------------- PRIVATE METHOD ---------------------------------

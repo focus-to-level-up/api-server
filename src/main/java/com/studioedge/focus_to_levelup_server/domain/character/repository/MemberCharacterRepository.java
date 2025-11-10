@@ -38,4 +38,6 @@ public interface MemberCharacterRepository extends JpaRepository<MemberCharacter
      */
     @Query("SELECT mc FROM MemberCharacter mc JOIN FETCH mc.character WHERE mc.member.id = :memberId AND mc.character.id = :characterId")
     Optional<MemberCharacter> findByMemberIdAndCharacterId(@Param("memberId") Long memberId, @Param("characterId") Long characterId);
+
+    Optional<MemberCharacter> findByMemberIdAndIsDefault(Long memberId, Boolean isDefault);
 }
