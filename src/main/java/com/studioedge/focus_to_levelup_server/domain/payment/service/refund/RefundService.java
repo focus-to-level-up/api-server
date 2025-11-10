@@ -5,7 +5,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.BonusTicketRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.PaymentLogRepository;
-import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
+import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.refund.RefundRequest;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.refund.RefundResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.entity.PaymentLog;

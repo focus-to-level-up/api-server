@@ -4,7 +4,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.GiftTicketRepository;
-import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
+import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.gift.GiftSubscriptionRequest;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.gift.GiftSubscriptionResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.entity.GiftTicket;

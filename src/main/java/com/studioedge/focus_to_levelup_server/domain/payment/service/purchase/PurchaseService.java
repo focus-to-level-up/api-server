@@ -4,6 +4,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoReposi
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.*;
+import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.purchase.PurchaseRequest;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.purchase.PurchaseResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.entity.*;

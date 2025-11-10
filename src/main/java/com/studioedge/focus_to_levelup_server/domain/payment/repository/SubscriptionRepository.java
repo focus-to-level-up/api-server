@@ -13,37 +13,45 @@ import java.util.Optional;
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
 
     /**
-     * 유저의 구독 조회 (활성/비활성 무관)
+     * 회원의 구독권 조회 (단건)
      */
     Optional<Subscription> findByMemberId(Long memberId);
 
     /**
-     * 유저의 활성 구독 조회
+     * 회원의 모든 활성화된 구독권 조회
      */
-    @Query("SELECT s FROM Subscription s WHERE s.member.id = :memberId AND s.isActive = true")
-    Optional<Subscription> findByMemberIdAndIsActiveTrue(@Param("memberId") Long memberId);
+    List<Subscription> findAllByMemberIdAndIsActiveTrueOrderByCreatedAtDesc(Long memberId);
 
     /**
-     * 유저의 모든 구독 이력 조회 (최신순)
+     * 회원의 특정 타입 활성화된 구독권 조회
      */
-    @Query("SELECT s FROM Subscription s WHERE s.member.id = :memberId ORDER BY s.startDate DESC")
-    List<Subscription> findAllByMemberIdOrderByStartDateDesc(@Param("memberId") Long memberId);
+    Optional<Subscription> findByMemberIdAndTypeAndIsActiveTrue(Long memberId, SubscriptionType type);
 
     /**
-     * 유저가 활성 구독을 가지고 있는지 확인
+     * 회원의 특정 타입 구독권 존재 여부 (활성화 상태만)
      */
-    @Query("SELECT COUNT(s) > 0 FROM Subscription s WHERE s.member.id = :memberId AND s.isActive = true")
-    boolean existsByMemberIdAndIsActiveTrue(@Param("memberId") Long memberId);
+    boolean existsByMemberIdAndTypeAndIsActiveTrue(Long memberId, SubscriptionType type);
 
     /**
-     * 만료된 구독 조회 (배치 작업용)
+     * 만료된 구독권 조회 (배치 작업용)
      */
     @Query("SELECT s FROM Subscription s WHERE s.isActive = true AND s.endDate < :today")
-    List<Subscription> findAllExpired(@Param("today") LocalDate today);
+    List<Subscription> findExpiredSubscriptions(@Param("today") LocalDate today);
 
     /**
-     * 특정 타입의 활성 구독 수 조회 (통계용)
+     * 회원의 유효한 구독권 존재 여부 확인
      */
-    @Query("SELECT COUNT(s) FROM Subscription s WHERE s.type = :type AND s.isActive = true")
-    long countByTypeAndIsActiveTrue(@Param("type") SubscriptionType type);
+    @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END FROM Subscription s " +
+            "WHERE s.member.id = :memberId AND s.isActive = true AND s.endDate >= :today")
+    boolean hasValidSubscription(@Param("memberId") Long memberId, @Param("today") LocalDate today);
+
+    /**
+     * 회원의 모든 구독권 조회 (최신순)
+     */
+    List<Subscription> findAllByMemberIdOrderByCreatedAtDesc(Long memberId);
+
+    /**
+     * 회원의 모든 구독권 삭제 (회원 탈퇴 시)
+     */
+    void deleteAllByMemberId(Long memberId);
 }

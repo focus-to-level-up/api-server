@@ -1,6 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.payment.service.subscription;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
+import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.entity.Subscription;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
