@@ -10,18 +10,16 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.LocalDate;
-
 @Entity
 @Table(
-        name = "weekly_stats",
+        name = "monthly_stats",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"member_id", "start_date"})
+                @UniqueConstraint(columnNames = {"member_id", "month"})
         }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WeeklyStat extends BaseEntity {
+public class MonthlyStat extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "weekly_stat_id")
@@ -33,29 +31,15 @@ public class WeeklyStat extends BaseEntity {
     private Member member;
 
     @Column(nullable = false)
-    private LocalDate startDate;
-
-    @Column(nullable = false)
-    private LocalDate endDate;
+    private Integer month;
 
     @Column(nullable = false)
     private Integer totalFocusMinutes;
 
-    @Column(nullable = false)
-    private Integer totalLevel;
-
-    @Column(length = 2048, nullable = false)
-    private String lastCharacterImageUrl;
-
     @Builder
-    public WeeklyStat(Member member, LocalDate startDate, LocalDate endDate,
-                      Integer totalFocusMinutes, Integer totalLevel, String lastCharacterImageUrl)
-    {
+    public MonthlyStat(Member member, Integer month, Integer totalFocusMinutes) {
         this.member = member;
-        this.startDate = startDate;
-        this.endDate = endDate;
+        this.month = month;
         this.totalFocusMinutes = totalFocusMinutes;
-        this.totalLevel = totalLevel;
-        this.lastCharacterImageUrl = lastCharacterImageUrl;
     }
 }

@@ -7,6 +7,7 @@ import com.studioedge.focus_to_levelup_server.domain.character.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.stat.exception.StatMonthNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InvalidItemOptionException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.ItemAlreadyPurchasedException;
@@ -127,5 +128,13 @@ public class ExceptionMapper {
 
         mapper.put(AllowedAppNotFoundException.class,
                 ExceptionSituation.of("해당 허용가능 앱을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * Stat 관련 예외 등록
+     */
+    private static void setUpStatException() {
+        mapper.put(StatMonthNotFoundException.class,
+                ExceptionSituation.of("해당 월의 통계를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 }

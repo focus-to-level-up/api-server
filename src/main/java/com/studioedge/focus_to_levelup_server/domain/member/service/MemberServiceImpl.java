@@ -1,13 +1,12 @@
 package com.studioedge.focus_to_levelup_server.domain.member.service;
 
-import com.studioedge.focus_to_levelup_server.domain.character.repository.CharacterRepository;
-import com.studioedge.focus_to_levelup_server.domain.character.repository.MemberCharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.character.repository.CharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.repository.MemberCharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
 import com.studioedge.focus_to_levelup_server.domain.event.entity.School;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.AllowedAppRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberAssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
@@ -17,8 +16,9 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
-import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
+import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
+import com.studioedge.focus_to_levelup_server.domain.stat.dao.WeeklyStatRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.AssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.ReportLogRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
@@ -58,6 +58,7 @@ public class MemberServiceImpl implements MemberService {
     private final ReportLogRepository reportLogRepository;
     private final MemberCharacterRepository memberCharacterRepository;
     private final CharacterRepository characterRepository;
+    private final WeeklyStatRepository weeklyStatRepository;
     @Override
     @Transactional
     public void completeSignUp(Member member, CompleteSignUpRequest request) {
@@ -67,7 +68,6 @@ public class MemberServiceImpl implements MemberService {
         saveInitialCharacter(member);
         List<MemberAsset> memberAssets = saveInitialMemberAsset(member);
         memberInfoRepository.save(CompleteSignUpRequest.from(member, memberAssets, request));
-
         memberRepository.findById(member.getId())
                 .orElseThrow(MemberNotFoundException::new)
                 .updateNickname(request.nickname());
