@@ -1,7 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.payment.service;
 
 import com.studioedge.focus_to_levelup_server.domain.payment.entity.Product;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.response.ProductDetailResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.response.ProductListResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.response.ProductSummary;
 import com.studioedge.focus_to_levelup_server.domain.payment.exception.ProductNotFoundException;
@@ -28,15 +27,6 @@ public class ProductQueryService {
                 .map(ProductSummary::from)
                 .toList();
         return ProductListResponse.of(productSummaries);
-    }
-
-    /**
-     * 상품 상세 조회
-     */
-    public ProductDetailResponse findProductDetail(Long productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(ProductNotFoundException::new);
-        return ProductDetailResponse.from(product);
     }
 
     /**

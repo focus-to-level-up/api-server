@@ -1,28 +1,39 @@
 package com.studioedge.focus_to_levelup_server.domain.payment.service.receipt;
 
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.PaymentPlatform;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ReceiptValidationService implements ReceiptValidator {
     private final AppleReceiptValidator appleReceiptValidator;
     private final GoogleReceiptValidator googleReceiptValidator;
-    private final MockReceiptValidator mockReceiptValidator;
+
+    @Autowired(required = false)
+    private MockReceiptValidator mockReceiptValidator;
 
     @Value("${payment.mode}")
     private String paymentMode;
 
+    public ReceiptValidationService(AppleReceiptValidator appleReceiptValidator,
+                                   GoogleReceiptValidator googleReceiptValidator) {
+        this.appleReceiptValidator = appleReceiptValidator;
+        this.googleReceiptValidator = googleReceiptValidator;
+    }
+
     @Override
     public ReceiptValidationResult validate(String receiptData, PaymentPlatform platform) {
-        // Mock 모드: 항상 성공 반환
+        // Mock 모드: 항상 성공 반환 (local, dev 프로파일에서만 사용 가능)
         if ("mock".equalsIgnoreCase(paymentMode)) {
-            log.info("[MOCK MODE] Skipping actual receipt validation");
-            return mockReceiptValidator.validate(receiptData);
+            if (mockReceiptValidator != null) {
+                log.info("[MOCK MODE] Skipping actual receipt validation");
+                return mockReceiptValidator.validate(receiptData);
+            } else {
+                log.warn("[MOCK MODE] MockReceiptValidator is not available in this profile");
+            }
         }
 
         // 실제 검증

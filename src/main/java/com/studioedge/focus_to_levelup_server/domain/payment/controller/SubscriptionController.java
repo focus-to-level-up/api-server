@@ -1,7 +1,8 @@
 package com.studioedge.focus_to_levelup_server.domain.payment.controller;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.subscription.ActivateGuildBoostRequest;
+import com.studioedge.focus_to_levelup_server.domain.payment.dto.subscription.UpdateAutoRenewRequest;
+import com.studioedge.focus_to_levelup_server.domain.payment.dto.subscription.UpdateGuildBoostRequest;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.subscription.SubscriptionDetailResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.service.subscription.SubscriptionCommandService;
 import com.studioedge.focus_to_levelup_server.domain.payment.service.subscription.SubscriptionQueryService;
@@ -34,31 +35,23 @@ public class SubscriptionController {
     }
 
     @PutMapping("/{subscriptionId}/auto-renew")
-    @Operation(summary = "자동 갱신 중지", description = "구독권 자동 결제를 중지합니다")
-    public ResponseEntity<CommonResponse<Void>> stopAutoRenew(
+    @Operation(summary = "자동 갱신 상태 변경", description = "구독권 자동 결제를 활성화/비활성화합니다. isAutoRenew가 true면 활성화, false면 중지합니다.")
+    public ResponseEntity<CommonResponse<Void>> updateAutoRenew(
             @PathVariable Long subscriptionId,
-            @AuthenticationPrincipal Member member
+            @AuthenticationPrincipal Member member,
+            @RequestBody @Valid UpdateAutoRenewRequest request
     ) {
-        subscriptionCommandService.stopAutoRenew(member.getId(), subscriptionId);
+        subscriptionCommandService.updateAutoRenew(member.getId(), subscriptionId, request.getIsAutoRenew());
         return HttpResponseUtil.ok(null);
     }
 
     @PutMapping("/guild-boost")
-    @Operation(summary = "길드 부스트 활성화", description = "프리미엄 구독권으로 길드 부스트를 활성화합니다")
-    public ResponseEntity<CommonResponse<Void>> activateGuildBoost(
+    @Operation(summary = "길드 부스트 상태 변경", description = "프리미엄 구독권으로 길드 부스트를 활성화/비활성화합니다. guildId가 null이면 비활성화, 값이 있으면 활성화합니다.")
+    public ResponseEntity<CommonResponse<Void>> updateGuildBoost(
             @AuthenticationPrincipal Member member,
-            @RequestBody @Valid ActivateGuildBoostRequest request
+            @RequestBody @Valid UpdateGuildBoostRequest request
     ) {
-        subscriptionCommandService.activateGuildBoost(member.getId(), request.getGuildId());
-        return HttpResponseUtil.ok(null);
-    }
-
-    @DeleteMapping("/guild-boost")
-    @Operation(summary = "길드 부스트 비활성화", description = "길드 부스트를 비활성화합니다")
-    public ResponseEntity<CommonResponse<Void>> deactivateGuildBoost(
-            @AuthenticationPrincipal Member member
-    ) {
-        subscriptionCommandService.deactivateGuildBoost(member.getId());
+        subscriptionCommandService.updateGuildBoost(member.getId(), request.getGuildId());
         return HttpResponseUtil.ok(null);
     }
 }

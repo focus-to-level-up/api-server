@@ -5,6 +5,6 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class ActivateGuildBoostRequest {
-    private Long guildId;
+public class UpdateGuildBoostRequest {
+    private Long guildId; // null이면 비활성화
 }
