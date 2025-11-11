@@ -16,4 +16,15 @@ public interface MonthlySubjectStatRepository extends JpaRepository<MonthlySubje
             @Param("memberId") Long memberId,
             @Param("year") int year
     );
+
+    @Query("SELECT ms FROM MonthlySubjectStat ms " +
+            "JOIN FETCH ms.subject " +
+            "WHERE ms.member.id = :memberId " +
+            "AND ms.year = :year " +
+            "AND ms.month < :currentMonth")
+    List<MonthlySubjectStat> findAllByMemberIdAndYearAndMonthBeforeWithSubject(
+            @Param("memberId") Long memberId,
+            @Param("year") int year,
+            @Param("currentMonth") int currentMonth
+    );
 }

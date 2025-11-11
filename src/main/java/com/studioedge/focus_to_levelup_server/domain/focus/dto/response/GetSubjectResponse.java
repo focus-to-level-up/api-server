@@ -16,12 +16,12 @@ public record GetSubjectResponse(
         @Schema(description = "집중 시간(초)", example = "1200")
         Integer focusSeconds
 ) {
-    public static GetSubjectResponse of(Subject subject) {
+    public static GetSubjectResponse of(Subject subject, Integer focusSeconds) {
         return GetSubjectResponse.builder()
                 .id(subject.getId())
                 .name(subject.getName())
                 .color(subject.getColor())
-                .focusSeconds(subject.getFocusSeconds())
+                .focusSeconds(focusSeconds)
                 .build();
     }
 }
