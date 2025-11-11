@@ -12,7 +12,7 @@ public final class AppConstants {
      * @TODO: 에셋 이름 변경 필요할 수 있음.
      */
     public static final List<String> DEFAULT_ASSET_NAMES = List.of(
-            "양동동 프로필 이미지",
+            "양동동 프로필 1단계 이미지",
             "양동동 프로필 테두리"
     );
 

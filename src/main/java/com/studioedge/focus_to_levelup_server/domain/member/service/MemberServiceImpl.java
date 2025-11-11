@@ -68,6 +68,7 @@ public class MemberServiceImpl implements MemberService {
         saveInitialCharacter(member);
         List<MemberAsset> memberAssets = saveInitialMemberAsset(member);
         memberInfoRepository.save(CompleteSignUpRequest.from(member, memberAssets, request));
+        // @TODO WeeklyStat이 생성되어야 로직이 정상동작함.
         memberRepository.findById(member.getId())
                 .orElseThrow(MemberNotFoundException::new)
                 .updateNickname(request.nickname());
