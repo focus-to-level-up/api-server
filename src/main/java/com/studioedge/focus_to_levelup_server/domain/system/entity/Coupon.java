@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.system.entity;
 
+import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import com.studioedge.focus_to_levelup_server.global.common.enums.RewardType;
 import jakarta.persistence.*;
@@ -41,14 +42,25 @@ public class Coupon extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime expiredAt;
 
+    // 구독권 쿠폰 전용 필드 (rewardType = ETC인 경우 사용)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "subscription_type")
+    private SubscriptionType subscriptionType;
+
+    @Column(name = "subscription_duration_days")
+    private Integer subscriptionDurationDays;
+
     @Builder
     public Coupon(String couponCode, String description, RewardType rewardType,
-                  Integer reward, LocalDateTime expiredAt)
+                  Integer reward, LocalDateTime expiredAt,
+                  SubscriptionType subscriptionType, Integer subscriptionDurationDays)
     {
         this.couponCode = couponCode;
         this.description = description;
         this.rewardType = rewardType;
         this.reward = reward;
         this.expiredAt = expiredAt;
+        this.subscriptionType = subscriptionType;
+        this.subscriptionDurationDays = subscriptionDurationDays;
     }
 }
