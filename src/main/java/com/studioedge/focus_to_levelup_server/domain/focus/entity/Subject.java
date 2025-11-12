@@ -8,7 +8,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -32,10 +31,6 @@ public class Subject extends BaseEntity {
     private String name;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
-    private Integer focusSeconds = 0;
-
-    @Column(nullable = false)
     private String color;
 
     private LocalDateTime deleteAt; // soft delete
@@ -50,11 +45,7 @@ public class Subject extends BaseEntity {
     public void update(CreateSubjectRequest request) {
         this.name = request.name();
         this.color = request.color();
-        this.deleteAt = this.deleteAt != null ? null : null;
-    }
-
-    public void increaseFocusSeconds(Integer focusSeconds) {
-        this.focusSeconds += focusSeconds;
+        this.deleteAt = null;
     }
 
     public void delete() {

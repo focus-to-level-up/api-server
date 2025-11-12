@@ -20,7 +20,7 @@ public final class AppConstants {
      */
     public static final List<String> DEFAULT_ASSET_NAMES = List.of(
             "양동동 1단계 프로필 이미지",
-            "양동동 1단계 프로필 테두리"
+            "양동동 프로필 테두리"
     );
 
     /**

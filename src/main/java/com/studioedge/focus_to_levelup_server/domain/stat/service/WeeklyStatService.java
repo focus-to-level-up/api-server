@@ -1,8 +1,9 @@
 package com.studioedge.focus_to_levelup_server.domain.stat.service;
 
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
+import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
+import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailySubject;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
@@ -15,7 +16,6 @@ import com.studioedge.focus_to_levelup_server.domain.stat.dto.WeeklyStatListResp
 import com.studioedge.focus_to_levelup_server.domain.stat.dto.WeeklyStatResponse;
 import com.studioedge.focus_to_levelup_server.domain.stat.entity.WeeklyStat;
 import com.studioedge.focus_to_levelup_server.domain.stat.entity.WeeklySubjectStat;
-import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
+
 @Service
 @RequiredArgsConstructor
 public class WeeklyStatService {
@@ -35,13 +37,13 @@ public class WeeklyStatService {
     private final DailyGoalRepository dailyGoalRepository;
     private final MemberInfoRepository memberInfoRepository;
     private final WeeklySubjectStatRepository weeklySubjectStatRepository;
-    private final SubjectRepository subjectRepository;
+    private final DailySubjectRepository dailySubjectRepository;
 
     @Transactional(readOnly = true)
     public WeeklyStatListResponse getWeeklyStats(Long memberId, int year, int month) {
 
         LocalDate startDateOfMonth = LocalDate.of(year, month, 1);
-        LocalDate today = LocalDate.now();
+        LocalDate today = getServiceDate();
 
         // 1. [집계 데이터] 조회할 달의 시작 ~ "이번 주 시작일" 전까지의 WeeklyStat 조회
         LocalDate startOfThisWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
@@ -97,10 +99,9 @@ public class WeeklyStatService {
     public List<SubjectStatResponse> getWeeklySubjectStats(Member member, int year, int month) {
 
         LocalDate startDateOfMonth = LocalDate.of(year, month, 1);
-        LocalDate endDateOfMonth = startDateOfMonth.with(TemporalAdjusters.lastDayOfMonth());
 
         // "서비스 기준일" (새벽 4시 기준)
-        LocalDate serviceDate = AppConstants.getServiceDate();
+        LocalDate serviceDate = getServiceDate();
         LocalDate startOfThisWeek = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 
         // 1. [집계 데이터] 요청된 월의 "지난 주차" 통계 조회
@@ -111,14 +112,19 @@ public class WeeklyStatService {
                         startOfThisWeek.minusDays(1) // 이번 주 시작일 직전까지
                 );
 
-        // 2. [실시간 데이터] "이번 주" 데이터는 Subject 엔티티에서 직접 조회
-        // (요청한 월이 현재 월이 아닐 경우, "이번 주" 데이터는 조회할 필요 없음)
-        List<Subject> currentWeekSubjects;
+        // 2. [실시간 데이터] "이번 주" 데이터는 'DailySubject' 엔티티에서 직접 조회
+        List<DailySubject> currentWeekStats;
 
         if (serviceDate.getYear() == year && serviceDate.getMonthValue() == month) {
-            currentWeekSubjects = subjectRepository.findAllByMemberId(member.getId());
+            // [수정] SubjectRepository -> DailySubjectRepository
+            currentWeekStats = dailySubjectRepository
+                    .findAllByMemberIdAndDateRangeWithSubject(
+                            member.getId(),
+                            startOfThisWeek,
+                            serviceDate // 오늘까지
+                    );
         } else {
-            currentWeekSubjects = List.of(); // 빈 리스트
+            currentWeekStats = List.of(); // 빈 리스트
         }
 
         // 3. (집계) 과목(Subject)을 기준으로 모든 시간(분)을 합산 (Map<Subject, Integer>)
@@ -130,10 +136,12 @@ public class WeeklyStatService {
                 ));
 
         // 4. (집계) 3번 Map에 "이번 주" 실시간 데이터 덮어쓰기 (또는 추가)
-        for (Subject subject : currentWeekSubjects) {
-            // "subject.getFocusMinutes()"가 이번 주 누적 시간이라고 가정
-            totalMinutesPerSubject.merge(subject, subject.getFocusSeconds() / 60, Integer::sum);
+        for (DailySubject stat : currentWeekStats) {
+            // [수정] DailySubject의 focusSeconds를 분으로 변환하여 합산
+            int minutes = stat.getFocusSeconds() / 60;
+            totalMinutesPerSubject.merge(stat.getSubject(), minutes, Integer::sum);
         }
+
 
         // 5. (계산) 모든 과목의 총 합산 시간 계산
         double totalAllSubjectsMinutes = totalMinutesPerSubject.values().stream()

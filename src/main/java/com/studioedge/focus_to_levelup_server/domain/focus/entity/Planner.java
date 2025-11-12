@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.sql.Time;
 
@@ -21,6 +23,7 @@ public class Planner extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "daily_goal_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private DailyGoal dailyGoal;
 
     @ManyToOne(fetch = FetchType.LAZY)
