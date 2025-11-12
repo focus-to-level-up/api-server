@@ -2,10 +2,13 @@ package com.studioedge.focus_to_levelup_server.domain.focus.service;
 
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
+import com.studioedge.focus_to_levelup_server.domain.focus.dao.TodoRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateSubjectRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetSubjectResponse;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetTodoResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailySubject;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
+import com.studioedge.focus_to_levelup_server.domain.focus.entity.Todo;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectUnAuthorizedException;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
@@ -24,10 +27,11 @@ import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.
 public class SubjectService {
     private final SubjectRepository subjectRepository;
     private final DailySubjectRepository dailySubjectRepository;
+    private final TodoRepository todoRepository;
 
     @Transactional(readOnly = true)
     public List<GetSubjectResponse> getSubjectList(Member member) {
-        List<Subject> subjects = subjectRepository.findAllByMemberAndDeletedAtIsNull(member);
+        List<Subject> subjects = subjectRepository.findAllByMemberAndDeleteAtIsNull(member);
         List<DailySubject> dailySubjects = dailySubjectRepository.findAllByMemberAndDate(member, getServiceDate());
         Map<Long, Integer> todayMinutesMap = dailySubjects.stream()
                 .collect(Collectors.toMap(
@@ -38,7 +42,11 @@ public class SubjectService {
         return subjects.stream()
                 .map(subject -> {
                     Integer todaySeconds = todayMinutesMap.getOrDefault(subject.getId(), 0);
-                    return GetSubjectResponse.of(subject, todaySeconds);
+                    List<Todo> todos = todoRepository.findAllBySubjectId(subject.getId());
+                    List<GetTodoResponse> responses = todos.stream()
+                            .map(GetTodoResponse::of)
+                            .collect(Collectors.toList());
+                    return GetSubjectResponse.of(subject, todaySeconds, responses);
                 })
                 .collect(Collectors.toList());
     }

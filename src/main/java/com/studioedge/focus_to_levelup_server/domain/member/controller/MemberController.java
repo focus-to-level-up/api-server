@@ -145,9 +145,10 @@ public class MemberController {
             )
     })
     public ResponseEntity<CommonResponse<GetProfileResponse>> getMemberProfile(
-            @PathVariable(name = "id") Long memberId
+            @AuthenticationPrincipal Member member,
+            @RequestParam(name = "id", required = false) Long memberId
     ) {
-        return HttpResponseUtil.ok(memberService.getMemberProfile(memberId));
+        return HttpResponseUtil.ok(memberService.getMemberProfile(memberId == null ? member.getId() : memberId));
     }
 
 
