@@ -1,6 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.controller;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.FocusModeAnimationResponse;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.FocusModeImageResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.service.FocusService;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
@@ -60,7 +60,7 @@ public class FocusController {
                     description = "집중 에셋 전달"
             )
     })
-    public ResponseEntity<CommonResponse<FocusModeAnimationResponse>> getFocusAnimation(
+    public ResponseEntity<CommonResponse<FocusModeImageResponse>> getFocusAnimation(
             @AuthenticationPrincipal Member member
     ) {
         return HttpResponseUtil.ok(focusService.getFocusAnimation(member));

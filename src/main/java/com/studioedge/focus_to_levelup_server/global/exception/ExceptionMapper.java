@@ -34,6 +34,7 @@ public class ExceptionMapper {
         setUpRankingException();
         setUpMailException();
         setUpCouponException();
+        setUpSystemException();
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -213,5 +214,13 @@ public class ExceptionMapper {
                 ExceptionSituation.of("만료된 쿠폰입니다.", HttpStatus.BAD_REQUEST));
         mapper.put(CouponAlreadyUsedException.class,
                 ExceptionSituation.of("이미 사용한 쿠폰입니다.", HttpStatus.BAD_REQUEST));
+    }
+
+    /**
+     * 시스템 관련 예외 등록
+     */
+    private static void setUpSystemException() {
+        mapper.put(BackgroundNotFoundException.class,
+                ExceptionSituation.of("배경을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 }
