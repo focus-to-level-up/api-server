@@ -14,10 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Event (School)")
 @RestController
@@ -25,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class EventController {
     private final SchoolService schoolService;
-    @PostMapping("/v1/event/school")
+    @GetMapping("/v1/event/school")
     @Operation(summary = "학교 현재 랭킹 조회", description = """
             ### 기능
             - 학교별 누적 레벨(`totalLevel`)을 기준으로 학교 랭킹 목록을 페이징하여 조회합니다.
