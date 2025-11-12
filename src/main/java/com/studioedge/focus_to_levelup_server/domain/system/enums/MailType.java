@@ -4,5 +4,6 @@ public enum MailType {
     SUBSCRIPTION,
     EVENT,
     RANKING,
-    GUILD
+    GUILD,
+    PURCHASE  // 인앱 구매 보상
 }
