@@ -25,6 +25,9 @@ public class Member extends BaseEntity {
     @Column(name = "member_id")
     private Long id;
 
+    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
+    private MemberInfo memberInfo;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SocialType socialType;
@@ -77,7 +80,7 @@ public class Member extends BaseEntity {
     @Builder
     public Member(SocialType socialType, String socialId, String nickname, String fcmToken,
                   String appleRefreshToken, String kakaoRefreshToken, String naverRefreshToken,
-                  String googleRefreshToken) {
+                  String googleRefreshToken, MemberInfo memberInfo) {
         this.socialType = socialType;
         this.socialId = socialId;
         this.nickname = nickname;
@@ -86,6 +89,7 @@ public class Member extends BaseEntity {
         this.kakaoRefreshToken = kakaoRefreshToken;
         this.naverRefreshToken = naverRefreshToken;
         this.googleRefreshToken = googleRefreshToken;
+        this.memberInfo = memberInfo;
     }
 
     // 비즈니스 로직
@@ -117,6 +121,11 @@ public class Member extends BaseEntity {
         this.fcmToken = fcmToken;
     }
 
+    public void completeSignUp(String nickname, MemberInfo memberInfo) {
+        this.nickname = nickname;
+        this.nicknameUpdatedAt = LocalDateTime.now();
+        this.memberInfo = memberInfo;
+    }
     public void updateNickname(String nickname) {
         this.nickname = nickname;
         this.nicknameUpdatedAt = LocalDateTime.now();
