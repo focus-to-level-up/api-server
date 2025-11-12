@@ -7,6 +7,7 @@ import com.studioedge.focus_to_levelup_server.domain.character.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.EventUnAuthorizedException;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.guild.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.payment.exception.*;
@@ -32,8 +33,10 @@ public class ExceptionMapper {
         setUpPaymentException();
         setUpFocusException();
         setUpRankingException();
+        setUpEventException();
         setUpMailException();
         setUpCouponException();
+        setUpGuildException();
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -213,5 +216,34 @@ public class ExceptionMapper {
                 ExceptionSituation.of("만료된 쿠폰입니다.", HttpStatus.BAD_REQUEST));
         mapper.put(CouponAlreadyUsedException.class,
                 ExceptionSituation.of("이미 사용한 쿠폰입니다.", HttpStatus.BAD_REQUEST));
+    }
+
+    /**
+     * Guild 관련 예외 등록
+     */
+    private static void setUpGuildException() {
+        // 404 NOT_FOUND
+        mapper.put(GuildNotFoundException.class,
+                ExceptionSituation.of("길드를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(NotGuildMemberException.class,
+                ExceptionSituation.of("길드원이 아닙니다.", HttpStatus.NOT_FOUND));
+
+        // 403 FORBIDDEN
+        mapper.put(InsufficientGuildPermissionException.class,
+                ExceptionSituation.of("길드 권한이 없습니다.", HttpStatus.FORBIDDEN));
+
+        // 400 BAD_REQUEST
+        mapper.put(GuildFullException.class,
+                ExceptionSituation.of("길드 정원이 가득 찼습니다. (최대 20명)", HttpStatus.BAD_REQUEST));
+        mapper.put(InvalidGuildPasswordException.class,
+                ExceptionSituation.of("길드 비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(AlreadyJoinedGuildException.class,
+                ExceptionSituation.of("이미 가입한 길드입니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(MaxBoostLimitExceededException.class,
+                ExceptionSituation.of("부스트 한도를 초과했습니다. (유저: 2개, 길드: 10명)", HttpStatus.BAD_REQUEST));
+        mapper.put(CannotDeleteGuildWithMembersException.class,
+                ExceptionSituation.of("길드원이 있는 길드는 삭제할 수 없습니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(LeaderCannotLeaveException.class,
+                ExceptionSituation.of("길드장은 먼저 권한을 위임해야 탈퇴할 수 있습니다.", HttpStatus.FORBIDDEN));
     }
 }

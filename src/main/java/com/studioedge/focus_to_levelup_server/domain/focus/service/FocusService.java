@@ -7,6 +7,8 @@ import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
+import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.FocusModeAnimationResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +39,7 @@ public class FocusService {
     private final DailyGoalRepository dailyGoalRepository;
     private final MemberCharacterRepository memberCharacterRepository;
     private final SchoolRepository schoolRepository;
+    private final GuildMemberRepository guildMemberRepository;
     @Transactional
     public void saveFocus(Member m, Long subjectId, SaveFocusRequest request) {
         /**
@@ -76,6 +80,12 @@ public class FocusService {
             schoolRepository.findByName(memberInfo.getBelonging())
                     .orElseThrow(SchoolNotFoundException::new)
                     .plusTotalLevel(focusExp);
+        }
+
+        // 길드 주간 집중 시간 업데이트 (가입한 모든 길드)
+        List<GuildMember> guildMembers = guildMemberRepository.findAllByMemberIdWithGuild(m.getId());
+        for (GuildMember gm : guildMembers) {
+            gm.addWeeklyFocusTime(request.focusSeconds());
         }
 
     }

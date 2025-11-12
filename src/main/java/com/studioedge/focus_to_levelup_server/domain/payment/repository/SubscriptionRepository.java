@@ -37,4 +37,10 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
      * 회원의 모든 구독권 삭제 (회원 탈퇴 시)
      */
     void deleteAllByMemberId(Long memberId);
+
+    /**
+     * 회원의 활성화된 구독권 조회 (단건 - 프리미엄 우선)
+     */
+    @Query("SELECT s FROM Subscription s WHERE s.member.id = :memberId AND s.isActive = true ORDER BY s.type DESC, s.endDate DESC LIMIT 1")
+    Optional<Subscription> findByMemberIdAndIsActiveTrue(@Param("memberId") Long memberId);
 }
