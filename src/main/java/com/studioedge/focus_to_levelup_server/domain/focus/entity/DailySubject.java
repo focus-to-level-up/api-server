@@ -15,7 +15,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(
-        name = "daily_subject_stats",
+        name = "daily_subjects",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"member_id", "subject_id", "date"})
         }

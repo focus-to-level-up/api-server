@@ -36,6 +36,7 @@ public class ExceptionMapper {
         setUpMailException();
         setUpCouponException();
         setUpStatException();
+        setUpEventException();
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -181,12 +182,13 @@ public class ExceptionMapper {
         mapper.put(StatMonthNotFoundException.class,
                 ExceptionSituation.of("해당 월의 통계를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
+
     /**
      * Ranking 관련 예외 등록
      */
     private static void setUpRankingException() {
         mapper.put(RankingNotFoundException.class,
-                ExceptionSituation.of("랭킹에 해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+                ExceptionSituation.of("랭킹에 포함되어있지 않습니다. 랭킹은 첫 생성날의 다음주부터 참여됩니다.", HttpStatus.NOT_FOUND));
     }
 
     /**
@@ -198,6 +200,7 @@ public class ExceptionMapper {
         mapper.put(EventUnAuthorizedException.class,
                 ExceptionSituation.of("이벤트에 참여할 권한이 없습니다.", HttpStatus.UNAUTHORIZED));
     }
+
     /**
      * Mail 관련 예외 등록
      */

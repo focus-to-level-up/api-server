@@ -60,9 +60,9 @@ public class FocusService {
                 .orElseThrow(MemberNotFoundException::new);
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(m.getId())
                 .orElseThrow(InvalidMemberException::new);
-        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), LocalDate.now())
+        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), serviceDate)
                 .orElseThrow(DailyGoalNotFoundException::new);
-        Subject subject = this.subjectRepository.findById(subjectId)
+        Subject subject = this.subjectRepository.findByIdAndDeleteAtIsNull(subjectId)
                 .orElseThrow(SubjectNotFoundException::new);
         MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefault(m.getId(), true)
                 .orElseThrow(CharacterDefaultNotFoundException::new);
