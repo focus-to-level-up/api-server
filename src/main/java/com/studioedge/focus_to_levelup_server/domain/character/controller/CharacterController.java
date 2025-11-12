@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Character", description = "캐릭터 API")
 @RestController
-@RequestMapping("/api/characters")
+@RequestMapping("/api/v1/characters")
 @RequiredArgsConstructor
 public class CharacterController {
 

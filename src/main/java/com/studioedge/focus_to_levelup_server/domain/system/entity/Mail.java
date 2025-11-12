@@ -55,11 +55,34 @@ public class Mail extends BaseEntity {
                 String description, Integer reward, LocalDate expiredAt)
     {
         this.receiver = receiver;
-        this.senderName = senderName;
+        this.senderName = senderName != null ? senderName : "운영자";
         this.type = type;
         this.title = title;
         this.description = description;
-        this.reward = reward;
+        this.reward = reward != null ? reward : 0;
         this.expiredAt = expiredAt;
+    }
+
+    // 비즈니스 메서드
+
+    /**
+     * 우편 수령 처리
+     */
+    public void markAsReceived() {
+        this.isReceived = true;
+    }
+
+    /**
+     * 우편 만료 여부 확인
+     */
+    public boolean isExpired() {
+        return LocalDate.now().isAfter(expiredAt);
+    }
+
+    /**
+     * 우편 소유권 확인
+     */
+    public boolean isOwnedBy(Long memberId) {
+        return this.receiver.getId().equals(memberId);
     }
 }
