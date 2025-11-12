@@ -10,6 +10,6 @@ spring:
   sql:
     init:
       mode: always
-      data-locations: classpath:static/character_data.sql,classpath:static/data.sql,classpath:static/subscription_data.sql,classpath:static/coupon_data.sql
+      data-locations: ${MASTER_DATA_PATH}
       encoding: UTF-8
       continue-on-error: false
