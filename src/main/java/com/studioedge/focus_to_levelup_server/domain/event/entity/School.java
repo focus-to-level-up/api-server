@@ -25,11 +25,22 @@ public class School extends BaseEntity {
     private CategoryMainType categoryMain;
 
     @Column(nullable = false)
-    private Long total = 0l;
+    private Long totalLevel = 0l;
+
+    @Column(nullable = false)
+    private Long totalExp = 0l;
 
     @Builder
     public School(String name, CategoryMainType categoryMain) {
         this.name = name;
         this.categoryMain = categoryMain;
+    }
+
+    public void plusTotalLevel(Integer exp) {
+        this.totalExp += exp;
+        if (this.totalExp >= 600) {
+            this.totalLevel += (this.totalExp / 600);
+            this.totalExp %= 600;
+        }
     }
 }

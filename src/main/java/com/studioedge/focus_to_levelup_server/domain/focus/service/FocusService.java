@@ -3,6 +3,8 @@ package com.studioedge.focus_to_levelup_server.domain.focus.service;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.character.repository.MemberCharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
+import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
@@ -18,6 +20,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
+import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +35,7 @@ public class FocusService {
     private final SubjectRepository subjectRepository;
     private final DailyGoalRepository dailyGoalRepository;
     private final MemberCharacterRepository memberCharacterRepository;
+    private final SchoolRepository schoolRepository;
     @Transactional
     public void saveFocus(Member m, Long subjectId, SaveFocusRequest request) {
         /**
@@ -43,6 +47,7 @@ public class FocusService {
          * */
 
         int focusMinutes = request.focusSeconds() / 60;
+        int focusExp = focusMinutes * 10;
 
         Subject subject = this.subjectRepository.findById(subjectId)
                 .orElseThrow(SubjectNotFoundException::new);
@@ -55,8 +60,8 @@ public class FocusService {
                 .orElseThrow(MemberNotFoundException::new);
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(m.getId())
                 .orElseThrow(InvalidMemberException::new);
-        member.levelUp(focusMinutes * 10);
-        memberInfo.addGold(focusMinutes * 10);
+        member.levelUp(focusExp);
+        memberInfo.addGold(focusExp);
 
         DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), LocalDate.now())
                 .orElseThrow(DailyGoalNotFoundException::new);
@@ -64,9 +69,15 @@ public class FocusService {
 
         MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefault(m.getId(), true)
                 .orElseThrow(CharacterDefaultNotFoundException::new);
-        memberCharacter.increaseLevel(focusMinutes * 10);
+        memberCharacter.increaseLevel(focusExp);
 
         member.focusOff();
+        if (AppConstants.SCHOOL_CATEGORIES.contains(memberInfo.getCategoryMain())) {
+            schoolRepository.findByName(memberInfo.getBelonging())
+                    .orElseThrow(SchoolNotFoundException::new)
+                    .plusTotalLevel(focusExp);
+        }
+
     }
 
     @Transactional

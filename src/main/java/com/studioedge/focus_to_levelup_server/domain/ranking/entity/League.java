@@ -1,14 +1,13 @@
 package com.studioedge.focus_to_levelup_server.domain.ranking.entity;
 
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
+import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
 
 import java.time.LocalDate;
 
@@ -21,6 +20,10 @@ public class League extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "league_id")
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "season_id", nullable = false)
+    private Season season;
 
     @Column(unique = true, nullable = false)
     private String name;
@@ -40,8 +43,9 @@ public class League extends BaseEntity {
     private LocalDate endDate;
 
     @Builder
-    public League(String name, CategoryMainType categoryType,
+    public League(Season season, String name, CategoryMainType categoryType,
                   LocalDate startDate, LocalDate endDate) {
+        this.season = season;
         this.name = name;
         this.categoryType = categoryType;
         this.startDate = startDate;

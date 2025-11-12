@@ -4,10 +4,12 @@ import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.event.exception.EventUnAuthorizedException;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.stat.exception.StatMonthNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.payment.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InvalidItemOptionException;
@@ -30,8 +32,11 @@ public class ExceptionMapper {
         setUpCharacterException();
         setUpPaymentException();
         setUpFocusException();
+        setUpRankingException();
         setUpMailException();
         setUpCouponException();
+        setUpStatException();
+        setUpEventException();
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -84,8 +89,6 @@ public class ExceptionMapper {
                 ExceptionSituation.of("회원님의 정보가 존재하지 않습니다. 탈퇴후 계정을 새로 생성해야합니다.", HttpStatus.NOT_FOUND));
         mapper.put(CategoryUpdateException.class,
                 ExceptionSituation.of("카테고리는 변경일을 기준으로 1달 이후에 변경 가능합니다.", HttpStatus.BAD_REQUEST));
-        mapper.put(SchoolNotFoundException.class,
-                ExceptionSituation.of("입력한 학교가 존재하지 않습니다.", HttpStatus.BAD_REQUEST));
         mapper.put(AssetUnauthorizedException.class,
                 ExceptionSituation.of("현재 에셋을 사용할 수 있는 권한이 없습니다.", HttpStatus.UNAUTHORIZED));
         mapper.put(InvalidSignUpException.class,
@@ -179,6 +182,25 @@ public class ExceptionMapper {
         mapper.put(StatMonthNotFoundException.class,
                 ExceptionSituation.of("해당 월의 통계를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
+
+    /**
+     * Ranking 관련 예외 등록
+     */
+    private static void setUpRankingException() {
+        mapper.put(RankingNotFoundException.class,
+                ExceptionSituation.of("랭킹에 포함되어있지 않습니다. 랭킹은 첫 생성날의 다음주부터 참여됩니다.", HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * Event(School) 관련 예외 등록
+     * */
+    private static void setUpEventException() {
+        mapper.put(SchoolNotFoundException.class,
+                ExceptionSituation.of("입력한 학교가 존재하지 않습니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(EventUnAuthorizedException.class,
+                ExceptionSituation.of("이벤트에 참여할 권한이 없습니다.", HttpStatus.UNAUTHORIZED));
+    }
+
     /**
      * Mail 관련 예외 등록
      */
