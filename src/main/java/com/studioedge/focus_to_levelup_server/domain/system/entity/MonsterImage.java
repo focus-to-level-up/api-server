@@ -24,6 +24,7 @@ public class MonsterImage {
     private Monster monster;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private MonsterImageType type;
 
     @Column(length = 2048, nullable = false)

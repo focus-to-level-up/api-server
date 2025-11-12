@@ -11,11 +11,20 @@ public final class AppConstants {
     private AppConstants() {}
 
     /**
+<<<<<<< HEAD
      * 회원가입 시 지급되는 기본 프로필 에셋의 이름 목록
+=======
+     * 회원가입 시 지급되는 기본 캐릭터의 이름입니다.
+     */
+    public static final String DEFAULT_CHARACTER_NAME = "양동동";
+
+    /**
+     * 회원가입 시 지급되는 기본 프로필 에셋의 이름 목록입니다.
+>>>>>>> origin
      */
     public static final List<String> DEFAULT_ASSET_NAMES = List.of(
             "양동동 1단계 프로필 이미지",
-            "양동동 1단계 프로필 테두리"
+            "양동동 프로필 테두리"
     );
 
     /**
@@ -26,11 +35,6 @@ public final class AppConstants {
             CategoryMainType.MIDDLE_SCHOOL,
             CategoryMainType.HIGH_SCHOOL
     );
-
-    /**
-     * 회원가입 시 지급되는 기본 캐릭터의 이름
-     */
-    public static final String DEFAULT_CHARACTER_NAME = "양동동";
 
     /**
      * 기본 훈련장 이름

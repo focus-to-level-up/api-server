@@ -6,11 +6,13 @@ import com.studioedge.focus_to_levelup_server.domain.character.repository.Member
 import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
+import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.FocusModeImageResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.MonsterAnimationResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
+import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailySubject;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;
@@ -37,6 +39,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
 
 @Service
 @RequiredArgsConstructor
@@ -46,10 +52,12 @@ public class FocusService {
     private final SubjectRepository subjectRepository;
     private final DailyGoalRepository dailyGoalRepository;
     private final MemberCharacterRepository memberCharacterRepository;
+    private final DailySubjectRepository dailySubjectRepository;
     private final SchoolRepository schoolRepository;
     private final MonsterRepository monsterRepository;
     private final MonsterImageRepository monsterImageRepository;
     private final BackgroundRepository backgroundRepository;
+
     @Transactional
     public void saveFocus(Member m, Long subjectId, SaveFocusRequest request) {
         /**
@@ -59,39 +67,56 @@ public class FocusService {
          * 대표 캐릭터 친밀도 누적
          * 현재 집중중 상태 해제
          * */
-
         int focusMinutes = request.focusSeconds() / 60;
+        LocalDate serviceDate = getServiceDate();
         int focusExp = focusMinutes * 10;
 
-        Subject subject = this.subjectRepository.findById(subjectId)
-                .orElseThrow(SubjectNotFoundException::new);
-        if (!subject.getMember().getId().equals(m.getId())) {
-            throw new SubjectUnAuthorizedException();
-        }
-        subject.increaseFocusSeconds(request.focusSeconds());
 
         Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(m.getId())
                 .orElseThrow(InvalidMemberException::new);
-        member.levelUp(focusExp);
-        memberInfo.addGold(focusExp);
-
-        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), LocalDate.now())
+        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), serviceDate)
                 .orElseThrow(DailyGoalNotFoundException::new);
-        dailyGoal.increaseCurrentMinutes(focusMinutes);
-
+        Subject subject = this.subjectRepository.findByIdAndDeleteAtIsNull(subjectId)
+                .orElseThrow(SubjectNotFoundException::new);
         MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefault(m.getId(), true)
                 .orElseThrow(CharacterDefaultNotFoundException::new);
-        memberCharacter.increaseLevel(focusExp);
+        DailySubject dailySubject = dailySubjectRepository.findByMemberAndSubjectAndDate(member, subject, serviceDate)
+                .orElseGet(() -> {
+                    // 오늘 해당 과목으로 공부한 기록이 없으면, 새로 생성
+                    return DailySubject.builder()
+                            .member(member)
+                            .subject(subject)
+                            .date(serviceDate)
+                            .build();
+                    // save()는 @Transactional 종료 시 자동으로 수행됨 (orElseGet 내부에서는 save 명시)
+                    // -> 수정: orElseGet 밖에서 save/update를 처리하는 것이 더 명확함.
+                });
+        if (!subject.getMember().getId().equals(m.getId())) {
+            throw new SubjectUnAuthorizedException();
+        }
 
+        // 레벨 업
+        member.levelUp(focusExp);
+        // 골드 획득
+        memberInfo.addGold(focusExp);
+        // 일일 목표 공부 시간 더하기
+        dailyGoal.addCurrentMinutes(focusMinutes);
+        // 과목 공부 시간 더하기
+        dailySubject.addSeconds(request.focusSeconds());
+        // 캐릭터 친밀도 상승
+        memberCharacter.levelUp(focusExp);
+        // 집중 상태 해제
         member.focusOff();
+
+        // 만약 dailySubject가 생성되어있지 않다면 저장해야함.
+        dailySubjectRepository.save(dailySubject);
         if (AppConstants.SCHOOL_CATEGORIES.contains(memberInfo.getCategoryMain())) {
             schoolRepository.findByName(memberInfo.getBelonging())
                     .orElseThrow(SchoolNotFoundException::new)
                     .plusTotalLevel(focusExp);
         }
-
     }
 
     @Transactional
@@ -101,22 +126,44 @@ public class FocusService {
         member.focusOn();
     }
 
+    // @TODO: 향후 리팩토링 필요함. 몬스터 종류 많아지고, 맵마다 다른 몬스터가 나온다면
     @Transactional(readOnly = true)
     public FocusModeImageResponse getFocusAnimation(Member member) {
-        // @TODO: 향후 리팩토링 필요함. 몬스터 종류 많아지고, 맵마다 다른 몬스터가 나온다면
-        List<Monster> monsters = monsterRepository.findAll();
+        List<MonsterImage> monsterImages = monsterImageRepository.findAllWithMonster();
+        // 몬스터(Monster) 객체 기준으로 그룹화
+        Map<Monster, List<MonsterImage>> imagesByMonster = monsterImages.stream()
+                .collect(Collectors.groupingBy(MonsterImage::getMonster));
+
         List<MonsterAnimationResponse> responses = new ArrayList<>();
-        for(Monster monster : monsters) {
-            List<MonsterImage> monsterImages = monsterImageRepository.findAllByMonster(monster);
-            String move = monsterImages.get(0).getType().equals(MonsterImageType.MOVE) ?
-                    monsterImages.get(0).getImageUrl() : monsterImages.get(1).getImageUrl();
-            String die = monsterImages.get(0).getType().equals(MonsterImageType.DIE) ?
-                    monsterImages.get(0).getImageUrl() : monsterImages.get(1).getImageUrl();
-            responses.add(MonsterAnimationResponse.of(monster.getName(), die, move))
+        for (Map.Entry<Monster, List<MonsterImage>> entry : imagesByMonster.entrySet()) {
+
+            Monster monster = entry.getKey();
+            List<MonsterImage> images = entry.getValue();
+
+            String moveUrl = findUrlByType(images, MonsterImageType.MOVE);
+            String dieUrl = findUrlByType(images, MonsterImageType.DIE);
+
+            responses.add(MonsterAnimationResponse.of(
+                    monster.getName(),
+                    dieUrl,
+                    moveUrl
+            ));
         }
+
         Background background = backgroundRepository.findByName(AppConstants.DEFAULT_FOCUS_BACKGROUND_NAME)
                 .orElseThrow(BackgroundNotFoundException::new);
+
         return FocusModeImageResponse.of(background.getImageUrl(), responses);
     }
 
+    /**
+     * 몬스터 이미지 리스트에서 특정 타입의 URL을 찾는 헬퍼 메서드
+     */
+    private String findUrlByType(List<MonsterImage> images, MonsterImageType type) {
+        return images.stream()
+                .filter(m -> m.getType() == type)
+                .map(MonsterImage::getImageUrl)
+                .findFirst()
+                .orElse(null);
+    }
 }

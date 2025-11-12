@@ -53,6 +53,10 @@ public class FocusController {
      * */
     @GetMapping("/v1/focus")
     @Operation(summary = "집중모드 에셋 조회", description = """
+            ### 기능
+            - 집중모드에 진입했을 떄 필요한 이미지 객체들을 조회합니다.
+            - 등장하는 몬스터, 배경화면 등을 조회합니다.
+            - 앱 초기에는 정해진 몇몇 몬스터와 기본 배경이지만, 향후 디벨롭하면서 다양한 몬스터, 배경이 등장하기에 사용합니다.
             """)
     @ApiResponses({
             @ApiResponse(

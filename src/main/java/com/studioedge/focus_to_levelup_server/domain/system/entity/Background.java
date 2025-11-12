@@ -22,6 +22,7 @@ public class Background {
 
     // 배경 이미지 타입(ex: FOCUS(집중할때), TRAINING(훈련장)) -> 향후 캐릭터마다 배경이 바뀌거나 할때를 위해서
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private BackgroundImageType type;
 
     @Column(length = 2048, nullable = false)
