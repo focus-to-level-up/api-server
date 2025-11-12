@@ -5,3 +5,11 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:static/character_data.sql,classpath:static/data.sql,classpath:static/subscription_data.sql,classpath:static/coupon_data.sql
+      encoding: UTF-8
+      continue-on-error: false
