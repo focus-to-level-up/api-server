@@ -4,14 +4,18 @@ import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.event.exception.EventUnAuthorizedException;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.stat.exception.StatMonthNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.payment.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InvalidItemOptionException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.ItemAlreadyPurchasedException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.ItemNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.system.exception.*;
 import org.springframework.http.HttpStatus;
 
 import java.util.LinkedHashMap;
@@ -26,7 +30,12 @@ public class ExceptionMapper {
         setUpStoreException();
         setUpMemberException();
         setUpCharacterException();
+        setUpPaymentException();
         setUpFocusException();
+        setUpRankingException();
+        setUpMailException();
+        setUpCouponException();
+        setUpStatException();
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -79,8 +88,6 @@ public class ExceptionMapper {
                 ExceptionSituation.of("회원님의 정보가 존재하지 않습니다. 탈퇴후 계정을 새로 생성해야합니다.", HttpStatus.NOT_FOUND));
         mapper.put(CategoryUpdateException.class,
                 ExceptionSituation.of("카테고리는 변경일을 기준으로 1달 이후에 변경 가능합니다.", HttpStatus.BAD_REQUEST));
-        mapper.put(SchoolNotFoundException.class,
-                ExceptionSituation.of("입력한 학교가 존재하지 않습니다.", HttpStatus.BAD_REQUEST));
         mapper.put(AssetUnauthorizedException.class,
                 ExceptionSituation.of("현재 에셋을 사용할 수 있는 권한이 없습니다.", HttpStatus.UNAUTHORIZED));
         mapper.put(InvalidSignUpException.class,
@@ -103,6 +110,43 @@ public class ExceptionMapper {
                 ExceptionSituation.of("유효하지 않은 진화 단계입니다. 보유한 진화 단계만 선택할 수 있습니다.", HttpStatus.BAD_REQUEST));
         mapper.put(MemberCharacterNotFoundException.class,
                 ExceptionSituation.of("보유하지 않은 캐릭터입니다.", HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * Payment 관련 예외 등록
+     */
+    private static void setUpPaymentException() {
+        // 상품 관련 예외
+        mapper.put(ProductNotFoundException.class,
+                ExceptionSituation.of("존재하지 않는 상품입니다.", HttpStatus.NOT_FOUND));
+        mapper.put(DuplicatePurchaseException.class,
+                ExceptionSituation.of("이미 처리된 결제입니다.", HttpStatus.CONFLICT));
+        mapper.put(InvalidReceiptException.class,
+                ExceptionSituation.of("유효하지 않은 영수증입니다.", HttpStatus.BAD_REQUEST));
+
+        // 환불 관련 예외
+        mapper.put(PurchaseNotFoundException.class,
+                ExceptionSituation.of("결제 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(UnauthorizedRefundException.class,
+                ExceptionSituation.of("환불 권한이 없습니다.", HttpStatus.FORBIDDEN));
+        mapper.put(RefundNotAllowedException.class,
+                ExceptionSituation.of("환불이 불가능합니다. (7일 경과 또는 재화 사용)", HttpStatus.BAD_REQUEST));
+        mapper.put(InsufficientDiamondForRefundException.class,
+                ExceptionSituation.of("환불을 위한 다이아가 부족합니다.", HttpStatus.BAD_REQUEST));
+
+        // 구독권 관련 예외
+        mapper.put(SubscriptionNotFoundException.class,
+                ExceptionSituation.of("구독권을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(PremiumSubscriptionRequiredException.class,
+                ExceptionSituation.of("프리미엄 구독권이 필요합니다.", HttpStatus.FORBIDDEN));
+
+        // 선물 티켓 관련 예외
+        mapper.put(NoAvailableGiftTicketException.class,
+                ExceptionSituation.of("사용 가능한 선물 티켓이 없습니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(TicketAlreadyUsedException.class,
+                ExceptionSituation.of("이미 사용된 티켓입니다.", HttpStatus.CONFLICT));
+        mapper.put(RecipientAlreadyHasPremiumException.class,
+                ExceptionSituation.of("상대방이 이미 프리미엄 구독권을 보유하고 있습니다.", HttpStatus.BAD_REQUEST));
     }
 
     /**
@@ -136,5 +180,47 @@ public class ExceptionMapper {
     private static void setUpStatException() {
         mapper.put(StatMonthNotFoundException.class,
                 ExceptionSituation.of("해당 월의 통계를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    }
+    /**
+     * Ranking 관련 예외 등록
+     */
+    private static void setUpRankingException() {
+        mapper.put(RankingNotFoundException.class,
+                ExceptionSituation.of("랭킹에 해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * Event(School) 관련 예외 등록
+     * */
+    private static void setUpEventException() {
+        mapper.put(SchoolNotFoundException.class,
+                ExceptionSituation.of("입력한 학교가 존재하지 않습니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(EventUnAuthorizedException.class,
+                ExceptionSituation.of("이벤트에 참여할 권한이 없습니다.", HttpStatus.UNAUTHORIZED));
+    }
+    /**
+     * Mail 관련 예외 등록
+     */
+    private static void setUpMailException() {
+        mapper.put(MailNotFoundException.class,
+                ExceptionSituation.of("존재하지 않는 우편입니다.", HttpStatus.NOT_FOUND));
+        mapper.put(UnauthorizedMailAccessException.class,
+                ExceptionSituation.of("우편에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN));
+        mapper.put(MailAlreadyReceivedException.class,
+                ExceptionSituation.of("이미 수령한 우편입니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(MailExpiredException.class,
+                ExceptionSituation.of("만료된 우편입니다.", HttpStatus.BAD_REQUEST));
+    }
+
+    /**
+     * Coupon 관련 예외 등록
+     */
+    private static void setUpCouponException() {
+        mapper.put(CouponNotFoundException.class,
+                ExceptionSituation.of("존재하지 않는 쿠폰입니다.", HttpStatus.NOT_FOUND));
+        mapper.put(CouponExpiredException.class,
+                ExceptionSituation.of("만료된 쿠폰입니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(CouponAlreadyUsedException.class,
+                ExceptionSituation.of("이미 사용한 쿠폰입니다.", HttpStatus.BAD_REQUEST));
     }
 }

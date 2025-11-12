@@ -6,9 +6,14 @@ spring:
     password: focus
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-# Hibernate SQL 로깅 (파라미터 값 포함)
-logging:
-  level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.hibernate.orm.jdbc.bind: TRACE
+  jpa:
+    hibernate:
+      ddl-auto: create
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
+      data-locations: ${MASTER_DATA_PATH}
+      encoding: UTF-8
+      continue-on-error: false

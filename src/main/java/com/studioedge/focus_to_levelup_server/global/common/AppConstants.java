@@ -1,8 +1,11 @@
 package com.studioedge.focus_to_levelup_server.global.common;
 
+import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 public final class AppConstants {
     private AppConstants() {}
@@ -12,8 +15,17 @@ public final class AppConstants {
      * @TODO: 에셋 이름 변경 필요할 수 있음.
      */
     public static final List<String> DEFAULT_ASSET_NAMES = List.of(
-            "양동동 프로필 1단계 이미지",
-            "양동동 프로필 테두리"
+            "양동동 1단계 프로필 이미지",
+            "양동동 1단계 프로필 테두리"
+    );
+
+    /**
+     * 학교 이벤트에 포함되는 카테고리 범위입니다.
+     */
+    public static final Set<CategoryMainType> SCHOOL_CATEGORIES = Set.of(
+            CategoryMainType.ELEMENTARY_SCHOOL,
+            CategoryMainType.MIDDLE_SCHOOL,
+            CategoryMainType.HIGH_SCHOOL
     );
 
     /**
