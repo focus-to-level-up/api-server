@@ -9,6 +9,7 @@ import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalReposito
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.FocusModeImageResponse;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.MonsterAnimationResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
@@ -21,9 +22,12 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.BackgroundRepository;
+import com.studioedge.focus_to_levelup_server.domain.system.dao.MonsterImageRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.MonsterRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Background;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Monster;
+import com.studioedge.focus_to_levelup_server.domain.system.entity.MonsterImage;
+import com.studioedge.focus_to_levelup_server.domain.system.enums.MonsterImageType;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.BackgroundNotFoundException;
 import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -43,6 +48,7 @@ public class FocusService {
     private final MemberCharacterRepository memberCharacterRepository;
     private final SchoolRepository schoolRepository;
     private final MonsterRepository monsterRepository;
+    private final MonsterImageRepository monsterImageRepository;
     private final BackgroundRepository backgroundRepository;
     @Transactional
     public void saveFocus(Member m, Long subjectId, SaveFocusRequest request) {
@@ -99,9 +105,18 @@ public class FocusService {
     public FocusModeImageResponse getFocusAnimation(Member member) {
         // @TODO: 향후 리팩토링 필요함. 몬스터 종류 많아지고, 맵마다 다른 몬스터가 나온다면
         List<Monster> monsters = monsterRepository.findAll();
+        List<MonsterAnimationResponse> responses = new ArrayList<>();
+        for(Monster monster : monsters) {
+            List<MonsterImage> monsterImages = monsterImageRepository.findAllByMonster(monster);
+            String move = monsterImages.get(0).getType().equals(MonsterImageType.MOVE) ?
+                    monsterImages.get(0).getImageUrl() : monsterImages.get(1).getImageUrl();
+            String die = monsterImages.get(0).getType().equals(MonsterImageType.DIE) ?
+                    monsterImages.get(0).getImageUrl() : monsterImages.get(1).getImageUrl();
+            responses.add(MonsterAnimationResponse.of(monster.getName(), die, move))
+        }
         Background background = backgroundRepository.findByName(AppConstants.DEFAULT_FOCUS_BACKGROUND_NAME)
                 .orElseThrow(BackgroundNotFoundException::new);
-        return null;
+        return FocusModeImageResponse.of(background.getImageUrl(), responses);
     }
 
 }
