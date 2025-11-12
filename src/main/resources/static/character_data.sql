@@ -31,7 +31,7 @@ SET @character_id = LAST_INSERT_ID();
 SET @folder = 'yangdongdong/';
 SET @file = 'yangdongdong';
 
-INSERT INTO character_images (character_id, evolution, image_Type, image_url)
+INSERT IGNORE INTO character_images (character_id, evolution, image_Type, image_url)
 VALUES
     (@character_id, 0, 'BACKGROUND', CONCAT(@s3_base_url, @folder, @file, '_background.png')),
     (@character_id, 1, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '1.png')),
@@ -47,14 +47,14 @@ VALUES
 -- -----------------------------------------------------
 -- 2. 레어 - 김투구 (S3: kimtoogoo)
 -- -----------------------------------------------------
-INSERT INTO characters (name, rarity, price, description, background_image_url)
+INSERT IGNORE INTO characters (name, rarity, price, description, background_image_url)
 VALUES ('김투구', 'RARE', 6000, '', '');
 
 SET @character_id = LAST_INSERT_ID();
 SET @folder = 'kimtoogoo/';
 SET @file = 'kimtoogoo';
 
-INSERT INTO character_images (character_id, evolution, image_type, image_url)
+INSERT IGNORE INTO character_images (character_id, evolution, image_type, image_url)
 VALUES
     (@character_id, 0, 'BACKGROUND', CONCAT(@s3_base_url, @folder, @file, '_background.png')),
     (@character_id, 1, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '1.png')),
@@ -71,14 +71,14 @@ VALUES
 -- -----------------------------------------------------
 -- 3. 레어 - 에르핀 (S3: elfin)
 -- -----------------------------------------------------
-INSERT INTO characters (name, rarity, price, description, background_image_url)
+INSERT IGNORE INTO characters (name, rarity, price, description, background_image_url)
 VALUES ('에르핀', 'RARE', 6000, '', '');
 
 SET @character_id = LAST_INSERT_ID();
 SET @folder = 'elfin/';
 SET @file = 'elfin';
 
-INSERT INTO character_images (character_id, evolution, image_type, image_url)
+INSERT IGNORE INTO character_images (character_id, evolution, image_type, image_url)
 VALUES
     (@character_id, 0, 'BACKGROUND', CONCAT(@s3_base_url, @folder, @file, '_background.png')),
     (@character_id, 1, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '1.png')),
@@ -95,14 +95,14 @@ VALUES
 -- -----------------------------------------------------
 -- 4. 에픽 - 쿠마 (S3: kuma)
 -- -----------------------------------------------------
-INSERT INTO characters (name, rarity, price, description, background_image_url)
+INSERT IGNORE INTO characters (name, rarity, price, description, background_image_url)
 VALUES ('쿠마', 'EPIC', 18000, '', '');
 
 SET @character_id = LAST_INSERT_ID();
 SET @folder = 'kuma/';
 SET @file = 'kuma';
 
-INSERT INTO character_images (character_id, evolution, image_type, image_url)
+INSERT IGNORE INTO character_images (character_id, evolution, image_type, image_url)
 VALUES
     (@character_id, 0, 'BACKGROUND', CONCAT(@s3_base_url, @folder, @file, '_background.png')),
     (@character_id, 1, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '1.png')),
@@ -119,14 +119,14 @@ VALUES
 -- -----------------------------------------------------
 -- 5. 에픽 - 하이든 (S3: hiden)
 -- -----------------------------------------------------
-INSERT INTO characters (name, rarity, price, description, background_image_url)
+INSERT IGNORE INTO characters (name, rarity, price, description, background_image_url)
 VALUES ('하이든', 'EPIC', 18000, '', '');
 
 SET @character_id = LAST_INSERT_ID();
 SET @folder = 'hiden/';
 SET @file = 'hiden';
 
-INSERT INTO character_images (character_id, evolution, image_type, image_url)
+INSERT IGNORE INTO character_images (character_id, evolution, image_type, image_url)
 VALUES
     (@character_id, 0, 'BACKGROUND', CONCAT(@s3_base_url, @folder, @file, '_background.png')),
     (@character_id, 1, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '1.png')),
@@ -143,14 +143,14 @@ VALUES
 -- -----------------------------------------------------
 -- 6. 유니크 - 빙뇽 (S3: bingyoung)
 -- -----------------------------------------------------
-INSERT INTO characters (name, rarity, price, description, background_image_url)
+INSERT IGNORE INTO characters (name, rarity, price, description, background_image_url)
 VALUES ('빙뇽', 'UNIQUE', 40000, '', '');
 
 SET @character_id = LAST_INSERT_ID();
 SET @folder = 'bingyoung/';
 SET @file = 'bingyoung';
 
-INSERT INTO character_images (character_id, evolution, image_type, image_url)
+INSERT IGNORE INTO character_images (character_id, evolution, image_type, image_url)
 VALUES
     (@character_id, 0, 'BACKGROUND', CONCAT(@s3_base_url, @folder, @file, '_background.png')),
     (@character_id, 1, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '1.png')),
@@ -167,14 +167,14 @@ VALUES
 -- -----------------------------------------------------
 -- 7. 유니크 - 밤톨냥 (S3: bamtolnyang)
 -- -----------------------------------------------------
-INSERT INTO characters (name, rarity, price, description, background_image_url)
+INSERT IGNORE INTO characters (name, rarity, price, description, background_image_url)
 VALUES ('밤톨냥', 'UNIQUE', 40000, '', '');
 
 SET @character_id = LAST_INSERT_ID();
 SET @folder = 'bamtolnyang/';
 SET @file = 'bamtolnyang';
 
-INSERT INTO character_images (character_id, evolution, image_type, image_url)
+INSERT IGNORE INTO character_images (character_id, evolution, image_type, image_url)
 VALUES
     (@character_id, 0, 'BACKGROUND', CONCAT(@s3_base_url, @folder, @file, '_background.png')),
     (@character_id, 1, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '1.png')),

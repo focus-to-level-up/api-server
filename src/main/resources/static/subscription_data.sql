@@ -21,7 +21,7 @@ TRUNCATE TABLE products;
 -- -----------------------------------------------------
 -- 1. 기본 구독권 (2,200원)
 -- -----------------------------------------------------
-INSERT INTO products (
+INSERT IGNORE INTO products (
     name,
     description,
     price,
@@ -45,7 +45,7 @@ VALUES (
 -- -----------------------------------------------------
 -- 2. 프리미엄 구독권 (4,400원)
 -- -----------------------------------------------------
-INSERT INTO products (
+INSERT IGNORE INTO products (
     name,
     description,
     price,
@@ -71,7 +71,7 @@ VALUES (
 -- -----------------------------------------------------
 -- 3. 다이아 2500개 (3,300원, 월 1회 한정)
 -- -----------------------------------------------------
-INSERT INTO products (
+INSERT IGNORE INTO products (
     name,
     description,
     price,
