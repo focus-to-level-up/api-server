@@ -165,7 +165,7 @@ public class MemberController {
             @ApiResponse(
                     responseCode = "200",
                     description = "세팅상태 조회 완료",
-                    content = @Content(schema = @Schema(implementation = GetProfileResponse.class))
+                    content = @Content(schema = @Schema(implementation = MemberSettingDto.class))
             ),
             @ApiResponse(
                     responseCode = "404",

@@ -3,6 +3,7 @@ package com.studioedge.focus_to_levelup_server.domain.stat.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Builder
@@ -16,6 +17,13 @@ public record DailyStatListResponse (
         return DailyStatListResponse.builder()
                 .dailyStatResponses(responses)
                 .totalFocusMinutes(totalMinutes)
+                .build();
+    }
+
+    public static DailyStatListResponse empty() {
+        return DailyStatListResponse.builder()
+                .dailyStatResponses(new ArrayList<>())
+                .totalFocusMinutes(0)
                 .build();
     }
 }
