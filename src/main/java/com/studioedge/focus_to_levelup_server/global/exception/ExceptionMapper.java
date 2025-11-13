@@ -251,6 +251,8 @@ public class ExceptionMapper {
                 ExceptionSituation.of("길드 비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST));
         mapper.put(AlreadyJoinedGuildException.class,
                 ExceptionSituation.of("이미 가입한 길드입니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(MaxGuildMembershipExceededException.class,
+                ExceptionSituation.of("최대 길드 가입 수를 초과했습니다. (최대 10개)", HttpStatus.BAD_REQUEST));
         mapper.put(MaxBoostLimitExceededException.class,
                 ExceptionSituation.of("부스트 한도를 초과했습니다. (유저: 2개, 길드: 10명)", HttpStatus.BAD_REQUEST));
         mapper.put(CannotDeleteGuildWithMembersException.class,

@@ -1,6 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.guild.controller;
 
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildListResponse;
+import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildMemberResponse;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildResponse;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildSearchResponse;
 import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildCategory;
@@ -177,10 +178,10 @@ public class GuildController {
             @ApiResponse(responseCode = "200", description = "길드원 조회 성공"),
             @ApiResponse(responseCode = "404", description = "길드를 찾을 수 없습니다.")
     })
-    public ResponseEntity<CommonResponse<com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildMemberResponse.GuildMemberListResponse>> getGuildMembers(
+    public ResponseEntity<CommonResponse<GuildMemberResponse.GuildMemberListResponse>> getGuildMembers(
             @Parameter(description = "길드 ID") @PathVariable Long guildId
     ) {
-        com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildMemberResponse.GuildMemberListResponse response =
+        GuildMemberResponse.GuildMemberListResponse response =
                 guildMemberQueryService.getGuildMembers(guildId);
         return HttpResponseUtil.ok(response);
     }

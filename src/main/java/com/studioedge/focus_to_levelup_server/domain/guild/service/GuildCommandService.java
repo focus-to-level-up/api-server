@@ -11,6 +11,7 @@ import com.studioedge.focus_to_levelup_server.domain.guild.exception.CannotDelet
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.GuildFullException;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.InvalidGuildPasswordException;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.LeaderCannotLeaveException;
+import com.studioedge.focus_to_levelup_server.domain.guild.exception.MaxGuildMembershipExceededException;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.NotGuildMemberException;
 import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildRepository;
@@ -119,6 +120,7 @@ public class GuildCommandService {
     /**
      * 길드 가입
      * - 비공개 길드는 비밀번호 검증
+     * - 사용자당 최대 10개 길드 가입 제한
      */
     public GuildResponse joinGuild(Long guildId, String password, Long memberId) {
         Guild guild = guildQueryService.findGuildById(guildId);
@@ -133,6 +135,12 @@ public class GuildCommandService {
         // 중복 가입 체크
         if (guildMemberRepository.existsByGuildIdAndMemberId(guildId, memberId)) {
             throw new AlreadyJoinedGuildException();
+        }
+
+        // 사용자당 최대 10개 길드 가입 제한 체크
+        long memberGuildCount = guildMemberRepository.countByMemberId(memberId);
+        if (memberGuildCount >= 10) {
+            throw new MaxGuildMembershipExceededException();
         }
 
         // 비공개 길드 비밀번호 검증

@@ -39,20 +39,22 @@ public class GuildMemberController {
             ### 기능
             - 특정 길드에 가입합니다.
             - 비공개 길드는 비밀번호가 필요합니다.
+            - 사용자당 최대 10개 길드까지 가입 가능합니다.
 
             ### 처리 절차
             1. 정원 확인 (현재 인원 < 20명)
-            2. 비공개 길드 시 비밀번호 검증
-            3. 중복 가입 확인
-            4. GuildMember 생성 (role=MEMBER)
-            5. Guild.currentMembers 증가
+            2. 중복 가입 확인
+            3. 사용자 길드 가입 수 확인 (< 10개)
+            4. 비공개 길드 시 비밀번호 검증
+            5. GuildMember 생성 (role=MEMBER)
+            6. Guild.currentMembers 증가
 
             ### 쿼리 파라미터
             - `password`: 비공개 길드 비밀번호 (비공개 길드만 필수)
             """)
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "길드 가입 성공"),
-            @ApiResponse(responseCode = "400", description = "정원 초과 또는 중복 가입 또는 비밀번호 불일치"),
+            @ApiResponse(responseCode = "400", description = "정원 초과 또는 중복 가입 또는 비밀번호 불일치 또는 최대 가입 수 초과 (10개)"),
             @ApiResponse(responseCode = "404", description = "길드를 찾을 수 없습니다.")
     })
     public ResponseEntity<CommonResponse<GuildResponse>> joinGuild(

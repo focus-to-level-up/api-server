@@ -44,6 +44,9 @@ public interface GuildMemberRepository extends JpaRepository<GuildMember, Long> 
     // 중복 가입 확인
     boolean existsByGuildIdAndMemberId(Long guildId, Long memberId);
 
+    // 유저가 가입한 길드 수 (최대 10개 제한 검증용)
+    long countByMemberId(Long memberId);
+
     // 유저가 부스트한 길드 목록
     @Query("SELECT gm FROM GuildMember gm " +
             "JOIN FETCH gm.guild g " +
