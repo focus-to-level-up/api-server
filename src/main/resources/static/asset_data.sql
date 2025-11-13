@@ -26,7 +26,7 @@ SET @s3_border_base = 'https://focus-to-levelup-s3.s3.ap-northeast-2.amazonaws.c
 -- -----------------------------------------------------
 -- 1. 양동동 (yangdongdong)
 -- -----------------------------------------------------
-INSERT INTO assets (type, name, asset_url)
+INSERT IGNORE INTO assets (type, name, asset_url)
 VALUES
     ('CHARACTER_PROFILE_IMAGE', '양동동 1단계 프로필 이미지', CONCAT(@s3_image_base, 'yangdongdong1_profile_image.png')),
     ('CHARACTER_PROFILE_IMAGE', '양동동 2단계 프로필 이미지', CONCAT(@s3_image_base, 'yangdongdong2_profile_image.png')),
@@ -36,7 +36,7 @@ VALUES
 -- -----------------------------------------------------
 -- 2. 김투구 (kimtoogoo)
 -- -----------------------------------------------------
-INSERT INTO assets (type, name, asset_url)
+INSERT IGNORE INTO assets (type, name, asset_url)
 VALUES
     ('CHARACTER_PROFILE_IMAGE', '김투구 1단계 프로필 이미지', CONCAT(@s3_image_base, 'kimtoogoo1_profile_image.png')),
     ('CHARACTER_PROFILE_IMAGE', '김투구 2단계 프로필 이미지', CONCAT(@s3_image_base, 'kimtoogoo2_profile_image.png')),
@@ -46,7 +46,7 @@ VALUES
 -- -----------------------------------------------------
 -- 3. 에르핀 (elfin)
 -- -----------------------------------------------------
-INSERT INTO assets (type, name, asset_url)
+INSERT IGNORE INTO assets (type, name, asset_url)
 VALUES
     ('CHARACTER_PROFILE_IMAGE', '에르핀 1단계 프로필 이미지', CONCAT(@s3_image_base, 'elfin1_profile_image.png')),
     ('CHARACTER_PROFILE_IMAGE', '에르핀 2단계 프로필 이미지', CONCAT(@s3_image_base, 'elfin2_profile_image.png')),
@@ -56,7 +56,7 @@ VALUES
 -- -----------------------------------------------------
 -- 4. 쿠마 (kuma)
 -- -----------------------------------------------------
-INSERT INTO assets (type, name, asset_url)
+INSERT IGNORE INTO assets (type, name, asset_url)
 VALUES
     ('CHARACTER_PROFILE_IMAGE', '쿠마 1단계 프로필 이미지', CONCAT(@s3_image_base, 'kuma1_profile_image.png')),
     ('CHARACTER_PROFILE_IMAGE', '쿠마 2단계 프로필 이미지', CONCAT(@s3_image_base, 'kuma2_profile_image.png')),
@@ -66,7 +66,7 @@ VALUES
 -- -----------------------------------------------------
 -- 5. 하이든 (hiden)
 -- -----------------------------------------------------
-INSERT INTO assets (type, name, asset_url)
+INSERT IGNORE INTO assets (type, name, asset_url)
 VALUES
     ('CHARACTER_PROFILE_IMAGE', '하이든 1단계 프로필 이미지', CONCAT(@s3_image_base, 'hiden1_profile_image.png')),
     ('CHARACTER_PROFILE_IMAGE', '하이든 2단계 프로필 이미지', CONCAT(@s3_image_base, 'hiden2_profile_image.png')),
@@ -76,7 +76,7 @@ VALUES
 -- -----------------------------------------------------
 -- 6. 빙뇽 (bingyoung)
 -- -----------------------------------------------------
-INSERT INTO assets (type, name, asset_url)
+INSERT IGNORE INTO assets (type, name, asset_url)
 VALUES
     ('CHARACTER_PROFILE_IMAGE', '빙뇽 1단계 프로필 이미지', CONCAT(@s3_image_base, 'bingyoung1_profile_image.png')),
     ('CHARACTER_PROFILE_IMAGE', '빙뇽 2단계 프로필 이미지', CONCAT(@s3_image_base, 'bingyoung2_profile_image.png')),
@@ -86,7 +86,7 @@ VALUES
 -- -----------------------------------------------------
 -- 7. 밤톨냥 (bamtolnyang)
 -- -----------------------------------------------------
-INSERT INTO assets (type, name, asset_url)
+INSERT IGNORE INTO assets (type, name, asset_url)
 VALUES
     ('CHARACTER_PROFILE_IMAGE', '밤톨냥 1단계 프로필 이미지', CONCAT(@s3_image_base, 'bamtolnyang1_profile_image.png')),
     ('CHARACTER_PROFILE_IMAGE', '밤톨냥 2단계 프로필 이미지', CONCAT(@s3_image_base, 'bamtolnyang2_profile_image.png')), --
