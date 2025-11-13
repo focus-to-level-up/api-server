@@ -5,6 +5,7 @@ import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -14,13 +15,17 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "subject_stats")
+@Table(
+        name = "weekly_subject_stats",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"member_id", "subject_id", "start_date"})
+        })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SubjectStat extends BaseEntity {
+public class WeeklySubjectStat extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "subject_stat_id")
+    @Column(name = "weekly_subject_stat_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -43,8 +48,9 @@ public class SubjectStat extends BaseEntity {
     @ColumnDefault("0")
     private Integer totalMinutes;
 
-    public SubjectStat(Member member, Subject subject, LocalDate startDate,
-                       LocalDate endDate, Integer totalMinutes)
+    @Builder
+    public WeeklySubjectStat(Member member, Subject subject, LocalDate startDate,
+                             LocalDate endDate, Integer totalMinutes)
     {
         this.member = member;
         this.subject = subject;

@@ -5,12 +5,7 @@ import lombok.Getter;
 @Getter
 public enum CategorySubType {
     // 초등 (ELEMENTARY)
-    ELEMENTARY_1(CategoryMainType.ELEMENTARY_SCHOOL),
-    ELEMENTARY_2(CategoryMainType.ELEMENTARY_SCHOOL),
-    ELEMENTARY_3(CategoryMainType.ELEMENTARY_SCHOOL),
-    ELEMENTARY_4(CategoryMainType.ELEMENTARY_SCHOOL),
-    ELEMENTARY_5(CategoryMainType.ELEMENTARY_SCHOOL),
-    ELEMENTARY_6(CategoryMainType.ELEMENTARY_SCHOOL),
+    ELEMENTARY(CategoryMainType.ELEMENTARY_SCHOOL),
 
     // 중등 (MIDDLE)
     MIDDLE_1(CategoryMainType.MIDDLE_SCHOOL),

@@ -39,10 +39,10 @@ public class WeeklyStat extends BaseEntity {
     private LocalDate endDate;
 
     @Column(nullable = false)
-    private int totalFocusMinutes;
+    private Integer totalFocusMinutes;
 
     @Column(nullable = false)
-    private int totalLevel;
+    private Integer totalLevel;
 
     @Column(length = 2048, nullable = false)
     private String lastCharacterImageUrl;

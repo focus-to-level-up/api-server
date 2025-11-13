@@ -51,6 +51,7 @@ public class MemberServiceImpl implements MemberService {
     private final ReportLogRepository reportLogRepository;
     private final MemberCharacterRepository memberCharacterRepository;
     private final CharacterRepository characterRepository;
+
     @Override
     @Transactional
     public void completeSignUp(Member member, CompleteSignUpRequest request) {
@@ -61,7 +62,6 @@ public class MemberServiceImpl implements MemberService {
         List<MemberAsset> memberAssets = saveInitialMemberAsset(member);
         MemberInfo memberInfo = memberInfoRepository
                 .save(CompleteSignUpRequest.from(member, memberAssets, request));
-
         memberRepository.findById(member.getId())
                 .orElseThrow(MemberNotFoundException::new)
                 .completeSignUp(request.nickname(), memberInfo);
