@@ -40,4 +40,10 @@ public interface MemberCharacterRepository extends JpaRepository<MemberCharacter
     Optional<MemberCharacter> findByMemberIdAndCharacterId(@Param("memberId") Long memberId, @Param("characterId") Long characterId);
 
     Optional<MemberCharacter> findByMemberIdAndIsDefault(Long memberId, Boolean isDefault);
+
+    /**
+     * 특정 유저의 특정 층수에 배치된 캐릭터 개수 조회
+     */
+    @Query("SELECT COUNT(mc) FROM MemberCharacter mc WHERE mc.member.id = :memberId AND mc.floor = :floor")
+    Long countByMemberIdAndFloor(@Param("memberId") Long memberId, @Param("floor") Integer floor);
 }

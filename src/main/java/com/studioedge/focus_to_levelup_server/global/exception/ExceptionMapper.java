@@ -111,6 +111,8 @@ public class ExceptionMapper {
                 ExceptionSituation.of("유효하지 않은 진화 단계입니다. 보유한 진화 단계만 선택할 수 있습니다.", HttpStatus.BAD_REQUEST));
         mapper.put(MemberCharacterNotFoundException.class,
                 ExceptionSituation.of("보유하지 않은 캐릭터입니다.", HttpStatus.NOT_FOUND));
+        mapper.put(CharacterSlotFullException.class,
+                ExceptionSituation.of("훈련장 슬롯이 가득 찼습니다. 캐릭터를 배치할 수 없습니다.", HttpStatus.BAD_REQUEST));
     }
 
     /**

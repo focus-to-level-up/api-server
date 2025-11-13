@@ -18,7 +18,10 @@ public record MemberSettingDto(
         Boolean isAIPlanner,
         @Schema(description = "구독권 메세지 여부", example = "true")
         @NotNull
-        Boolean isSubscriptionMessageBlocked
+        Boolean isSubscriptionMessageBlocked,
+        @Schema(description = "총 누적 통계 색상 (Hex 코드, # 제외)", example = "FFFF00")
+        @NotNull
+        String totalStatColor
 ) {
     public static MemberSettingDto of(MemberSetting memberSetting) {
         return MemberSettingDto.builder()
@@ -26,6 +29,7 @@ public record MemberSettingDto(
                 .isPomodoro(memberSetting.getIsPomodoro())
                 .isAIPlanner(memberSetting.getIsAIPlanner())
                 .isSubscriptionMessageBlocked(memberSetting.getIsSubscriptionMessageBlocked())
+                .totalStatColor(memberSetting.getTotalStatColor())
                 .build();
     }
 }
