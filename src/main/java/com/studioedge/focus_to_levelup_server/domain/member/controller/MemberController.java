@@ -165,7 +165,7 @@ public class MemberController {
             @ApiResponse(
                     responseCode = "200",
                     description = "세팅상태 조회 완료",
-                    content = @Content(schema = @Schema(implementation = GetProfileResponse.class))
+                    content = @Content(schema = @Schema(implementation = MemberSettingDto.class))
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -290,6 +290,24 @@ public class MemberController {
     ) {
         memberService.updateMemberSetting(member, request);
         return HttpResponseUtil.updated(null);
+    }
+
+    @GetMapping("/v1/member/currency")
+    @Operation(summary = "유저 재화 조회", description = """
+            ### 기능
+            - 유저의 현재 재화(레벨, 골드, 다이아몬드)를 조회합니다.
+            """)
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "재화 조회 성공",
+                    content = @Content(schema = @Schema(implementation = MemberCurrencyResponse.class))
+            )
+    })
+    public ResponseEntity<CommonResponse<MemberCurrencyResponse>> getMemberCurrency(
+            @AuthenticationPrincipal Member member
+    ) {
+        return HttpResponseUtil.ok(memberService.getMemberCurrency(member));
     }
 
     // ============= 테스트용 API =============

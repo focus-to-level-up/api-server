@@ -4,7 +4,6 @@ import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalReposito
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.stat.dto.DailyStatListResponse;
 import com.studioedge.focus_to_levelup_server.domain.stat.dto.DailyStatResponse;
-import com.studioedge.focus_to_levelup_server.domain.stat.exception.StatMonthNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,10 +31,6 @@ public class DailyStatService {
         // 1. DB에서 해당 월의 DailyGoal 데이터를 한 번에 조회
         List<DailyGoal> goals = dailyGoalRepository.
                 findAllByMemberIdAndDailyGoalDateBetween(memberId, startDate, endDate);
-
-        if (goals.isEmpty()) {
-            throw new StatMonthNotFoundException();
-        }
 
         // 'goals' 리스트에서 총 집중 시간을 미리 계산합니다.
         int totalFocusMinutes = goals.stream()

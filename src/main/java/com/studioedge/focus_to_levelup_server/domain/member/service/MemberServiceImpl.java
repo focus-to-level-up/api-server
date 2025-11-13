@@ -251,6 +251,19 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public MemberCurrencyResponse getMemberCurrency(Member member) {
+        MemberInfo memberInfo = memberInfoRepository.findByMemberId(member.getId())
+                .orElseThrow(InvalidMemberException::new);
+
+        return MemberCurrencyResponse.builder()
+                .level(member.getLevel())
+                .gold(memberInfo.getGold())
+                .diamond(memberInfo.getDiamond())
+                .build();
+    }
+
+    @Override
     @Transactional
     public void updateCurrency(Long memberId, Integer gold, Integer diamond) {
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
