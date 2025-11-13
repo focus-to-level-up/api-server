@@ -70,6 +70,7 @@ public class MemberSetting {
         this.isPomodoro = request.isPomodoro();
         this.isAIPlanner = request.isAIPlanner();
         this.isSubscriptionMessageBlocked = request.isSubscriptionMessageBlocked();
+        this.totalStatColor = request.totalStatColor();
     }
 
     public void updateTotalStatColor(String color) {

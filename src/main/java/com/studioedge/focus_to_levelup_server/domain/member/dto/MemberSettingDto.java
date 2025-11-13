@@ -19,7 +19,7 @@ public record MemberSettingDto(
         @Schema(description = "구독권 메세지 여부", example = "true")
         @NotNull
         Boolean isSubscriptionMessageBlocked,
-        @Schema(description = "통계 색상(핵스 코드)", example = "FFFF00")
+        @Schema(description = "총 누적 통계 색상 (Hex 코드, # 제외)", example = "FFFF00")
         @NotNull
         String totalStatColor
 ) {

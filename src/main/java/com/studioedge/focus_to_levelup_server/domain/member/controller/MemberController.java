@@ -292,6 +292,24 @@ public class MemberController {
         return HttpResponseUtil.updated(null);
     }
 
+    @GetMapping("/v1/member/currency")
+    @Operation(summary = "유저 재화 조회", description = """
+            ### 기능
+            - 유저의 현재 재화(레벨, 골드, 다이아몬드)를 조회합니다.
+            """)
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "재화 조회 성공",
+                    content = @Content(schema = @Schema(implementation = MemberCurrencyResponse.class))
+            )
+    })
+    public ResponseEntity<CommonResponse<MemberCurrencyResponse>> getMemberCurrency(
+            @AuthenticationPrincipal Member member
+    ) {
+        return HttpResponseUtil.ok(memberService.getMemberCurrency(member));
+    }
+
     // ============= 테스트용 API =============
     @PutMapping("/v1/member/test/currency")
     @Operation(summary = "[테스트용] 골드/다이아 수정", description = "테스트를 위해 골드와 다이아를 수정합니다.")
