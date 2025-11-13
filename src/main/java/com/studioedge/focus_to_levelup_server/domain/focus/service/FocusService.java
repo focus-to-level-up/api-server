@@ -8,6 +8,8 @@ import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFo
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
+import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.FocusModeImageResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.MonsterAnimationResponse;
@@ -54,6 +56,7 @@ public class FocusService {
     private final MemberCharacterRepository memberCharacterRepository;
     private final DailySubjectRepository dailySubjectRepository;
     private final SchoolRepository schoolRepository;
+    private final GuildMemberRepository guildMemberRepository;
     private final MonsterRepository monsterRepository;
     private final MonsterImageRepository monsterImageRepository;
     private final BackgroundRepository backgroundRepository;
@@ -117,6 +120,13 @@ public class FocusService {
                     .orElseThrow(SchoolNotFoundException::new)
                     .plusTotalLevel(focusExp);
         }
+
+        // 길드 주간 집중 시간 업데이트 (가입한 모든 길드)
+        List<GuildMember> guildMembers = guildMemberRepository.findAllByMemberIdWithGuild(m.getId());
+        for (GuildMember gm : guildMembers) {
+            gm.addWeeklyFocusTime(request.focusSeconds());
+        }
+
     }
 
     @Transactional

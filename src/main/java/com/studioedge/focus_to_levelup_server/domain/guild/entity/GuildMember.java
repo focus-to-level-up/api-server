@@ -5,11 +5,15 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.data.annotation.CreatedDate;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(
@@ -28,12 +32,12 @@ public class GuildMember extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "guild_id")
+    @JoinColumn(name = "guild_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Guild guild;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
 
@@ -43,11 +47,44 @@ public class GuildMember extends BaseEntity {
     private GuildRole role = GuildRole.MEMBER;
 
     @Column(nullable = false)
-    private Boolean isBoosted;
+    @ColumnDefault("0")
+    private Integer weeklyFocusTime = 0; // 주간 집중 시간 (초 단위)
 
-    public GuildMember(Guild guild, Member member, Boolean isBoosted) {
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private Boolean isBoosted = false;
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime joinedAt;
+
+    @Builder
+    public GuildMember(Guild guild, Member member, GuildRole role, Integer weeklyFocusTime, Boolean isBoosted) {
         this.guild = guild;
         this.member = member;
-        this.isBoosted = isBoosted;
+        this.role = role != null ? role : GuildRole.MEMBER;
+        this.weeklyFocusTime = weeklyFocusTime != null ? weeklyFocusTime : 0;
+        this.isBoosted = isBoosted != null ? isBoosted : false;
+    }
+
+    // 비즈니스 메서드
+    public void updateRole(GuildRole role) {
+        this.role = role;
+    }
+
+    public void addWeeklyFocusTime(Integer seconds) {
+        this.weeklyFocusTime += seconds;
+    }
+
+    public void resetWeeklyFocusTime() {
+        this.weeklyFocusTime = 0;
+    }
+
+    public void activateBoost() {
+        this.isBoosted = true;
+    }
+
+    public void deactivateBoost() {
+        this.isBoosted = false;
     }
 }

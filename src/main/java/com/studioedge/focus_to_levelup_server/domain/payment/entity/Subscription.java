@@ -178,4 +178,11 @@ public class Subscription extends BaseEntity {
     public boolean isGifted() {
         return this.source == SubscriptionSource.GIFT || this.source == SubscriptionSource.PREMIUM_GIFT;
     }
+
+    /**
+     * 활성화된 길드 ID 업데이트 (Guild 서비스에서 호출)
+     */
+    public void updateActivatedGuildId(Long guildId) {
+        this.activatedGuildId = guildId;
+    }
 }
