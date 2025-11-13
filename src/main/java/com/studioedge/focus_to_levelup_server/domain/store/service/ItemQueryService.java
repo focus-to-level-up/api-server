@@ -5,7 +5,7 @@ import com.studioedge.focus_to_levelup_server.domain.store.dto.response.ItemResp
 import com.studioedge.focus_to_levelup_server.domain.store.entity.Item;
 import com.studioedge.focus_to_levelup_server.domain.store.enums.ItemType;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.ItemNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.store.repository.ItemRepository;
+import com.studioedge.focus_to_levelup_server.domain.store.dao.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

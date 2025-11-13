@@ -5,8 +5,8 @@ import com.studioedge.focus_to_levelup_server.domain.store.dto.response.MemberIt
 import com.studioedge.focus_to_levelup_server.domain.store.entity.ItemDetail;
 import com.studioedge.focus_to_levelup_server.domain.store.entity.MemberItem;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InvalidItemOptionException;
-import com.studioedge.focus_to_levelup_server.domain.store.repository.ItemDetailRepository;
-import com.studioedge.focus_to_levelup_server.domain.store.repository.MemberItemRepository;
+import com.studioedge.focus_to_levelup_server.domain.store.dao.ItemDetailRepository;
+import com.studioedge.focus_to_levelup_server.domain.store.dao.MemberItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

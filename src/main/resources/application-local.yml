@@ -1,14 +1,44 @@
 # application-local.yml (로컬 개발용)
 spring:
-  datasource:
+  datasource-data:
     url: jdbc:mysql://localhost:13307/focus_db?serverTimezone=UTC&characterEncoding=UTF-8
     username: focus
     password: focus
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+<<<<<<< Updated upstream
+=======
+  datasource-meta:
+    url: jdbc:mysql://localhost:13307/focus_meta_db?serverTimezone=UTC&characterEncoding=UTF-8
+    username: focus
+    password: focus
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
+      data-locations: ${MASTER_DATA_PATH}
+      encoding: UTF-8
+      continue-on-error: false
+
+---
+
+>>>>>>> Stashed changes
 # Hibernate SQL 로깅 (파라미터 값 포함)
 logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.hibernate.orm.jdbc.bind: TRACE
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes

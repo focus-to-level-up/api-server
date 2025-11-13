@@ -6,7 +6,7 @@ import com.studioedge.focus_to_levelup_server.domain.character.dto.response.Memb
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.InvalidDefaultEvolutionException;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.MemberCharacterNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.character.repository.MemberCharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
 import com.studioedge.focus_to_levelup_server.global.common.enums.Rarity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

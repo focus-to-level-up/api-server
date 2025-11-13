@@ -2,7 +2,13 @@ package com.studioedge.focus_to_levelup_server.domain.focus.service;
 
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
+<<<<<<< Updated upstream
 import com.studioedge.focus_to_levelup_server.domain.character.repository.MemberCharacterRepository;
+=======
+import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
+import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
+>>>>>>> Stashed changes
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;

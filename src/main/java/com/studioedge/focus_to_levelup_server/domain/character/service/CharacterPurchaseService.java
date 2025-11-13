@@ -6,8 +6,14 @@ import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterAlreadyPurchasedException;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
+<<<<<<< Updated upstream
 import com.studioedge.focus_to_levelup_server.domain.character.repository.CharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.repository.MemberCharacterRepository;
+=======
+import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterSlotFullException;
+import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
+>>>>>>> Stashed changes
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;

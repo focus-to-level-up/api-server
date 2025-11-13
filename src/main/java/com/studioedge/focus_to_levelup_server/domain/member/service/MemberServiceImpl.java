@@ -5,6 +5,11 @@ import com.studioedge.focus_to_levelup_server.domain.character.repository.Member
 import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
+<<<<<<< Updated upstream
+=======
+import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
+>>>>>>> Stashed changes
 import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
 import com.studioedge.focus_to_levelup_server.domain.event.entity.School;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.AllowedAppRepository;

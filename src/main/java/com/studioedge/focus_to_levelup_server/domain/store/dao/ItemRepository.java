@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.domain.store.repository;
+package com.studioedge.focus_to_levelup_server.domain.store.dao;
 
 import com.studioedge.focus_to_levelup_server.domain.store.entity.Item;
 import com.studioedge.focus_to_levelup_server.domain.store.enums.ItemType;
