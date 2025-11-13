@@ -21,7 +21,7 @@ SET @s3_base_url = 'https://focus-to-levelup-s3.s3.ap-northeast-2.amazonaws.com/
 -- -----------------------------------------------------
 -- 1. 기본 집중 배경
 -- -----------------------------------------------------
-INSERT INTO backgrounds (name, type, image_url)
+INSERT IGNORE INTO backgrounds (name, type, image_url)
 VALUES
     ('기본 집중 배경', 'FOCUS', CONCAT(@s3_base_url, 'default_focus_background.png'));
 

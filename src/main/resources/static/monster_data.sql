@@ -33,7 +33,7 @@ SET @folder = 'slime/';
 SET @file = 'slime';
 
 -- 1-3. 이미지 테이블에 타입별 URL 저장
-INSERT INTO monster_images (monster_id, type, image_url)
+INSERT IGNORE INTO monster_images (monster_id, type, image_url)
 VALUES
     (@monster_id, 'MOVE', CONCAT(@s3_base_url, @folder, @file, '_move.gif')),
     (@monster_id, 'DIE',  CONCAT(@s3_base_url, @folder, @file, '_die.gif'));
