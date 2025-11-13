@@ -24,13 +24,18 @@ public final class AppConstants {
     );
 
     /**
-     * 학교 이벤트에 포함되는 카테고리 범위입니다.
+     * 학교 이벤트에 포함되는 카테고리 범위
      */
     public static final Set<CategoryMainType> SCHOOL_CATEGORIES = Set.of(
             CategoryMainType.ELEMENTARY_SCHOOL,
             CategoryMainType.MIDDLE_SCHOOL,
             CategoryMainType.HIGH_SCHOOL
     );
+
+    /**
+     * 기본 훈련장 이름
+     */
+    public static final String DEFAULT_FOCUS_BACKGROUND_NAME = "기본 집중 배경";
 
     public static LocalDate getServiceDate() {
         LocalDateTime now = LocalDateTime.now();

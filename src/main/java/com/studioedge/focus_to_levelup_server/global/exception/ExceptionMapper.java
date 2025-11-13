@@ -38,6 +38,7 @@ public class ExceptionMapper {
         setUpMailException();
         setUpCouponException();
         setUpGuildException();
+        setUpSystemException();
         setUpStatException();
         setUpEventException();
     }
@@ -259,5 +260,11 @@ public class ExceptionMapper {
                 ExceptionSituation.of("길드원이 있는 길드는 삭제할 수 없습니다.", HttpStatus.BAD_REQUEST));
         mapper.put(LeaderCannotLeaveException.class,
                 ExceptionSituation.of("길드장은 먼저 권한을 위임해야 탈퇴할 수 있습니다.", HttpStatus.FORBIDDEN));
+    /**
+     * 시스템 관련 예외 등록
+     */
+    private static void setUpSystemException() {
+        mapper.put(BackgroundNotFoundException.class,
+                ExceptionSituation.of("배경을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 }
