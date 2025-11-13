@@ -32,6 +32,10 @@ public class DailyStatService {
         List<DailyGoal> goals = dailyGoalRepository.
                 findAllByMemberIdAndDailyGoalDateBetween(memberId, startDate, endDate);
 
+        if (goals.isEmpty()) {
+            return DailyStatListResponse.empty();
+        }
+
         // 'goals' 리스트에서 총 집중 시간을 미리 계산합니다.
         int totalFocusMinutes = goals.stream()
                 .mapToInt(DailyGoal::getCurrentMinutes)

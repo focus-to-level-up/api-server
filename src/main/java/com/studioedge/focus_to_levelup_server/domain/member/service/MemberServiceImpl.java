@@ -257,7 +257,7 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(InvalidMemberException::new);
 
         return MemberCurrencyResponse.builder()
-                .level(member.getLevel())
+                .level(member.getCurrentLevel())
                 .gold(memberInfo.getGold())
                 .diamond(memberInfo.getDiamond())
                 .build();
