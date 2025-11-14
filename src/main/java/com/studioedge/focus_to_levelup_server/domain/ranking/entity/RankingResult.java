@@ -33,7 +33,7 @@ public class RankingResult extends BaseEntity {
     @Column(nullable = false)
     private Tier tier;
 
-    @Column(nullable = false)
+    @Column(name = "user_rank", nullable = false)
     private Integer rank;
 
     @Column(nullable = false)
