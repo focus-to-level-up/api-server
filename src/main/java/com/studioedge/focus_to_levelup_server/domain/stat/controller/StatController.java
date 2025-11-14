@@ -103,6 +103,7 @@ public class StatController {
         return HttpResponseUtil.ok(statQueryService.getMonthlyStats(member.getId(), year));
     }
 
+    @GetMapping("/total")
     @Operation(summary = "총 누적 통계 조회 (히트맵)", description = """
             ### 기능
             - `period` 파라미터(1, 3, 6, 12개월) 또는 전체 기간의 일별 학습 데이터를 조회합니다.
