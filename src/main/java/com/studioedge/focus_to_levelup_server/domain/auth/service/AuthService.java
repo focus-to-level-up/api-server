@@ -83,11 +83,22 @@ public class AuthService {
 
     /**
      * Kakao 회원가입
+     * Authorization Code 방식과 Token 방식(Flutter SDK용) 모두 지원
      */
     @Transactional
     public SignUpResponse signUpKakao(SignUpRequest request) {
-        // 1. KakaoService에서 회원가입 처리 (Authorization Code → socialId + refreshToken)
-        KakaoService.KakaoSignUpResult result = kakaoService.signUp(request.getAuthorizationCode());
+        KakaoService.KakaoSignUpResult result;
+
+        // 1. KakaoService에서 회원가입 처리
+        if (request.getAccessToken() != null && request.getRefreshToken() != null) {
+            // Token 방식 (Flutter SDK 등 클라이언트에서 직접 토큰 발급)
+            result = kakaoService.signUpWithTokens(request.getAccessToken(), request.getRefreshToken());
+        } else if (request.getAuthorizationCode() != null) {
+            // Authorization Code 방식 (서버에서 토큰 교환)
+            result = kakaoService.signUp(request.getAuthorizationCode());
+        } else {
+            throw new IllegalArgumentException("Kakao 회원가입에는 authorizationCode 또는 (accessToken + refreshToken)이 필요합니다.");
+        }
 
         // 2. 회원 생성 또는 조회
         Member member = findOrCreateMember(SocialType.KAKAO, result.socialId(), request.getFcmToken());
