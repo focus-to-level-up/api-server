@@ -141,18 +141,30 @@ public class AuthService {
 
     /**
      * Naver 회원가입
+     * Authorization Code 방식과 Token 방식(Flutter SDK용) 모두 지원
      */
     @Transactional
     public SignUpResponse signUpNaver(SignUpRequest request) {
-        // 1. Authorization Code로 Access Token + Refresh Token 교환
-        // state는 클라이언트가 제공 (CSRF 방지), 없으면 기본값 "STATE" 사용 (하위 호환성)
-        String state = request.getState() != null ? request.getState() : "STATE";
-        NaverTokenResponse tokenResponse = naverService.getNaverTokenFromAuthorizationCode(
-                request.getAuthorizationCode(),
-                state
-        );
-        String accessToken = tokenResponse.getAccessToken();
-        String refreshToken = tokenResponse.getRefreshToken();
+        String accessToken;
+        String refreshToken;
+
+        // 1. Token 획득 (두 가지 방식 지원)
+        if (request.getAccessToken() != null && request.getRefreshToken() != null) {
+            // Token 방식 (Flutter SDK 등 클라이언트에서 직접 토큰 발급)
+            accessToken = request.getAccessToken();
+            refreshToken = request.getRefreshToken();
+        } else if (request.getAuthorizationCode() != null) {
+            // Authorization Code 방식 (서버에서 토큰 교환)
+            String state = request.getState() != null ? request.getState() : "STATE";
+            NaverTokenResponse tokenResponse = naverService.getNaverTokenFromAuthorizationCode(
+                    request.getAuthorizationCode(),
+                    state
+            );
+            accessToken = tokenResponse.getAccessToken();
+            refreshToken = tokenResponse.getRefreshToken();
+        } else {
+            throw new IllegalArgumentException("Naver 회원가입에는 authorizationCode 또는 (accessToken + refreshToken)이 필요합니다.");
+        }
 
         // 2. Access Token으로 사용자 정보 조회
         String socialId = naverService.getSocialIdFromAccessToken(accessToken);
