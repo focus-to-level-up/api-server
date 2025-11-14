@@ -66,7 +66,9 @@ Prod: TBD
 POST /api/v1/auth/signup/kakao
 ```
 
-**Request Body**
+**Request Body (두 가지 방식 지원)**
+
+1️⃣ **Authorization Code 방식** (웹 애플리케이션)
 ```json
 {
   "authorizationCode": "카카오 인가 코드",
@@ -74,10 +76,21 @@ POST /api/v1/auth/signup/kakao
 }
 ```
 
+2️⃣ **Token 방식** (Flutter SDK 등 클라이언트에서 직접 토큰 발급)
+```json
+{
+  "accessToken": "카카오 Access Token",
+  "refreshToken": "카카오 Refresh Token",
+  "fcmToken": "FCM 토큰 (선택사항)"
+}
+```
+
+> **Note**: Flutter Kakao SDK는 클라이언트에서 직접 Access Token과 Refresh Token을 발급받으므로, Token 방식을 사용하세요.
+
 **Response** `201 Created`
 ```json
 {
-  "message": "ok",
+  "message": "created",
   "data": {
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
@@ -86,7 +99,7 @@ POST /api/v1/auth/signup/kakao
 
 **Error Cases**
 - `400` - 이미 가입된 회원
-- `401` - 유효하지 않은 인가 코드
+- `401` - 유효하지 않은 인가 코드 또는 토큰
 
 ---
 
@@ -194,10 +207,12 @@ POST /api/v1/auth/login/kakao
 **Request Body**
 ```json
 {
-  "identityToken": "카카오 액세스 토큰",
+  "identityToken": "카카오 Access Token (Flutter SDK 등에서 발급받은 토큰)",
   "fcmToken": "FCM 토큰 (선택사항)"
 }
 ```
+
+> **Note**: Kakao 로그인은 클라이언트에서 발급받은 Access Token을 `identityToken` 필드에 전달합니다.
 
 **Response** `200 OK`
 ```json
