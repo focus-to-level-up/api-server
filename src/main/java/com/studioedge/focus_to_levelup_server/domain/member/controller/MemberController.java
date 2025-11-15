@@ -128,10 +128,14 @@ public class MemberController {
     @Operation(summary = "유저 프로필 단일 조회", description = """
             ### 기능
             - 특정 `memberId`를 가진 유저의 프로필을 조회합니다.
-            
+
             ### 요청
-            - `id`: 조회할 유저의 pk. (쿼리파라미터) ('유저 리스트 조회'에서 주어진 pk를 활용합니다.)
-                - 만약 `id`==null 이라면, 이는 자신을 조회하는 요청으로 간주하여 자신의 정볼르 조회합니다.
+            - `id`: 조회할 유저의 pk. (경로 변수) ('유저 리스트 조회'에서 주어진 pk를 활용합니다.)
+                - 만약 `id`가 없다면, 이는 자신을 조회하는 요청으로 간주하여 자신의 정보를 조회합니다.
+
+            ### 예시
+            - GET /v1/member/profile → 자기 자신 프로필 조회
+            - GET /v1/member/profile/123 → 123번 유저 프로필 조회
             """
     )
     @ApiResponses({
