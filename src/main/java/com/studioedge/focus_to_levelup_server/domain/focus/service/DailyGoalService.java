@@ -61,6 +61,6 @@ public class DailyGoalService {
             throw new AlreadyReceivedDailyGoalException();
         }
         member.levelUp(request.rewardExp());
-        member.receiveDailyGoal(request);
+        member.getMemberInfo().totalLevelUp(request.rewardExp());
     }
 }

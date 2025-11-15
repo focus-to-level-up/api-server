@@ -124,7 +124,7 @@ public class MemberController {
         return HttpResponseUtil.ok(memberService.getMemberAsset(member, PageRequest.of(page, size)));
     }
 
-    @GetMapping("/v1/member/profile/{id}")
+    @GetMapping("/v1/member/profile")
     @Operation(summary = "유저 프로필 단일 조회", description = """
             ### 기능
             - 특정 `memberId`를 가진 유저의 프로필을 조회합니다.
