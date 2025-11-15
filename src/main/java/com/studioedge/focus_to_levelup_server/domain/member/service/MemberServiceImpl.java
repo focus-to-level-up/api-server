@@ -18,6 +18,8 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
 import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
+import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
+import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.AssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.ReportLogRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
@@ -35,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,6 +54,7 @@ public class MemberServiceImpl implements MemberService {
     private final ReportLogRepository reportLogRepository;
     private final MemberCharacterRepository memberCharacterRepository;
     private final CharacterRepository characterRepository;
+    private final RankingRepository rankingRepository;
 
     @Override
     @Transactional
@@ -101,12 +105,15 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public GetProfileResponse getMemberProfile(Long memberId) {
+        System.out.println("memberId = " + memberId);
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
                 .orElseThrow(InvalidMemberException::new);
         SubscriptionState state = getSubscriptionState(memberId);
+        String ranking = getMemberRanking(memberId);
         return GetProfileResponse.of(
                 memberInfo.getMember(),
                 memberInfo,
+                ranking,
                 state.type(),
                 state.isBoosted()
         );
@@ -248,6 +255,14 @@ public class MemberServiceImpl implements MemberService {
                     return new SubscriptionState(sub.getType(), isPremium);
                 })
                 .orElse(new SubscriptionState(SubscriptionType.NONE, false));
+    }
+
+    private String getMemberRanking(Long memberId) {
+        Optional<Ranking> ranking = rankingRepository.findByMemberId(memberId);
+        if (ranking.isEmpty()) {
+            return "-";
+        }
+        else return ranking.get().getTier().toString();
     }
 
     @Override

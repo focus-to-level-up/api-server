@@ -24,6 +24,14 @@ public record GetProfileResponse(
         String profileBorderUrl,
         @Schema(description = "소속 이름", example = "서울고등학교")
         String belonging,
+        @Schema(description = "현재 티어", example = "BRONZE")
+        String currentTier,
+        @Schema(description = "자난 최고 티어", example = "SILVER")
+        String highestTier,
+        @Schema(description = "현재 레벨", example = "40")
+        Integer currentLevel,
+        @Schema(description = "현재 레벨", example = "230")
+        Integer totalLevel,
         @Schema(description = "부스트 여부", example = "true")
         Boolean boosted,
         @Schema(description = "집중 여부", example = "true")
@@ -31,7 +39,7 @@ public record GetProfileResponse(
         @Schema(description = "구독 상태", example = "PREMIUM")
         SubscriptionType subscriptionType
 ) {
-    public static GetProfileResponse of(Member member, MemberInfo memberInfo,
+    public static GetProfileResponse of(Member member, MemberInfo memberInfo, String ranking,
                                         SubscriptionType subscriptionType, boolean boosted) {
         return GetProfileResponse.builder()
                 .id(member.getId())
@@ -44,6 +52,10 @@ public record GetProfileResponse(
                 .boosted(boosted)
                 .focusOn(member.getIsFocusing())
                 .subscriptionType(subscriptionType)
+                .currentTier(ranking)
+                .highestTier(memberInfo.getHighestTier() == null ? "-" : memberInfo.getHighestTier().toString())
+                .currentLevel(member.getCurrentLevel())
+                .totalLevel(memberInfo.getTotalLevel())
                 .build();
     }
 }

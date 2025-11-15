@@ -138,9 +138,6 @@ public class Member extends BaseEntity {
     public void focusOff() {
         this.isFocusing = false;
     }
-    public void receiveDailyGoal(ReceiveDailyGoalRequest request) {
-        this.currentExp += request.rewardExp();
-    }
 
     public void levelUp(Integer exp) {
         this.currentExp += exp;

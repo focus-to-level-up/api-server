@@ -15,6 +15,8 @@ import java.util.Optional;
 public interface RankingRepository extends JpaRepository<Ranking, Long> {
     Optional<Ranking> findByMember(Member member);
 
+    Optional<Ranking> findByMemberId(Long memberId);
+
     @Query(value = "SELECT r FROM Ranking r " +
             "JOIN FETCH r.member m " +
             "JOIN FETCH r.league l " +
