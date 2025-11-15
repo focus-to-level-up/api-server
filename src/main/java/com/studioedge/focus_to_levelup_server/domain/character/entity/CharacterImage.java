@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.character.entity;
 
+import com.studioedge.focus_to_levelup_server.domain.character.enums.CharacterImageType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,6 +23,10 @@ public class CharacterImage {
     @Column(nullable = false)
     private Integer evolution;
 
-    @Column(length = 2048, nullable = false)
+    @Column(name = "image_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private CharacterImageType imageType;
+
+    @Column(name = "image_url", length = 2048, nullable = false)
     private String imageUrl;
 }

@@ -1,0 +1,50 @@
+package com.studioedge.focus_to_levelup_server.domain.guild.dto;
+
+import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
+import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
+import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildCategory;
+import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
+
+import java.util.Optional;
+
+public record GuildResponse(
+        Long id,
+        String name,
+        String description,
+        Integer targetFocusTime,
+        Integer averageFocusTime,
+        Integer currentMembers,
+        Integer maxMembers,
+        GuildCategory category,
+        Boolean isPublic,
+        Integer lastWeekDiamondReward,
+        Boolean isJoinable, // 가입 가능 여부
+        MemberGuildStatus memberStatus // 현재 유저의 가입 상태
+) {
+    public static GuildResponse of(Guild guild, Optional<GuildMember> guildMember) {
+        MemberGuildStatus memberStatus = guildMember
+                .map(gm -> new MemberGuildStatus(true, gm.getRole()))
+                .orElse(new MemberGuildStatus(false, null));
+
+        return new GuildResponse(
+                guild.getId(),
+                guild.getName(),
+                guild.getDescription(),
+                guild.getTargetFocusTime(),
+                guild.getAverageFocusTime(),
+                guild.getCurrentMembers(),
+                guild.getMaxMembers(),
+                guild.getCategory(),
+                guild.getIsPublic(),
+                guild.getLastWeekDiamondReward(),
+                !guild.isFull(),
+                memberStatus
+        );
+    }
+
+    public record MemberGuildStatus(
+            Boolean isMember,
+            GuildRole role // 가입했다면
+    ) {
+    }
+}

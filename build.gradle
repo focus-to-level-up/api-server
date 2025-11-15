@@ -42,6 +42,9 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
+	// aws
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
 	// webclient (for Apple API)
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
@@ -53,6 +56,9 @@ dependencies {
 
 	// google oauth (for Google Sign In) - using WebClient instead of Google API Client
 	// We'll verify Google ID Token using our existing JWT library
+
+	// google auth (for Google Play receipt validation)
+	implementation 'com.google.auth:google-auth-library-oauth2-http:1.19.0'
 
 	// dotenv
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'

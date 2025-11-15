@@ -25,6 +25,6 @@ public class ItemDetail {
     @Column(nullable = false)
     private Integer price;
 
-    @Column(nullable = false)
+    @Column(name = "reward_level", nullable = false)
     private Integer rewardLevel;
 }

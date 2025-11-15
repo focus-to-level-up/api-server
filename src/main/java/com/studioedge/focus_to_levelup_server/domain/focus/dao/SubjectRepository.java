@@ -10,5 +10,10 @@ import java.util.Optional;
 public interface SubjectRepository extends JpaRepository<Subject, Long> {
     List<Subject> findAllByMemberId(Long memberId);
 
+    Optional<Subject> findByIdAndDeleteAtIsNull(Long id);
+
     Optional<Subject> findByMemberAndName(Member member, String name);
+
+    List<Subject> findAllByMemberAndDeleteAtIsNull(Member member);
+
 }

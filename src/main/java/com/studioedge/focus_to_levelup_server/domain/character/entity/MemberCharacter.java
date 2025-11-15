@@ -75,7 +75,7 @@ public class MemberCharacter extends BaseEntity {
         this.isDefault = false;
     }
 
-    public void increaseLevel(Integer exp) {
+    public void levelUp(Integer exp) {
         this.currentExp += exp;
         if (this.currentExp >= 600) {
             this.currentLevel += (this.currentExp / 600);

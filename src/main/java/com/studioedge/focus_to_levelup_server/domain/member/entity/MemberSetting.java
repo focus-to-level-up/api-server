@@ -57,6 +57,9 @@ public class MemberSetting {
     @ColumnDefault("0")
     private Integer rankingDeactivatedCount = 0; // 랭킹에서 비활성화 횟수
 
+    @Column(nullable = false)
+    private String totalStatColor = "FFFF00"; // 노란색 초기값
+
     @Builder
     public MemberSetting(Member member) {
         this.member = member;
@@ -67,5 +70,10 @@ public class MemberSetting {
         this.isPomodoro = request.isPomodoro();
         this.isAIPlanner = request.isAIPlanner();
         this.isSubscriptionMessageBlocked = request.isSubscriptionMessageBlocked();
+        this.totalStatColor = request.totalStatColor();
+    }
+
+    public void updateTotalStatColor(String color) {
+        this.totalStatColor = color;
     }
 }

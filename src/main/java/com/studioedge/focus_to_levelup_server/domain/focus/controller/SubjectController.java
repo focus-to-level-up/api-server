@@ -36,7 +36,15 @@ public class SubjectController {
     @Operation(summary = "유저의 모든 과목 리스트 조회", description = """
             ### 기능
             - 현재 로그인한 유저가 생성한 모든 과목 리스트를 조회합니다.
-            - 과목을 생성한 적이 없거나 비어있다면, 빈 리스트가 전달됩니다.
+            - 각 과목 응답(`GetSubjectResponse`)에는 다음 정보가 포함됩니다:
+                1. `id`: 과목 pk
+                2. `name`: 과목 이름
+                3. `color`: 과목 색상(hex code)
+                4. `focusSeconds`: 집중한 시간(초) 
+                5. `todoResponses`: 해당 과목에 종속된 **'할일(Todo) 목록'** 리스트
+                    1) `id`: 할일 pk
+                    2) `content`: 할일 내용
+                    3) `complete`: 할일 완료 여부
             """
     )
     @ApiResponses({

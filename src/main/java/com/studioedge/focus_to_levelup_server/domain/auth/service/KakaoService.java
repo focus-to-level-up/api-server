@@ -159,7 +159,7 @@ public class KakaoService {
     }
 
     /**
-     * Kakao 회원가입
+     * Kakao 회원가입 (Authorization Code 방식)
      * Authorization Code → Access Token + Refresh Token 교환 → 사용자 정보 조회
      * @return socialId와 refreshToken을 담은 DTO
      */
@@ -171,6 +171,20 @@ public class KakaoService {
         String socialId = getSocialIdFromAccessToken(tokenResponse.getAccessToken());
 
         return new KakaoSignUpResult(socialId, tokenResponse.getRefreshToken());
+    }
+
+    /**
+     * Kakao 회원가입 (Token 방식 - Flutter SDK용)
+     * 클라이언트에서 이미 발급받은 Access Token과 Refresh Token으로 회원가입 처리
+     * @param accessToken 클라이언트에서 발급받은 Access Token
+     * @param refreshToken 클라이언트에서 발급받은 Refresh Token
+     * @return socialId와 refreshToken을 담은 DTO
+     */
+    public KakaoSignUpResult signUpWithTokens(String accessToken, String refreshToken) {
+        // Access Token으로 사용자 정보 조회
+        String socialId = getSocialIdFromAccessToken(accessToken);
+
+        return new KakaoSignUpResult(socialId, refreshToken);
     }
 
     /**

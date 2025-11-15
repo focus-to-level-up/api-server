@@ -1,26 +1,43 @@
 # application-local.yml (로컬 개발용)
 spring:
+  # Data db (API용)
   datasource-data:
-    url: jdbc:mysql://localhost:13307/focus_db?serverTimezone=UTC&characterEncoding=UTF-8
+    jdbc-url: jdbc:mysql://localhost:13307/focus_db?useSSL=false&useUnicode=true&serverTimezone=UTC&characterEncoding=UTF-8
     username: focus
     password: focus
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-<<<<<<< Updated upstream
-=======
+  # Meta DB (Batch 메타데이터용)
   datasource-meta:
-    url: jdbc:mysql://localhost:13307/focus_meta_db?serverTimezone=UTC&characterEncoding=UTF-8
+    jdbc-url: jdbc:mysql://localhost:13307/focus_meta_db?useSSL=false&useUnicode=true&serverTimezone=UTC&characterEncoding=UTF-8
     username: focus
     password: focus
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    show-sql: true
+    open-in-view: false
+    generate-ddl: true
+    database-platform: org.hibernate.dialect.MySQLDialect
     properties:
       hibernate:
-        show_sql: true
+        hbm2ddl:
+          auto: create
+        format_sql: true
+        naming:
+          # 4. 이것이 카멜케이스 -> 스네이크케이스 변환 설정입니다. (하이픈(-) 사용)
+          physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+          implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
     defer-datasource-initialization: true
+
+  batch:
+    jdbc:
+      schema: classpath:org/springframework/batch/core/schema-mysql.sql
+      initialize-schema: embedded
 
   sql:
     init:
@@ -29,16 +46,9 @@ spring:
       encoding: UTF-8
       continue-on-error: false
 
----
-
->>>>>>> Stashed changes
 # Hibernate SQL 로깅 (파라미터 값 포함)
 logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.hibernate.orm.jdbc.bind: TRACE
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes

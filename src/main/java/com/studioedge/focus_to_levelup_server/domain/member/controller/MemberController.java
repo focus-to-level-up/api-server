@@ -124,13 +124,18 @@ public class MemberController {
         return HttpResponseUtil.ok(memberService.getMemberAsset(member, PageRequest.of(page, size)));
     }
 
-    @GetMapping("/v1/member/profile/{id}")
+    @GetMapping("/v1/member/profile")
     @Operation(summary = "유저 프로필 단일 조회", description = """
             ### 기능
             - 특정 `memberId`를 가진 유저의 프로필을 조회합니다.
-            
+
             ### 요청
             - `id`: 조회할 유저의 pk. ('유저 리스트 조회'에서 주어진 pk를 활용합니다.)
+                - 만약 `id`가 없다면, 이는 자신을 조회하는 요청으로 간주하여 자신의 정보를 조회합니다.
+
+            ### 예시
+            - GET /v1/member/profile → 자기 자신 프로필 조회
+            - GET /v1/member/profile?id=123 → 123번 유저 프로필 조회
             """
     )
     @ApiResponses({
@@ -145,9 +150,10 @@ public class MemberController {
             )
     })
     public ResponseEntity<CommonResponse<GetProfileResponse>> getMemberProfile(
-            @PathVariable(name = "id") Long memberId
+            @AuthenticationPrincipal Member member,
+            @RequestParam(name = "id", required = false) Long memberId
     ) {
-        return HttpResponseUtil.ok(memberService.getMemberProfile(memberId));
+        return HttpResponseUtil.ok(memberService.getMemberProfile(memberId == null ? member.getId() : memberId));
     }
 
 
@@ -163,7 +169,7 @@ public class MemberController {
             @ApiResponse(
                     responseCode = "200",
                     description = "세팅상태 조회 완료",
-                    content = @Content(schema = @Schema(implementation = GetProfileResponse.class))
+                    content = @Content(schema = @Schema(implementation = MemberSettingDto.class))
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -288,6 +294,24 @@ public class MemberController {
     ) {
         memberService.updateMemberSetting(member, request);
         return HttpResponseUtil.updated(null);
+    }
+
+    @GetMapping("/v1/member/currency")
+    @Operation(summary = "유저 재화 조회", description = """
+            ### 기능
+            - 유저의 현재 재화(레벨, 골드, 다이아몬드)를 조회합니다.
+            """)
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "재화 조회 성공",
+                    content = @Content(schema = @Schema(implementation = MemberCurrencyResponse.class))
+            )
+    })
+    public ResponseEntity<CommonResponse<MemberCurrencyResponse>> getMemberCurrency(
+            @AuthenticationPrincipal Member member
+    ) {
+        return HttpResponseUtil.ok(memberService.getMemberCurrency(member));
     }
 
     // ============= 테스트용 API =============

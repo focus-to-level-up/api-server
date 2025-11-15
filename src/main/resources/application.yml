@@ -8,7 +8,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
       naming:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
@@ -47,6 +47,16 @@ google:
   client-secret: ${GOOGLE_CLIENT_SECRET}
   redirect-uri: ${GOOGLE_REDIRECT_URI}
 
+# 인앱 결제 설정
+payment:
+  mode: ${PAYMENT_MODE:mock}  # mock, sandbox, production
+  apple:
+    shared-secret: ${APPLE_SHARED_SECRET:}
+    use-sandbox: ${APPLE_USE_SANDBOX:true}
+  google:
+    package-name: ${GOOGLE_PLAY_PACKAGE_NAME:}
+    service-account-json: ${GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:}
+
 logging:
   level:
     org:
@@ -57,3 +67,14 @@ logging:
         focus_to_levelup_server:
           global:
             jwt: DEBUG
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_S3_BUCKET}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+    region:
+      static: ${AWS_REGION}
+    stack:
+      auto: false
