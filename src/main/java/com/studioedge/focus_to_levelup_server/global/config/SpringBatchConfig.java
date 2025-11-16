@@ -17,14 +17,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 
 @Configuration
-@EnableBatchProcessing // Spring Batch 활성화
+@EnableBatchProcessing
 public class SpringBatchConfig {
 
-    /**
-     * Spring Batch가 사용할 JobRepository를 정의합니다.
-     * @Qualifier를 사용하여 Batch가 오직 'metaDBSource'와
-     * 'metaTransactionManager'만 사용하도록 강제합니다.
-     */
     @Bean
     public JobRepository jobRepository(
             @Qualifier("metaDBSource") DataSource dataSource,
@@ -37,6 +32,7 @@ public class SpringBatchConfig {
         factory.setIsolationLevelForCreate("ISOLATION_READ_COMMITTED");
         factory.setTablePrefix("BATCH_");
         factory.setDatabaseType("MYSQL");
+
         DefaultDataFieldMaxValueIncrementerFactory incrementerFactory =
                 new DefaultDataFieldMaxValueIncrementerFactory(dataSource);
         factory.setIncrementerFactory(incrementerFactory);
@@ -44,8 +40,8 @@ public class SpringBatchConfig {
         factory.setJdbcOperations(new JdbcTemplate(dataSource));
         factory.setConversionService(new DefaultConversionService());
         factory.setLobHandler(new DefaultLobHandler());
-
         factory.setSerializer(new Jackson2ExecutionContextStringSerializer());
+
         return factory.getObject();
     }
 }
