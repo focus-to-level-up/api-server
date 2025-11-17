@@ -33,8 +33,8 @@ public class PhoneNumberVerification extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Column(nullable = false, unique = true)
-    private String phoneNumber;
+    @Column(name = "hashed_phone_number", nullable = false, unique = true, length = 64)
+    private String hashedPhoneNumber; // SHA-256 해시 (64자)
 
     @Column(nullable = false)
     private LocalDateTime deleteScheduledAt; // 삭제 예정 일시 (이벤트 종료일)
@@ -46,9 +46,9 @@ public class PhoneNumberVerification extends BaseEntity {
     private String purpose = "PRE_REGISTRATION"; // 사용 목적 (추후 확장 가능)
 
     @Builder
-    public PhoneNumberVerification(Member member, String phoneNumber, LocalDateTime deleteScheduledAt, Boolean isVerified, String purpose) {
+    public PhoneNumberVerification(Member member, String hashedPhoneNumber, LocalDateTime deleteScheduledAt, Boolean isVerified, String purpose) {
         this.member = member;
-        this.phoneNumber = phoneNumber;
+        this.hashedPhoneNumber = hashedPhoneNumber;
         this.deleteScheduledAt = deleteScheduledAt;
         this.isVerified = isVerified != null ? isVerified : true;
         this.purpose = purpose != null ? purpose : "PRE_REGISTRATION";
@@ -56,11 +56,13 @@ public class PhoneNumberVerification extends BaseEntity {
 
     /**
      * 사전예약용 전화번호 인증 생성 (이벤트 종료 시 삭제)
+     * @param member 회원
+     * @param hashedPhoneNumber SHA-256 해시된 전화번호
      */
-    public static PhoneNumberVerification createForPreRegistration(Member member, String phoneNumber) {
+    public static PhoneNumberVerification createForPreRegistration(Member member, String hashedPhoneNumber) {
         return PhoneNumberVerification.builder()
                 .member(member)
-                .phoneNumber(phoneNumber)
+                .hashedPhoneNumber(hashedPhoneNumber)
                 .deleteScheduledAt(PRE_REGISTRATION_EVENT_END_DATE)
                 .isVerified(true)
                 .purpose("PRE_REGISTRATION")

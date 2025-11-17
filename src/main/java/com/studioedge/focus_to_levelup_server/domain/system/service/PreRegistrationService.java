@@ -29,6 +29,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -62,8 +65,11 @@ public class PreRegistrationService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(InvalidMemberException::new);
 
-        // 1. 전화번호 중복 체크 (다른 회원이 이미 사용 중인지 확인)
-        phoneNumberVerificationRepository.findByPhoneNumber(phoneNumber).ifPresent(existing -> {
+        // 1. 전화번호 해시 처리
+        String hashedPhoneNumber = hashPhoneNumber(phoneNumber);
+
+        // 2. 전화번호 중복 체크 (다른 회원이 이미 사용 중인지 확인)
+        phoneNumberVerificationRepository.findByHashedPhoneNumber(hashedPhoneNumber).ifPresent(existing -> {
             if (!existing.getMember().getId().equals(memberId)) {
                 throw new IllegalStateException("이미 다른 계정에서 사용 중인 전화번호입니다.");
             }
@@ -85,10 +91,10 @@ public class PreRegistrationService {
                     .orElse(null);
 
             if (verification == null) {
-                // 신규 저장
-                verification = PhoneNumberVerification.createForPreRegistration(member, phoneNumber);
+                // 신규 저장 (해시된 전화번호로 저장)
+                verification = PhoneNumberVerification.createForPreRegistration(member, hashedPhoneNumber);
                 phoneNumberVerificationRepository.save(verification);
-                log.info("[PreRegistration] Saved phone number verification for member {}: {}", memberId, phoneNumber);
+                log.info("[PreRegistration] Saved hashed phone number verification for member {}", memberId);
             } else {
                 // 이미 저장된 경우 (같은 회원이 다시 확인)
                 log.info("[PreRegistration] Phone number already verified for member {}", memberId);
@@ -123,25 +129,12 @@ public class PreRegistrationService {
             throw new IllegalStateException("이미 사전예약 보상을 받으셨습니다.");
         }
 
-        // PhoneNumberVerification 확인
+        // PhoneNumberVerification 확인 (이미 /check API에서 Firebase 조회 완료)
         PhoneNumberVerification verification = phoneNumberVerificationRepository.findByMember(member)
-                .orElseThrow(() -> new IllegalStateException("사전예약 정보가 없습니다."));
+                .orElseThrow(() -> new IllegalStateException("사전예약 정보가 없습니다. 먼저 /check를 호출하세요."));
 
-        // Firebase에서 사전예약 여부 재확인
-        try {
-            PreRegistrationData preRegData = firebaseService.getPreRegistrationData(verification.getPhoneNumber());
-
-            if (!Boolean.TRUE.equals(preRegData.isReserved())) {
-                throw new IllegalStateException("사전예약 정보가 확인되지 않습니다.");
-            }
-
-            log.info("[PreRegistration] Verified Firebase data for member {}: reserved at {}",
-                    memberId, formatTimestamp(preRegData.reservedAt()));
-
-        } catch (Exception e) {
-            log.error("[PreRegistration] Failed to verify Firebase data for member {}", memberId, e);
-            throw new IllegalStateException("사전예약 정보 확인에 실패했습니다: " + e.getMessage());
-        }
+        log.info("[PreRegistration] Claiming reward for member {} (phone number hash: {})",
+                memberId, verification.getHashedPhoneNumber());
 
         // 2. 캐릭터 검증 (RARE 등급만 허용)
         Character selectedCharacter = characterRepository.findById(selectedCharacterId)
@@ -270,5 +263,31 @@ public class PreRegistrationService {
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate()
                 .format(DateTimeFormatter.ISO_LOCAL_DATE);
+    }
+
+    /**
+     * 전화번호를 SHA-256 해시로 변환
+     * @param phoneNumber 평문 전화번호
+     * @return SHA-256 해시 문자열 (64자)
+     */
+    private String hashPhoneNumber(String phoneNumber) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(phoneNumber.getBytes(StandardCharsets.UTF_8));
+
+            // 바이트 배열을 16진수 문자열로 변환
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            log.error("SHA-256 algorithm not found", e);
+            throw new IllegalStateException("전화번호 해시 처리에 실패했습니다.");
+        }
     }
 }

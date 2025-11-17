@@ -15,9 +15,9 @@ import java.util.Optional;
 public interface PhoneNumberVerificationRepository extends JpaRepository<PhoneNumberVerification, Long> {
 
     /**
-     * 전화번호로 인증 정보 조회
+     * 해시된 전화번호로 인증 정보 조회
      */
-    Optional<PhoneNumberVerification> findByPhoneNumber(String phoneNumber);
+    Optional<PhoneNumberVerification> findByHashedPhoneNumber(String hashedPhoneNumber);
 
     /**
      * 회원으로 인증 정보 조회
@@ -33,7 +33,7 @@ public interface PhoneNumberVerificationRepository extends JpaRepository<PhoneNu
     int deleteAllPreRegistrationVerifications();
 
     /**
-     * 전화번호로 인증 정보 존재 여부 확인
+     * 해시된 전화번호로 인증 정보 존재 여부 확인
      */
-    boolean existsByPhoneNumber(String phoneNumber);
+    boolean existsByHashedPhoneNumber(String hashedPhoneNumber);
 }
