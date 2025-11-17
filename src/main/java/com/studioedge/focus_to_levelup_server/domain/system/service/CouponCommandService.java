@@ -100,6 +100,7 @@ public class CouponCommandService {
     private MailType determineMailType(RewardType rewardType) {
         return switch (rewardType) {
             case DIAMOND, GOLD -> MailType.EVENT;
+            case CHARACTER -> MailType.CHARACTER_REWARD; // 캐릭터 보상
             case ETC -> MailType.SUBSCRIPTION; // 구독권 등 기타 보상
         };
     }
