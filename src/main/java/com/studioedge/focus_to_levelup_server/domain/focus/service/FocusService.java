@@ -105,7 +105,7 @@ public class FocusService {
         // 골드 획득
         memberInfo.addGold(focusExp);
         // 일일 목표 공부 시간 더하기
-        dailyGoal.addCurrentMinutes(focusMinutes);
+        dailyGoal.addCurrentSeconds(request.focusSeconds());
         // 과목 공부 시간 더하기
         dailySubject.addSeconds(request.focusSeconds());
         // 캐릭터 친밀도 상승

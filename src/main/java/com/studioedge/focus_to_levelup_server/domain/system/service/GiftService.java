@@ -32,6 +32,7 @@ public class GiftService {
     public GiftResponse giftSubscription(Long senderId, String receiverNickname, SubscriptionType subscriptionType, Integer durationDays) {
         // 1. 받는 사람 조회
         Member receiver = memberRepository.findByNickname(receiverNickname)
+
                 .orElseThrow(ReceiverNotFoundException::new);
 
         // 2. 우편 생성

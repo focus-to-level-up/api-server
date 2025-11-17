@@ -18,10 +18,10 @@ public record MonthlyStatResponse(
                 .build();
     }
 
-    public static MonthlyStatResponse of(Integer month, Integer totalMinutes) {
+    public static MonthlyStatResponse of(Integer month, Integer totalSeconds) {
         return MonthlyStatResponse.builder()
                 .month(month)
-                .totalFocusMinutes(totalMinutes)
+                .totalFocusMinutes(totalSeconds / 60)
                 .build();
     }
 }
