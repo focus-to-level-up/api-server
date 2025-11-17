@@ -5,5 +5,6 @@ public enum CharacterImageType {
     ATTACK,
     WEAPON,
     BACKGROUND,
-    PICTURE
+    PICTURE,
+    HEAD
 }
