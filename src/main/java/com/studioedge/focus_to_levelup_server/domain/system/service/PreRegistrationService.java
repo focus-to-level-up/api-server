@@ -116,10 +116,10 @@ public class PreRegistrationService {
     }
 
     /**
-     * 사전예약 보상 지급 (캐릭터 선택 포함)
+     * 사전예약 보상 지급 (캐릭터 선택권 포함)
      */
     @Transactional
-    public PreRegistrationRewardResponse claimPreRegistrationReward(Long memberId, Long selectedCharacterId) {
+    public PreRegistrationRewardResponse claimPreRegistrationReward(Long memberId) {
         // 1. Member 조회 및 검증
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(InvalidMemberException::new);
@@ -136,47 +136,30 @@ public class PreRegistrationService {
         log.info("[PreRegistration] Claiming reward for member {} (phone number hash: {})",
                 memberId, verification.getHashedPhoneNumber());
 
-        // 2. 캐릭터 검증 (RARE 등급만 허용)
-        Character selectedCharacter = characterRepository.findById(selectedCharacterId)
-                .orElseThrow(CharacterNotFoundException::new);
-
-        if (selectedCharacter.getRarity() != Rarity.RARE) {
-            throw new InvalidCharacterSelectionException();
-        }
-
-        // 3. MemberInfo 조회
-        MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElseThrow(InvalidMemberException::new);
-
         List<Long> mailIds = new ArrayList<>();
 
-        // 4. 다이아 지급 (우편함)
+        // 2. 다이아 지급 (우편함)
         Mail diamondMail = createDiamondMail(member, PRE_REGISTRATION_DIAMOND);
         mailRepository.save(diamondMail);
         mailIds.add(diamondMail.getId());
 
-        // 5. 프리미엄 구독권 지급 (우편함)
+        // 3. 프리미엄 구독권 지급 (우편함)
         Mail subscriptionMail = createSubscriptionMail(member, PRE_REGISTRATION_SUBSCRIPTION_DAYS);
         mailRepository.save(subscriptionMail);
         mailIds.add(subscriptionMail.getId());
 
-        // 6. 캐릭터 지급 (우편함)
-        Mail characterMail = createCharacterMail(member, selectedCharacter);
-        mailRepository.save(characterMail);
-        mailIds.add(characterMail.getId());
+        // 4. 캐릭터 선택권 지급 (우편함) - RARE 등급 선택권
+        Mail characterSelectionMail = createCharacterSelectionTicketMail(member, Rarity.RARE);
+        mailRepository.save(characterSelectionMail);
+        mailIds.add(characterSelectionMail.getId());
 
-        // 7. 보상 수령 완료 플래그 설정
+        // 5. 보상 수령 완료 플래그 설정
         member.markPreRegistrationRewarded();
 
-        log.info("Pre-registration reward claimed for member {}: {} diamonds, {} days subscription, character {}",
-                memberId, PRE_REGISTRATION_DIAMOND, PRE_REGISTRATION_SUBSCRIPTION_DAYS, selectedCharacter.getName());
+        log.info("Pre-registration reward claimed for member {}: {} diamonds, {} days subscription, character selection ticket",
+                memberId, PRE_REGISTRATION_DIAMOND, PRE_REGISTRATION_SUBSCRIPTION_DAYS);
 
-        return PreRegistrationRewardResponse.of(
-                PRE_REGISTRATION_DIAMOND,
-                PRE_REGISTRATION_SUBSCRIPTION_DAYS,
-                CharacterRewardInfo.from(selectedCharacter),
-                mailIds
-        );
+        return PreRegistrationRewardResponse.of(mailIds);
     }
 
     /**
@@ -186,7 +169,7 @@ public class PreRegistrationService {
         return Mail.builder()
                 .receiver(member)
                 .senderName("Focus to Level Up")
-                .type(MailType.PRE_REGISTRATION)
+                .type(MailType.EVENT)
                 .title("사전예약 보상을 수령하세요")
                 .description("사전예약 감사 다이아 지급")
                 .popupTitle("사전 예약 보상 다이아 수령")
@@ -209,7 +192,7 @@ public class PreRegistrationService {
             return Mail.builder()
                     .receiver(member)
                     .senderName("Focus to Level Up")
-                    .type(MailType.PRE_REGISTRATION)
+                    .type(MailType.SUBSCRIPTION)
                     .title("사전예약 보상을 수령하세요")
                     .description(description)
                     .popupTitle("사전예약 프리미엄 구독권 수령")
@@ -224,28 +207,36 @@ public class PreRegistrationService {
     }
 
     /**
-     * 캐릭터 우편 생성
+     * 캐릭터 선택권 우편 생성 (등급별 선택 가능)
+     * @param member 수신자
+     * @param rarity 선택 가능한 캐릭터 등급 (RARE, EPIC, UNIQUE)
      */
-    private Mail createCharacterMail(Member member, Character character) {
+    private Mail createCharacterSelectionTicketMail(Member member, Rarity rarity) {
         try {
             String description = objectMapper.writeValueAsString(new java.util.HashMap<String, Object>() {{
-                put("characterId", character.getId());
+                put("rarity", rarity.name());
             }});
+
+            String rarityName = switch (rarity) {
+                case RARE -> "RARE";
+                case EPIC -> "EPIC";
+                case UNIQUE -> "UNIQUE";
+            };
 
             return Mail.builder()
                     .receiver(member)
                     .senderName("Focus to Level Up")
-                    .type(MailType.CHARACTER_REWARD)
+                    .type(MailType.CHARACTER_SELECTION_TICKET)
                     .title("사전예약 보상을 수령하세요")
                     .description(description)
-                    .popupTitle("사전예약 레어 캐릭터 수령")
-                    .popupContent("사전예약 보상으로 받으신 " + character.getName() + "을(를) 수령하세요!")
+                    .popupTitle("사전예약 " + rarityName + " 캐릭터 선택권")
+                    .popupContent("사전예약 보상으로 받으신 " + rarityName + " 등급 캐릭터 선택권입니다. 우편 수령 시 원하는 캐릭터를 선택하세요!")
                     .reward(0)
                     .expiredAt(LocalDate.now().plusDays(28))
                     .build();
         } catch (Exception e) {
-            log.error("Failed to create character mail JSON", e);
-            throw new IllegalStateException("캐릭터 우편 생성에 실패했습니다.");
+            log.error("Failed to create character selection ticket mail JSON", e);
+            throw new IllegalStateException("캐릭터 선택권 우편 생성에 실패했습니다.");
         }
     }
 

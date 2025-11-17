@@ -54,9 +54,10 @@ public class MailCommandService {
 
     /**
      * 우편 수락 및 보상 지급
+     * @param characterId 캐릭터 선택권 우편의 경우 선택할 캐릭터 ID (선택적)
      */
     @Transactional
-    public MailAcceptResponse acceptMail(Long memberId, Long mailId) {
+    public MailAcceptResponse acceptMail(Long memberId, Long mailId, Long characterId) {
         // 1. 우편 조회 및 검증
         Mail mail = mailRepository.findById(mailId)
                 .orElseThrow(MailNotFoundException::new);
@@ -81,6 +82,7 @@ public class MailCommandService {
             case SUBSCRIPTION, PRE_REGISTRATION, GIFT_SUBSCRIPTION -> handleSubscriptionMail(mail, memberId);
             case PURCHASE, GIFT_BONUS_TICKET -> handlePurchaseMail(mail, memberId);
             case CHARACTER_REWARD -> handleCharacterMail(mail, memberId);
+            case CHARACTER_SELECTION_TICKET -> handleCharacterSelectionTicketMail(mail, memberId, characterId);
             case EVENT, RANKING, GUILD, GUILD_WEEKLY, TIER_PROMOTION, SEASON_END -> handleDiamondMail(mail, memberId);
         };
     }
@@ -228,6 +230,63 @@ public class MailCommandService {
                 mail.getId(),
                 mail.getTitle(),
                 CharacterRewardInfo.from(character)
+        );
+    }
+
+    /**
+     * 캐릭터 선택권 우편 처리
+     * @param characterId 선택할 캐릭터 ID (필수)
+     */
+    private MailAcceptResponse handleCharacterSelectionTicketMail(Mail mail, Long memberId, Long characterId) {
+        // characterId 필수 검증
+        if (characterId == null) {
+            throw new IllegalArgumentException("캐릭터 선택권 우편은 캐릭터를 선택해야 합니다.");
+        }
+
+        // description에서 허용된 등급 파싱
+        Map<String, Object> metadata = parseMailDescription(mail.getDescription());
+        String allowedRarityStr = (String) metadata.get("rarity");
+
+        if (allowedRarityStr == null) {
+            log.error("Rarity not found in mail description: {}", mail.getDescription());
+            throw new IllegalArgumentException("캐릭터 선택권 정보가 올바르지 않습니다.");
+        }
+
+        // 선택한 캐릭터 조회
+        Character selectedCharacter = characterRepository.findById(characterId)
+                .orElseThrow(CharacterNotFoundException::new);
+
+        // 등급 검증
+        if (!selectedCharacter.getRarity().name().equals(allowedRarityStr)) {
+            throw new IllegalArgumentException(
+                    String.format("이 선택권으로는 %s 등급 캐릭터만 선택할 수 있습니다.", allowedRarityStr)
+            );
+        }
+
+        // Member 조회
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(InvalidMemberException::new);
+
+        // 중복 보유 검증
+        boolean alreadyOwned = memberCharacterRepository.existsByMemberIdAndCharacterId(
+                memberId, characterId);
+        if (alreadyOwned) {
+            throw new IllegalArgumentException("이미 보유한 캐릭터입니다. 다른 캐릭터를 선택해주세요.");
+        }
+
+        // 캐릭터 지급 (공통 서비스 사용 - 중복 체크 및 자동 층수 배치 포함)
+        MemberCharacter memberCharacter = characterCommandService.grantCharacter(member, selectedCharacter);
+
+        // 우편 수령 처리
+        mail.markAsReceived();
+
+        log.info("Character selection ticket used: member {} selected character {} ({})",
+                memberId, selectedCharacter.getName(), selectedCharacter.getRarity());
+
+        return MailAcceptResponse.ofCharacter(
+                mail.getId(),
+                mail.getTitle(),
+                CharacterRewardInfo.from(selectedCharacter)
         );
     }
 

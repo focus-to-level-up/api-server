@@ -54,14 +54,10 @@ public record MailInfo(
      */
     private static String determineIconType(MailType type) {
         return switch (type) {
-            case PRE_REGISTRATION, GUILD_WEEKLY, TIER_PROMOTION, SEASON_END, EVENT, PURCHASE -> "DIAMOND";
-            case GIFT_SUBSCRIPTION -> "SUBSCRIPTION";
+            case PRE_REGISTRATION, GUILD_WEEKLY, TIER_PROMOTION, SEASON_END, EVENT, PURCHASE, RANKING, GUILD -> "DIAMOND";
+            case GIFT_SUBSCRIPTION, SUBSCRIPTION -> "SUBSCRIPTION";
             case GIFT_BONUS_TICKET -> "BONUS_TICKET";
-            case CHARACTER_REWARD -> "CHARACTER";
-            // 레거시 타입
-            case SUBSCRIPTION -> "SUBSCRIPTION";
-            case RANKING -> "DIAMOND";
-            case GUILD -> "DIAMOND";
+            case CHARACTER_REWARD, CHARACTER_SELECTION_TICKET -> "CHARACTER";
         };
     }
 }
