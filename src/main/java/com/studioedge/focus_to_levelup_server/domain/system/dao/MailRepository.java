@@ -1,6 +1,8 @@
 package com.studioedge.focus_to_levelup_server.domain.system.dao;
 
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,6 +34,7 @@ public interface MailRepository extends JpaRepository<Mail, Long> {
     /**
      * 만료된 우편 조회 (배치용)
      */
-    @Query("SELECT m FROM Mail m WHERE m.expiredAt < :today")
-    List<Mail> findExpiredMails(@Param("today") LocalDate today);
+    @Query("SELECT m FROM Mail m WHERE m.expiredAt < CURRENT_DATE")
+    Page<Mail> findExpiredMails(Pageable pageable);
+
 }

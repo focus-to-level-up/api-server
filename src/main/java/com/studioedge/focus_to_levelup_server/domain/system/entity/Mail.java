@@ -31,6 +31,7 @@ public class Mail extends BaseEntity {
     private String senderName = "운영자";
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private MailType type;
 
     @Column(nullable = false)

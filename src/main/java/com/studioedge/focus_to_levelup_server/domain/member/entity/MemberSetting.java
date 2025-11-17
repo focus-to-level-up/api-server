@@ -10,7 +10,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "member_settings")
@@ -51,7 +51,7 @@ public class MemberSetting {
     @ColumnDefault("true")
     private Boolean isRankingActive = true; // 랭킹 활성화 여부
 
-    private LocalDateTime isRankingCautionAt; // 경고 당한 날짜
+    private LocalDate rankingCautionAt; // 경고 당한 날짜
 
     @Column(nullable = false)
     @ColumnDefault("0")
@@ -75,5 +75,9 @@ public class MemberSetting {
 
     public void updateTotalStatColor(String color) {
         this.totalStatColor = color;
+    }
+
+    public void removeRankingCautionAt() {
+        this.rankingCautionAt = null;
     }
 }

@@ -32,7 +32,6 @@ spring:
 #          # 4. 이것이 카멜케이스 -> 스네이크케이스 변환 설정입니다. (하이픈(-) 사용)
 #          physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
 #          implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
-    defer-datasource-initialization: true
 
   batch:
     jdbc:

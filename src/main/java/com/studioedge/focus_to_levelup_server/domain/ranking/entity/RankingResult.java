@@ -33,8 +33,8 @@ public class RankingResult extends BaseEntity {
     @Column(nullable = false)
     private Tier tier;
 
-    @Column(name = "user_rank", nullable = false)
-    private Integer rank;
+    @Column(nullable = false)
+    private Integer ranking;
 
     @Column(nullable = false)
     private Integer totalCount; // 총인원?
@@ -49,7 +49,7 @@ public class RankingResult extends BaseEntity {
         this.league = league;
         this.member = member;
         this.tier = tier;
-        this.rank = ranking;
+        this.ranking = ranking;
         this.totalCount = totalCount;
         this.reward = reward;
     }

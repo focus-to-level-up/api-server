@@ -3,6 +3,7 @@ package com.studioedge.focus_to_levelup_server.domain.member.entity;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.InsufficientDiamondException;
 import com.studioedge.focus_to_levelup_server.domain.member.dto.UpdateCategoryRequest;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.Gender;
+import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.MemberAsset;
 import com.studioedge.focus_to_levelup_server.global.common.enums.AssetType;
@@ -57,6 +58,16 @@ public class MemberInfo {
     // 유저 생성할 때 null.
     // 수정하고 싶다면, (null || 1달이 지났을 경우) 업데이트 가능.
     private LocalDateTime categoryUpdatedAt;
+
+    @Column(nullable = false)
+    @ColumnDefault("1")
+    private Integer totalLevel = 0;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer totalExp = 0;
+
+    private Tier highestTier;
 
     @Column(nullable = false)
     @ColumnDefault("'없음'")
@@ -157,5 +168,14 @@ public class MemberInfo {
 
     public void setDiamond(Integer diamond) {
         this.diamond = diamond;
+    }
+
+    // 총 레벨 업
+    public void totalLevelUp(Integer exp) {
+        this.totalExp += exp;
+        if (this.totalExp >= 600) {
+            this.totalLevel += (this.totalExp / 600);
+            this.totalExp %= 600;
+        }
     }
 }

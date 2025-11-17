@@ -14,7 +14,6 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Entity
@@ -72,8 +71,6 @@ public class Subscription extends BaseEntity {
         this.source = source != null ? source : SubscriptionSource.PURCHASE;
         this.giftedByMemberId = giftedByMemberId;
     }
-
-    // 비즈니스 메서드
 
     /**
      * 구독권 활성화
