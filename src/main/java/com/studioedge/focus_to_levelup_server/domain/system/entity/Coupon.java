@@ -63,4 +63,13 @@ public class Coupon extends BaseEntity {
         this.subscriptionType = subscriptionType;
         this.subscriptionDurationDays = subscriptionDurationDays;
     }
+
+    // 비즈니스 메서드
+
+    /**
+     * 쿠폰 만료 여부 확인
+     */
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(expiredAt);
+    }
 }

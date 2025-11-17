@@ -55,6 +55,10 @@ payment:
     package-name: ${GOOGLE_PLAY_PACKAGE_NAME:}
     service-account-json: ${GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:}
 
+# Firebase 설정 (사전예약 보상 시스템 - Firestore)
+firebase:
+  service-account-json: ${FIREBASE_SERVICE_ACCOUNT_JSON}
+
 logging:
   level:
     org:

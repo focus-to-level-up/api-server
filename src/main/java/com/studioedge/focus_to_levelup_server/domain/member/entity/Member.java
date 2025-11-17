@@ -43,6 +43,10 @@ public class Member extends BaseEntity {
     private LocalDateTime nicknameUpdatedAt;
 
     @Column(nullable = false)
+    @ColumnDefault("false")
+    private Boolean isPreRegistrationRewarded = false; // 사전예약 보상 수령 여부
+
+    @Column(nullable = false)
     @ColumnDefault("1")
     private Integer currentLevel = 1;
 
@@ -158,5 +162,9 @@ public class Member extends BaseEntity {
 
     public void reactivate() {
         this.status = MemberStatus.ACTIVE;
+    }
+
+    public void markPreRegistrationRewarded() {
+        this.isPreRegistrationRewarded = true;
     }
 }

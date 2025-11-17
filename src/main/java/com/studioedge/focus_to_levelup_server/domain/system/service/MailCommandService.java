@@ -2,7 +2,15 @@ package com.studioedge.focus_to_levelup_server.domain.system.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
+import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
+import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.character.repository.CharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.repository.MemberCharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.service.CharacterCommandService;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
+import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.BonusTicketRepository;
@@ -12,6 +20,7 @@ import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionS
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
 import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
+import com.studioedge.focus_to_levelup_server.domain.system.dto.response.CharacterRewardInfo;
 import com.studioedge.focus_to_levelup_server.domain.system.dto.response.MailAcceptResponse;
 import com.studioedge.focus_to_levelup_server.domain.system.dto.response.SubscriptionInfo;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
@@ -35,8 +44,12 @@ public class MailCommandService {
 
     private final MailRepository mailRepository;
     private final MemberInfoRepository memberInfoRepository;
+    private final MemberRepository memberRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final BonusTicketRepository bonusTicketRepository;
+    private final CharacterRepository characterRepository;
+    private final MemberCharacterRepository memberCharacterRepository;
+    private final CharacterCommandService characterCommandService;
     private final ObjectMapper objectMapper;
 
     /**
@@ -64,16 +77,12 @@ public class MailCommandService {
         }
 
         // 2. MailType에 따른 보상 지급
-        if (mail.getType() == MailType.SUBSCRIPTION) {
-            // 구독권 지급
-            return handleSubscriptionMail(mail, memberId);
-        } else if (mail.getType() == MailType.PURCHASE) {
-            // 구매 보상 지급 (다이아 + 보너스 티켓)
-            return handlePurchaseMail(mail, memberId);
-        } else {
-            // 다이아 지급 (EVENT, RANKING, GUILD)
-            return handleDiamondMail(mail, memberId);
-        }
+        return switch (mail.getType()) {
+            case SUBSCRIPTION, PRE_REGISTRATION, GIFT_SUBSCRIPTION -> handleSubscriptionMail(mail, memberId);
+            case PURCHASE, GIFT_BONUS_TICKET -> handlePurchaseMail(mail, memberId);
+            case CHARACTER_REWARD -> handleCharacterMail(mail, memberId);
+            case EVENT, RANKING, GUILD, GUILD_WEEKLY, TIER_PROMOTION, SEASON_END -> handleDiamondMail(mail, memberId);
+        };
     }
 
     /**
@@ -178,6 +187,47 @@ public class MailCommandService {
                 mail.getId(),
                 mail.getTitle(),
                 diamondReward
+        );
+    }
+
+    /**
+     * 캐릭터 우편 처리 (사전예약 보상, 이벤트 보상 등)
+     */
+    private MailAcceptResponse handleCharacterMail(Mail mail, Long memberId) {
+        // description에서 JSON 파싱
+        Map<String, Object> metadata = parseMailDescription(mail.getDescription());
+
+        Long characterId = metadata.containsKey("characterId")
+                ? ((Number) metadata.get("characterId")).longValue()
+                : null;
+
+        if (characterId == null) {
+            log.error("Character ID not found in mail description: {}", mail.getDescription());
+            throw new IllegalArgumentException("캐릭터 정보가 올바르지 않습니다.");
+        }
+
+        // Character 조회
+        Character character = characterRepository.findById(characterId)
+                .orElseThrow(CharacterNotFoundException::new);
+
+        // Member 조회
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(InvalidMemberException::new);
+
+        // 캐릭터 지급 (공통 서비스 사용 - 중복 체크 및 자동 층수 배치 포함)
+        MemberCharacter memberCharacter = characterCommandService.grantCharacter(member, character);
+
+        if (memberCharacter == null) {
+            log.warn("Member {} already owns character {}, skipping reward", memberId, characterId);
+        }
+
+        // 우편 수령 처리
+        mail.markAsReceived();
+
+        return MailAcceptResponse.ofCharacter(
+                mail.getId(),
+                mail.getTitle(),
+                CharacterRewardInfo.from(character)
         );
     }
 

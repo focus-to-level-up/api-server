@@ -219,6 +219,10 @@ public class ExceptionMapper {
                 ExceptionSituation.of("이미 수령한 우편입니다.", HttpStatus.BAD_REQUEST));
         mapper.put(MailExpiredException.class,
                 ExceptionSituation.of("만료된 우편입니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(InvalidCharacterSelectionException.class,
+                ExceptionSituation.of("잘못된 캐릭터 선택입니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(ReceiverNotFoundException.class,
+                ExceptionSituation.of("선물을 받을 유저를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 
     /**
