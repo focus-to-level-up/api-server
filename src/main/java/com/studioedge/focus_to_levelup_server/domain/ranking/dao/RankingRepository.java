@@ -30,4 +30,6 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
             @Param("league") League league,
             Pageable pageable
     );
+
+    void deleteByMemberId(Long memberId);
 }

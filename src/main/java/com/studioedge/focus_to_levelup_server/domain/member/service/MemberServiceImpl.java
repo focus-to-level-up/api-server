@@ -59,17 +59,15 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void completeSignUp(Member member, CompleteSignUpRequest request) {
-        System.out.println("member.getId() = " + member.getId());
         validateSignUp(request);
 
-        saveMemberSetting(member);
         saveInitialCharacter(member);
         List<MemberAsset> memberAssets = saveInitialMemberAsset(member);
-        MemberInfo memberInfo = memberInfoRepository
-                .save(CompleteSignUpRequest.from(member, memberAssets, request));
+        MemberSetting memberSetting = saveMemberSetting(member);
+        MemberInfo memberInfo = saveMemberInfo(member, memberAssets, request);
         memberRepository.findById(member.getId())
                 .orElseThrow(MemberNotFoundException::new)
-                .completeSignUp(request.nickname(), memberInfo);
+                .completeSignUp(request.nickname(), memberInfo, memberSetting);
     }
 
     @Override
@@ -206,11 +204,22 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-    private void saveMemberSetting(Member member) {
-        memberSettingRepository.save(
+    private MemberSetting saveMemberSetting(Member member) {
+       return memberSettingRepository.save(
                 MemberSetting.builder()
                         .member(member)
                         .build()
+        );
+    }
+
+    private MemberInfo saveMemberInfo(Member member, List<MemberAsset> memberAssets,
+                                      CompleteSignUpRequest request) {
+        return memberInfoRepository.save(
+                CompleteSignUpRequest.from(
+                        member,
+                        memberAssets,
+                        request
+                )
         );
     }
 

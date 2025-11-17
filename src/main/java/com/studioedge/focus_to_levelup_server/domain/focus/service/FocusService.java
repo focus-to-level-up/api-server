@@ -1,15 +1,13 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.service;
 
+import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.FocusModeImageResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.MonsterAnimationResponse;
@@ -19,15 +17,20 @@ import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectUnAuthorizedException;
+import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberSettingRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
+import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
+import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingExcludeException;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.BackgroundRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.MonsterImageRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.MonsterRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Background;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Monster;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.MonsterImage;
@@ -44,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.RANKING_WARNING_FOCUS_MINUTES;
 import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
 
 @Service
@@ -51,15 +55,16 @@ import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.
 public class FocusService {
     private final MemberRepository memberRepository;
     private final MemberInfoRepository memberInfoRepository;
+    private final MemberSettingRepository memberSettingRepository;
     private final SubjectRepository subjectRepository;
     private final DailyGoalRepository dailyGoalRepository;
     private final MemberCharacterRepository memberCharacterRepository;
     private final DailySubjectRepository dailySubjectRepository;
     private final SchoolRepository schoolRepository;
     private final GuildMemberRepository guildMemberRepository;
-    private final MonsterRepository monsterRepository;
     private final MonsterImageRepository monsterImageRepository;
     private final BackgroundRepository backgroundRepository;
+    private final RankingRepository rankingRepository;
 
     @Transactional
     public void saveFocus(Member m, Long subjectId, SaveFocusRequest request) {
@@ -74,11 +79,21 @@ public class FocusService {
         int focusExp = focusMinutes * 10;
         LocalDate serviceDate = getServiceDate();
 
-
         Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(m.getId())
                 .orElseThrow(InvalidMemberException::new);
+        MemberSetting memberSetting = memberSettingRepository.findByMemberId(m.getId())
+                .orElseThrow(InvalidMemberException::new);
+        if (focusMinutes >= RANKING_WARNING_FOCUS_MINUTES) {
+            boolean isBanned = memberSetting.warning();
+            if (isBanned) {
+                member.banRanking();
+                rankingRepository.deleteByMemberId(m.getId());
+                throw new RankingExcludeException();
+            }
+        }
+
         DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), serviceDate)
                 .orElseThrow(DailyGoalNotFoundException::new);
         Subject subject = this.subjectRepository.findByIdAndDeleteAtIsNull(subjectId)
@@ -93,8 +108,6 @@ public class FocusService {
                             .subject(subject)
                             .date(serviceDate)
                             .build();
-                    // save()는 @Transactional 종료 시 자동으로 수행됨 (orElseGet 내부에서는 save 명시)
-                    // -> 수정: orElseGet 밖에서 save/update를 처리하는 것이 더 명확함.
                 });
         if (!subject.getMember().getId().equals(m.getId())) {
             throw new SubjectUnAuthorizedException();

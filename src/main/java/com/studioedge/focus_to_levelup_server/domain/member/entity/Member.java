@@ -1,7 +1,6 @@
 
 package com.studioedge.focus_to_levelup_server.domain.member.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.ReceiveDailyGoalRequest;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
@@ -27,6 +26,9 @@ public class Member extends BaseEntity {
 
     @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
     private MemberInfo memberInfo;
+
+    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY)
+    private MemberSetting memberSetting;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -80,7 +82,7 @@ public class Member extends BaseEntity {
     @Builder
     public Member(SocialType socialType, String socialId, String nickname, String fcmToken,
                   String appleRefreshToken, String kakaoRefreshToken, String naverRefreshToken,
-                  String googleRefreshToken, MemberInfo memberInfo) {
+                  String googleRefreshToken, MemberInfo memberInfo, MemberSetting memberSetting) {
         this.socialType = socialType;
         this.socialId = socialId;
         this.nickname = nickname;
@@ -90,6 +92,7 @@ public class Member extends BaseEntity {
         this.naverRefreshToken = naverRefreshToken;
         this.googleRefreshToken = googleRefreshToken;
         this.memberInfo = memberInfo;
+        this.memberSetting = memberSetting;
     }
 
     // 비즈니스 로직
@@ -121,11 +124,13 @@ public class Member extends BaseEntity {
         this.fcmToken = fcmToken;
     }
 
-    public void completeSignUp(String nickname, MemberInfo memberInfo) {
+    public void completeSignUp(String nickname, MemberInfo memberInfo, MemberSetting memberSetting) {
         this.nickname = nickname;
         this.nicknameUpdatedAt = LocalDateTime.now();
         this.memberInfo = memberInfo;
+        this.memberSetting = memberSetting;
     }
+
     public void updateNickname(String nickname) {
         this.nickname = nickname;
         this.nicknameUpdatedAt = LocalDateTime.now();
@@ -155,5 +160,9 @@ public class Member extends BaseEntity {
 
     public void reactivate() {
         this.status = MemberStatus.ACTIVE;
+    }
+
+    public void banRanking() {
+        this.status = MemberStatus.RANKING_BANNED;
     }
 }

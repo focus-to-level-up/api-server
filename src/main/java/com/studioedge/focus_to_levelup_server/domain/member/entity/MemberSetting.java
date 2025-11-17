@@ -51,7 +51,7 @@ public class MemberSetting {
     @ColumnDefault("true")
     private Boolean isRankingActive = true; // 랭킹 활성화 여부
 
-    private LocalDate rankingCautionAt; // 경고 당한 날짜
+    private LocalDate rankingWarningAt; // 경고 당한 날짜
 
     @Column(nullable = false)
     @ColumnDefault("0")
@@ -77,7 +77,18 @@ public class MemberSetting {
         this.totalStatColor = color;
     }
 
-    public void removeRankingCautionAt() {
-        this.rankingCautionAt = null;
+    public void clearRankingWarning() {
+        this.isRankingCaution = false;
+        this.rankingWarningAt = null;
+    }
+
+    public boolean warning() {
+        if (this.rankingWarningAt != null) {
+            this.isRankingActive = false;
+            this.rankingDeactivatedCount++;
+            return false;
+        }
+        this.rankingWarningAt = LocalDate.now();
+        return true;
     }
 }
