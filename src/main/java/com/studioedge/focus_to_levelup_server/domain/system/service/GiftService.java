@@ -3,7 +3,9 @@ package com.studioedge.focus_to_levelup_server.domain.system.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.domain.payment.entity.Subscription;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
+import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dto.response.GiftResponse;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -23,6 +26,7 @@ public class GiftService {
 
     private final MemberRepository memberRepository;
     private final MailRepository mailRepository;
+    private final SubscriptionRepository subscriptionRepository;
     private final ObjectMapper objectMapper;
 
     /**
@@ -34,7 +38,13 @@ public class GiftService {
         Member receiver = memberRepository.findByNickname(receiverNickname)
                 .orElseThrow(ReceiverNotFoundException::new);
 
-        // 2. 우편 생성
+        // 2. 수신자가 구독 활성 중인지 확인 (기본 성장 패키지 또는 프리미엄 성장 패키지)
+        Optional<Subscription> activeSubscription = subscriptionRepository.findByMemberIdAndIsActiveTrue(receiver.getId());
+        if (activeSubscription.isPresent()) {
+            throw new IllegalStateException("이미 구독 중인 회원에게는 구독권을 선물할 수 없습니다.");
+        }
+
+        // 3. 우편 생성
         Mail mail = createSubscriptionGiftMail(receiver, subscriptionType, durationDays);
         mailRepository.save(mail);
 

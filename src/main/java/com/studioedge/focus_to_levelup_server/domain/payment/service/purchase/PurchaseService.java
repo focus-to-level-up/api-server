@@ -66,11 +66,18 @@ public class PurchaseService {
         Product product = productRepository.findByIdAndIsActiveTrue(request.productId())
                 .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다"));
 
-        // 5. MemberInfo 조회
+        // 5. 구독권 상품인 경우 활성 구독 여부 체크 (구독 활성 중이면 구매 불가)
+        if (product.getType() == ProductType.BASIC_SUBSCRIPTION || product.getType() == ProductType.PREMIUM_SUBSCRIPTION) {
+            subscriptionRepository.findByMemberIdAndIsActiveTrue(member.getId()).ifPresent(subscription -> {
+                throw new IllegalStateException("이미 구독 중입니다. 구독 기간이 종료된 후 구매할 수 있습니다.");
+            });
+        }
+
+        // 6. MemberInfo 조회
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(member.getId())
                 .orElseThrow(() -> new EntityNotFoundException("회원 정보를 찾을 수 없습니다"));
 
-        // 6. PaymentLog 생성
+        // 7. PaymentLog 생성
         PaymentLog paymentLog = PaymentLog.builder()
                 .member(member)
                 .product(product)
@@ -82,7 +89,7 @@ public class PurchaseService {
                 .build();
         paymentLogRepository.save(paymentLog);
 
-        // 7. 구독권 생성 (구독 상품인 경우)
+        // 8. 구독권 생성 (구독 상품인 경우)
         Boolean subscriptionCreated = false;
         if (product.getType() == ProductType.BASIC_SUBSCRIPTION || product.getType() == ProductType.PREMIUM_SUBSCRIPTION) {
             SubscriptionType subscriptionType = product.getType() == ProductType.BASIC_SUBSCRIPTION
@@ -104,13 +111,13 @@ public class PurchaseService {
             log.info("Created {} subscription for member {}", subscriptionType, member.getId());
         }
 
-        // 8. Mail 생성 (다이아 및 보너스 티켓 보상)
+        // 9. Mail 생성 (다이아 및 보너스 티켓 보상)
         SubscriptionType mailSubscriptionType = subscriptionCreated
                 ? (product.getType() == ProductType.BASIC_SUBSCRIPTION ? SubscriptionType.NORMAL : SubscriptionType.PREMIUM)
                 : null;
         createPurchaseMail(member, product, mailSubscriptionType);
 
-        // 9. 응답 생성
+        // 10. 응답 생성
         return new PurchaseResponse(
                 paymentLog.getId(),
                 product.getName(),
