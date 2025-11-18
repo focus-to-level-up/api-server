@@ -11,7 +11,8 @@ public enum MailType {
     EVENT,                     // 이벤트 보상
     RANKING,                   // 랭킹 보상 (기존)
     GUILD,                     // 길드 보상 (기존)
-    PURCHASE,                  // 인앱 구매 보상
+    FIRST_SUBSCRIPTION,        // 첫 구독 다이아 보상
+    DIAMOND_PACK_PURCHASE,     // 다이아 팩 구매 보상 (다이아만)
     CHARACTER_REWARD,          // 캐릭터 보상 (사전예약, 이벤트 등)
     CHARACTER_SELECTION_TICKET // 캐릭터 선택권 (우편 수령 시 캐릭터 선택)
 }

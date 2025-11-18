@@ -80,10 +80,10 @@ public class MailCommandService {
         // 2. MailType에 따른 보상 지급
         return switch (mail.getType()) {
             case SUBSCRIPTION, PRE_REGISTRATION, GIFT_SUBSCRIPTION -> handleSubscriptionMail(mail, memberId);
-            case PURCHASE, GIFT_BONUS_TICKET -> handlePurchaseMail(mail, memberId);
+            case GIFT_BONUS_TICKET -> handlePurchaseMail(mail, memberId);
             case CHARACTER_REWARD -> handleCharacterMail(mail, memberId);
             case CHARACTER_SELECTION_TICKET -> handleCharacterSelectionTicketMail(mail, memberId, characterId);
-            case EVENT, RANKING, GUILD, GUILD_WEEKLY, TIER_PROMOTION, SEASON_END -> handleDiamondMail(mail, memberId);
+            case EVENT, RANKING, GUILD, GUILD_WEEKLY, TIER_PROMOTION, SEASON_END, FIRST_SUBSCRIPTION, DIAMOND_PACK_PURCHASE -> handleDiamondMail(mail, memberId);
         };
     }
 
