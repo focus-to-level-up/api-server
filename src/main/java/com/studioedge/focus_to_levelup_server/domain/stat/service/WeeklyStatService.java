@@ -74,8 +74,8 @@ public class WeeklyStatService {
                     .findAllByMemberIdAndDailyGoalDateBetween(memberId, startOfThisWeek, serviceDate);
 
             // 3-2. 실시간 데이터 합산
-            int currentWeekMinutes = currentWeekGoals.stream()
-                    .mapToInt(DailyGoal::getCurrentMinutes)
+            int currentWeekSeconds = currentWeekGoals.stream()
+                    .mapToInt(DailyGoal::getCurrentSeconds)
                     .sum();
 
             // 3-3. 현재 레벨과 이미지 URL 조회를 위해 MemberInfo 조회 (N+1 방지 쿼리 사용)
@@ -89,7 +89,7 @@ public class WeeklyStatService {
             responses.add(WeeklyStatResponse.of(
                     startOfThisWeek,
                     serviceDate,
-                    currentWeekMinutes,
+                    currentWeekSeconds,
                     member.getCurrentLevel(),
                     imageUrl
             ));

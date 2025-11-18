@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.ranking.entity;
 
+import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
 import jakarta.persistence.*;
@@ -32,6 +33,11 @@ public class League extends BaseEntity {
     @Column(nullable = false)
     private CategoryMainType categoryType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @ColumnDefault("'BRONZE'")
+    private Tier tier;
+
     @Column(nullable = false)
     @ColumnDefault("1")
     private Integer currentWeek = 1;
@@ -44,11 +50,12 @@ public class League extends BaseEntity {
 
     @Builder
     public League(Season season, String name, CategoryMainType categoryType,
-                  LocalDate startDate, LocalDate endDate) {
+                  LocalDate startDate, LocalDate endDate, Tier tier) {
         this.season = season;
         this.name = name;
         this.categoryType = categoryType;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.tier = tier;
     }
 }

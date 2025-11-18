@@ -25,4 +25,13 @@ public interface DailySubjectRepository extends JpaRepository<DailySubject, Long
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+
+    @Query("SELECT ds FROM DailySubject ds " +
+            "WHERE ds.member.id = :memberId " +
+            "AND ds.date BETWEEN :startDate AND :endDate")
+    List<DailySubject> findAllByMemberIdAndDateBetween(
+            @Param("memberId") Long memberId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }

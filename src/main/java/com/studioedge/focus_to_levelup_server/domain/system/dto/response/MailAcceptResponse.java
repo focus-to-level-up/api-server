@@ -9,9 +9,10 @@ import lombok.Builder;
 public record MailAcceptResponse(
         Long mailId,
         String title,
-        String rewardDescription, // "다이아 1000개 지급", "프리미엄 구독권 30일 지급"
+        String rewardDescription, // "다이아 1000개 지급", "프리미엄 구독권 30일 지급", "캐릭터 '티비' 지급"
         Integer diamondRewarded,
-        SubscriptionInfo subscriptionInfo // 구독권인 경우만
+        SubscriptionInfo subscriptionInfo, // 구독권인 경우만
+        CharacterRewardInfo characterRewardInfo // 캐릭터인 경우만
 ) {
     public static MailAcceptResponse ofDiamond(Long mailId, String title, Integer diamond) {
         return MailAcceptResponse.builder()
@@ -20,6 +21,7 @@ public record MailAcceptResponse(
                 .rewardDescription(String.format("다이아 %d개 지급", diamond))
                 .diamondRewarded(diamond)
                 .subscriptionInfo(null)
+                .characterRewardInfo(null)
                 .build();
     }
 
@@ -36,6 +38,18 @@ public record MailAcceptResponse(
                 .rewardDescription(String.format("%s 구독권 %d일 지급", subscriptionTypeName, durationDays))
                 .diamondRewarded(0)
                 .subscriptionInfo(subscriptionInfo)
+                .characterRewardInfo(null)
+                .build();
+    }
+
+    public static MailAcceptResponse ofCharacter(Long mailId, String title, CharacterRewardInfo characterRewardInfo) {
+        return MailAcceptResponse.builder()
+                .mailId(mailId)
+                .title(title)
+                .rewardDescription(String.format("캐릭터 '%s' 지급", characterRewardInfo.characterName()))
+                .diamondRewarded(0)
+                .subscriptionInfo(null)
+                .characterRewardInfo(characterRewardInfo)
                 .build();
     }
 }

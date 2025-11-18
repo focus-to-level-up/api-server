@@ -82,15 +82,19 @@ public class ExceptionAdvice {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Void> handleException(Exception e) {
+    public ResponseEntity<ExceptionResponse> handleException(Exception e) {
         if (e instanceof NoResourceFoundException) {
             defaultLog.info(e.getMessage());
-            return ResponseEntity.notFound().build();
+            ExceptionSituation situation = ExceptionSituation.of(e.getMessage(), HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ExceptionResponse.from(situation));
         }
 
         defaultLog.error(e.getMessage());
         exceptionLog.error(e.getMessage(), e);
 
-        return ResponseEntity.internalServerError().build();
+        ExceptionSituation situation = ExceptionSituation.of(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.internalServerError()
+                .body(ExceptionResponse.from(situation));
     }
 }

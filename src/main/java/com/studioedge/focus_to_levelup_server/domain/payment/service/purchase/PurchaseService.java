@@ -4,9 +4,15 @@ import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoReposi
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.*;
+import com.studioedge.focus_to_levelup_server.domain.payment.dao.BonusTicketRepository;
+import com.studioedge.focus_to_levelup_server.domain.payment.dao.GiftTicketRepository;
+import com.studioedge.focus_to_levelup_server.domain.payment.dao.PaymentLogRepository;
+import com.studioedge.focus_to_levelup_server.domain.payment.dao.ProductRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.purchase.PurchaseRequest;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.purchase.PurchaseResponse;
-import com.studioedge.focus_to_levelup_server.domain.payment.entity.*;
+import com.studioedge.focus_to_levelup_server.domain.payment.entity.PaymentLog;
+import com.studioedge.focus_to_levelup_server.domain.payment.entity.Product;
+import com.studioedge.focus_to_levelup_server.domain.payment.entity.Subscription;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.ProductType;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.PurchaseStatus;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionSource;
@@ -106,7 +112,12 @@ public class PurchaseService {
         SubscriptionType mailSubscriptionType = subscriptionCreated
                 ? (product.getType() == ProductType.BASIC_SUBSCRIPTION ? SubscriptionType.NORMAL : SubscriptionType.PREMIUM)
                 : null;
-        createPurchaseMail(member, product, mailSubscriptionType);
+        if (subscriptionCreated && !member.getIsSubscriptionRewarded()) {
+            memberInfo.addDiamond(product.getDiamondReward());
+            member.firstSubscription();
+        } else {
+            createPurchaseMail(member, product, mailSubscriptionType);
+        }
 
         // 9. 응답 생성
         return new PurchaseResponse(

@@ -27,6 +27,7 @@ public class CharacterPurchaseService {
     private final MemberCharacterRepository memberCharacterRepository;
     private final MemberRepository memberRepository;
     private final MemberInfoRepository memberInfoRepository;
+    private final CharacterCommandService characterCommandService;
 
     /**
      * 캐릭터 구매
@@ -54,10 +55,8 @@ public class CharacterPurchaseService {
         // 4. 다이아 차감 (내부에서 검증)
         memberInfo.decreaseDiamond(character.getPrice());
 
-        // 5. 자동 층수 배치 (2층 → 3층 → 1층 순서, 각 층 최대 2개)
-        Integer floor = assignFloor(memberId);
-
-        // 6. MemberCharacter 생성
+        // 5. 캐릭터 지급 (공통 서비스 사용)
+        Integer floor = characterCommandService.assignFloor(memberId);
         MemberCharacter memberCharacter = MemberCharacter.builder()
                 .member(member)
                 .character(character)
@@ -67,28 +66,5 @@ public class CharacterPurchaseService {
         memberCharacterRepository.save(memberCharacter);
 
         return MemberCharacterResponse.from(memberCharacter);
-    }
-
-    /**
-     * 캐릭터를 배치할 층수를 자동으로 결정
-     * 우선순위: 2층 → 3층 → 1층
-     * 각 층당 최대 2개까지 배치 가능
-     * 모든 층이 가득 차면 예외 발생
-     */
-    private Integer assignFloor(Long memberId) {
-        // 2층 확인
-        if (memberCharacterRepository.countByMemberIdAndFloor(memberId, 2) < 2) {
-            return 2;
-        }
-        // 3층 확인
-        if (memberCharacterRepository.countByMemberIdAndFloor(memberId, 3) < 2) {
-            return 3;
-        }
-        // 1층 확인
-        if (memberCharacterRepository.countByMemberIdAndFloor(memberId, 1) < 2) {
-            return 1;
-        }
-        // 모든 층이 가득 참
-        throw new CharacterSlotFullException();
     }
 }

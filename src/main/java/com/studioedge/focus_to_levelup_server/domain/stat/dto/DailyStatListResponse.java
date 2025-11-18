@@ -13,10 +13,10 @@ public record DailyStatListResponse (
         @Schema(description = "총 집중한 시간(분)", example = "33200")
         Integer totalFocusMinutes
 ) {
-    public static DailyStatListResponse of(List<DailyStatResponse> responses, Integer totalMinutes) {
+    public static DailyStatListResponse of(List<DailyStatResponse> responses, Integer totalFocusSeconds) {
         return DailyStatListResponse.builder()
                 .dailyStatResponses(responses)
-                .totalFocusMinutes(totalMinutes)
+                .totalFocusMinutes(totalFocusSeconds / 60)
                 .build();
     }
 

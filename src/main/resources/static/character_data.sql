@@ -1,12 +1,12 @@
 -- -----------------------------------------------------
--- 캐릭터 마스터 데이터 초기화 (v2 - All Image Types)
+-- 캐릭터 마스터 데이터 초기화 (v3 - HEAD 이미지 추가)
 -- -----------------------------------------------------
 --
 -- 'characters' 테이블: 캐릭터 마스터 (이름, 등급, 가격)
 -- 'character_images' 테이블: 캐릭터 모든 이미지 (진화/타입별)
 --
 -- Rarity Enum: RARE, EPIC, UNIQUE
--- CharacterImageType Enum: IDLE, ATTACK, WEAPON, BACKGROUND
+-- CharacterImageType Enum: IDLE, ATTACK, WEAPON, BACKGROUND, PICTURE, HEAD
 --
 -- -----------------------------------------------------
 
@@ -31,21 +31,27 @@ SET @character_id = LAST_INSERT_ID();
 SET @folder = 'yangdongdong/';
 SET @file = 'yangdongdong';
 
-INSERT IGNORE INTO character_images (character_id, evolution, image_Type, image_url)
+INSERT IGNORE INTO character_images (character_id, evolution, image_type, image_url)
 VALUES
     (@character_id, 0, 'BACKGROUND', CONCAT(@s3_base_url, @folder, @file, '_background.png')),
-    (@character_id, 1, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '1.png')),
+    -- Evolution 1
+    (@character_id, 1, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '1.png')),
     (@character_id, 1, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '1_attack.gif')),
     (@character_id, 1, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '1_weapon.png')),
-    (@character_id, 1, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '1_idle.gif')),
-    (@character_id, 2, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '2.png')),
+    (@character_id, 1, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '1_idle.gif')),
+    (@character_id, 1, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '1_head.png')), -- ADDED
+    -- Evolution 2
+    (@character_id, 2, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '2.png')),
     (@character_id, 2, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '2_attack.gif')),
     (@character_id, 2, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '2_weapon.png')),
-    (@character_id, 2, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '2_idle.gif')),
-    (@character_id, 3, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '3.png')),
+    (@character_id, 2, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '2_idle.gif')),
+    (@character_id, 2, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '2_head.png')), -- ADDED
+    -- Evolution 3
+    (@character_id, 3, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '3.png')),
     (@character_id, 3, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '3_attack.gif')),
     (@character_id, 3, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '3_weapon.png')),
-    (@character_id, 3, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '3_idle.gif'));
+    (@character_id, 3, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '3_idle.gif')),
+    (@character_id, 3, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '3_head.png')); -- ADDED
 
 -- -----------------------------------------------------
 -- 2. 레어 - 김투구 (S3: kimtoogoo)
@@ -60,18 +66,24 @@ SET @file = 'kimtoogoo';
 INSERT IGNORE INTO character_images (character_id, evolution, image_type, image_url)
 VALUES
     (@character_id, 0, 'BACKGROUND', CONCAT(@s3_base_url, @folder, @file, '_background.png')),
-    (@character_id, 1, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '1.png')),
+    -- Evolution 1
+    (@character_id, 1, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '1.png')),
     (@character_id, 1, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '1_attack.gif')),
-    (@character_id, 1, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '1_idle.gif')),
+    (@character_id, 1, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '1_idle.gif')),
     (@character_id, 1, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '1_weapon.png')),
-    (@character_id, 2, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '2.png')),
+    (@character_id, 1, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '1_head.png')), -- ADDED
+    -- Evolution 2
+    (@character_id, 2, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '2.png')),
     (@character_id, 2, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '2_attack.gif')),
     (@character_id, 2, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '2_weapon.png')),
-    (@character_id, 2, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '2_idle.gif')),
-    (@character_id, 3, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '3.png')),
+    (@character_id, 2, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '2_idle.gif')),
+    (@character_id, 2, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '2_head.png')), -- ADDED
+    -- Evolution 3
+    (@character_id, 3, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '3.png')),
     (@character_id, 3, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '3_attack.gif')),
     (@character_id, 3, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '3_weapon.png')),
-    (@character_id, 3, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '3_idle.gif'));
+    (@character_id, 3, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '3_idle.gif')),
+    (@character_id, 3, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '3_head.png')); -- ADDED
 
 
 -- -----------------------------------------------------
@@ -79,7 +91,7 @@ VALUES
 -- -----------------------------------------------------
 INSERT IGNORE INTO characters (name, rarity, price, description, background_image_url)
 VALUES ('에르핀', 'RARE', 6000, '', '');
-
+atus
 SET @character_id = LAST_INSERT_ID();
 SET @folder = 'elfin/';
 SET @file = 'elfin';
@@ -87,18 +99,24 @@ SET @file = 'elfin';
 INSERT IGNORE INTO character_images (character_id, evolution, image_type, image_url)
 VALUES
     (@character_id, 0, 'BACKGROUND', CONCAT(@s3_base_url, @folder, @file, '_background.png')),
-    (@character_id, 1, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '1.png')),
+    -- Evolution 1
+    (@character_id, 1, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '1.png')),
     (@character_id, 1, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '1_attack.gif')),
-    (@character_id, 1, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '1_idle.gif')),
+    (@character_id, 1, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '1_idle.gif')),
     (@character_id, 1, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '1_weapon.png')),
-    (@character_id, 2, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '2.png')),
+    (@character_id, 1, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '1_head.png')), -- ADDED
+    -- Evolution 2
+    (@character_id, 2, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '2.png')),
     (@character_id, 2, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '2_attack.gif')),
     (@character_id, 2, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '2_weapon.png')),
-    (@character_id, 2, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '2_idle.gif')),
-    (@character_id, 3, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '3.png')),
+    (@character_id, 2, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '2_idle.gif')),
+    (@character_id, 2, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '2_head.png')), -- ADDED
+    -- Evolution 3
+    (@character_id, 3, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '3.png')),
     (@character_id, 3, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '3_attack.gif')),
     (@character_id, 3, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '3_weapon.png')),
-    (@character_id, 3, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '3_idle.gif'));
+    (@character_id, 3, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '3_idle.gif')),
+    (@character_id, 3, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '3_head.png')); -- ADDED
 
 
 -- -----------------------------------------------------
@@ -114,18 +132,24 @@ SET @file = 'kuma';
 INSERT IGNORE INTO character_images (character_id, evolution, image_type, image_url)
 VALUES
     (@character_id, 0, 'BACKGROUND', CONCAT(@s3_base_url, @folder, @file, '_background.png')),
-    (@character_id, 1, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '1.png')),
+    -- Evolution 1
+    (@character_id, 1, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '1.png')),
     (@character_id, 1, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '1_attack.gif')),
-    (@character_id, 1, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '1_idle.gif')),
+    (@character_id, 1, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '1_idle.gif')),
     (@character_id, 1, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '1_weapon.png')),
-    (@character_id, 2, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '2.png')),
+    (@character_id, 1, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '1_head.png')), -- ADDED
+    -- Evolution 2
+    (@character_id, 2, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '2.png')),
     (@character_id, 2, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '2_attack.gif')),
     (@character_id, 2, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '2_weapon.png')),
-    (@character_id, 2, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '2_idle.gif')),
-    (@character_id, 3, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '3.png')),
+    (@character_id, 2, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '2_idle.gif')),
+    (@character_id, 2, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '2_head.png')), -- ADDED
+    -- Evolution 3
+    (@character_id, 3, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '3.png')),
     (@character_id, 3, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '3_attack.gif')),
     (@character_id, 3, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '3_weapon.png')),
-    (@character_id, 3, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '3_idle.gif'));
+    (@character_id, 3, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '3_idle.gif')),
+    (@character_id, 3, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '3_head.png')); -- ADDED
 
 
 -- -----------------------------------------------------
@@ -141,18 +165,24 @@ SET @file = 'hiden';
 INSERT IGNORE INTO character_images (character_id, evolution, image_type, image_url)
 VALUES
     (@character_id, 0, 'BACKGROUND', CONCAT(@s3_base_url, @folder, @file, '_background.png')),
-    (@character_id, 1, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '1.png')),
+    -- Evolution 1
+    (@character_id, 1, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '1.png')),
     (@character_id, 1, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '1_attack.gif')),
-    (@character_id, 1, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '1_idle.gif')),
+    (@character_id, 1, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '1_idle.gif')),
     (@character_id, 1, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '1_weapon.png')),
-    (@character_id, 2, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '2.png')),
+    (@character_id, 1, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '1_head.png')), -- ADDED
+    -- Evolution 2
+    (@character_id, 2, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '2.png')),
     (@character_id, 2, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '2_attack.gif')),
     (@character_id, 2, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '2_weapon.png')),
-    (@character_id, 2, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '2_idle.gif')),
-    (@character_id, 3, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '3.png')),
+    (@character_id, 2, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '2_idle.gif')),
+    (@character_id, 2, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '2_head.png')), -- ADDED
+    -- Evolution 3
+    (@character_id, 3, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '3.png')),
     (@character_id, 3, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '3_attack.gif')),
     (@character_id, 3, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '3_weapon.png')),
-    (@character_id, 3, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '3_idle.gif'));
+    (@character_id, 3, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '3_idle.gif')),
+    (@character_id, 3, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '3_head.png')); -- ADDED
 
 
 -- -----------------------------------------------------
@@ -168,18 +198,24 @@ SET @file = 'bingyoung';
 INSERT IGNORE INTO character_images (character_id, evolution, image_type, image_url)
 VALUES
     (@character_id, 0, 'BACKGROUND', CONCAT(@s3_base_url, @folder, @file, '_background.png')),
-    (@character_id, 1, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '1.png')),
+    -- Evolution 1
+    (@character_id, 1, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '1.png')),
     (@character_id, 1, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '1_attack.gif')),
-    (@character_id, 1, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '1_idle.gif')),
+    (@character_id, 1, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '1_idle.gif')),
     (@character_id, 1, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '1_weapon.png')),
-    (@character_id, 2, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '2.png')),
+    (@character_id, 1, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '1_head.png')), -- ADDED
+    -- Evolution 2
+    (@character_id, 2, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '2.png')),
     (@character_id, 2, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '2_attack.gif')),
     (@character_id, 2, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '2_weapon.png')),
-    (@character_id, 2, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '2_idle.gif')),
-    (@character_id, 3, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '3.png')),
+    (@character_id, 2, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '2_idle.gif')),
+    (@character_id, 2, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '2_head.png')), -- ADDED
+    -- Evolution 3
+    (@character_id, 3, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '3.png')),
     (@character_id, 3, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '3_attack.gif')),
     (@character_id, 3, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '3_weapon.png')),
-    (@character_id, 3, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '3_idle.gif'));
+    (@character_id, 3, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '3_idle.gif')),
+    (@character_id, 3, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '3_head.png')); -- ADDED
 
 
 -- -----------------------------------------------------
@@ -195,18 +231,24 @@ SET @file = 'bamtolnyang';
 INSERT IGNORE INTO character_images (character_id, evolution, image_type, image_url)
 VALUES
     (@character_id, 0, 'BACKGROUND', CONCAT(@s3_base_url, @folder, @file, '_background.png')),
-    (@character_id, 1, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '1.png')),
+    -- Evolution 1
+    (@character_id, 1, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '1.png')),
     (@character_id, 1, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '1_attack.gif')),
-    (@character_id, 1, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '1_idle.gif')),
+    (@character_id, 1, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '1_idle.gif')),
     (@character_id, 1, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '1_weapon.png')),
-    (@character_id, 2, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '2.png')),
+    (@character_id, 1, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '1_head.png')), -- ADDED
+    -- Evolution 2
+    (@character_id, 2, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '2.png')),
     (@character_id, 2, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '2_attack.gif')),
     (@character_id, 2, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '2_weapon.png')),
-    (@character_id, 2, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '2_idle.gif')),
-    (@character_id, 3, 'PICTURE',       CONCAT(@s3_base_url, @folder, @file, '3.png')),
+    (@character_id, 2, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '2_idle.gif')),
+    (@character_id, 2, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '2_head.png')), -- ADDED
+    -- Evolution 3
+    (@character_id, 3, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '3.png')),
     (@character_id, 3, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '3_attack.gif')),
     (@character_id, 3, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '3_weapon.png')),
-    (@character_id, 3, 'IDLE',     CONCAT(@s3_base_url, @folder, @file, '3_idle.gif'));
+    (@character_id, 3, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '3_idle.gif')),
+    (@character_id, 3, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '3_head.png')); -- ADDED
 
 -- -----------------------------------------------------
 

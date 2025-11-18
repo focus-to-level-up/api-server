@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table(name = "mails")
@@ -40,6 +41,11 @@ public class Mail extends BaseEntity {
     @Column(length = 999, nullable = false)
     private String description;
 
+    private String popupTitle; // 팝업 타이틀 (UI용)
+
+    @Column(length = 999)
+    private String popupContent; // 팝업 내용 (UI용, 멀티라인 가능)
+
     @Column(nullable = false)
     @ColumnDefault("0")
     private int reward = 0;
@@ -53,13 +59,15 @@ public class Mail extends BaseEntity {
 
     @Builder
     public Mail(Member receiver, String senderName, MailType type, String title,
-                String description, Integer reward, LocalDate expiredAt)
+                String description, String popupTitle, String popupContent, Integer reward, LocalDate expiredAt)
     {
         this.receiver = receiver;
         this.senderName = senderName != null ? senderName : "운영자";
         this.type = type;
         this.title = title;
         this.description = description;
+        this.popupTitle = popupTitle;
+        this.popupContent = popupContent;
         this.reward = reward != null ? reward : 0;
         this.expiredAt = expiredAt;
     }
@@ -85,5 +93,28 @@ public class Mail extends BaseEntity {
      */
     public boolean isOwnedBy(Long memberId) {
         return this.receiver.getId().equals(memberId);
+    }
+
+    /**
+     * 만료까지 남은 일수 계산
+     */
+    public int getDaysUntilExpired() {
+        return (int) ChronoUnit.DAYS.between(LocalDate.now(), expiredAt);
+    }
+
+    /**
+     * 다이아 포맷팅 (x500, x1K, x1.8K 등)
+     */
+    public String getFormattedDiamondAmount() {
+        if (reward < 1000) {
+            return "x" + reward;
+        } else {
+            double k = reward / 1000.0;
+            if (k == (int) k) {
+                return "x" + (int) k + "K";
+            } else {
+                return "x" + String.format("%.1fK", k);
+            }
+        }
     }
 }

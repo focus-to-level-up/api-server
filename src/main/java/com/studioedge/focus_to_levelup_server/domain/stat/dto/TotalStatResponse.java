@@ -26,7 +26,7 @@ public record TotalStatResponse(
         public static HeatmapData from(DailyGoal dailyGoal) {
             return new HeatmapData(
                     dailyGoal.getDailyGoalDate(),
-                    dailyGoal.getCurrentMinutes()
+                    dailyGoal.getCurrentSeconds()
             );
         }
     }
