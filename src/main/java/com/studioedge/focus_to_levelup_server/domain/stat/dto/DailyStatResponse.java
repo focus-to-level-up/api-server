@@ -19,7 +19,7 @@ public record DailyStatResponse(
         return DailyStatResponse.builder()
                 .date(dailyGoal.getDailyGoalDate())
                 .targetMinutes(dailyGoal.getTargetMinutes())
-                .focusMinutes(dailyGoal.getCurrentMinutes())
+                .focusMinutes(dailyGoal.getCurrentSeconds())
                 .build();
     }
 

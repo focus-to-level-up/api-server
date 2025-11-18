@@ -37,8 +37,8 @@ public class DailyStatService {
         }
 
         // 'goals' 리스트에서 총 집중 시간을 미리 계산합니다.
-        int totalFocusMinutes = goals.stream()
-                .mapToInt(DailyGoal::getCurrentMinutes)
+        int totalFocusSeconds = goals.stream()
+                .mapToInt(DailyGoal::getCurrentSeconds)
                 .sum();
 
         // DailyGoal 리스트를 (LocalDate -> DailyGoal) 맵으로 변환 (빠른 탐색용)
@@ -59,6 +59,6 @@ public class DailyStatService {
                 })
                 .collect(Collectors.toList());
 
-        return DailyStatListResponse.of(responses, totalFocusMinutes);
+        return DailyStatListResponse.of(responses, totalFocusSeconds);
     }
 }

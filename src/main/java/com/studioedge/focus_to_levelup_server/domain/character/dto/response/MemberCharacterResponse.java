@@ -27,7 +27,9 @@ public record MemberCharacterResponse(
         String characterBackgroundImageUrl, // 캐릭터 전용 배경 이미지
         String attackImageUrl, // 공격 애니메이션
         String idleImageUrl, // 서있는 애니메이션
-        String weaponImageUrl // 공격 무기 이미지
+        String weaponImageUrl, // 공격 무기 이미지
+        String headImageUrl // 공격 무기 이미지
+
 ) {
     public static MemberCharacterResponse from(MemberCharacter memberCharacter) {
 
@@ -66,6 +68,7 @@ public record MemberCharacterResponse(
                 .attackImageUrl(evolutionImages.get(CharacterImageType.ATTACK))
                 .weaponImageUrl(evolutionImages.get(CharacterImageType.WEAPON))
                 .idleImageUrl(evolutionImages.get(CharacterImageType.IDLE))
+                .headImageUrl(evolutionImages.get(CharacterImageType.HEAD))
                 .build();
     }
 }

@@ -31,12 +31,12 @@ public record WeeklyStatResponse(
     }
 
     // 실시간 계산된 '현재 주'로부터 생성
-    public static WeeklyStatResponse of(LocalDate startDate, LocalDate endDate, Integer totalMinutes,
+    public static WeeklyStatResponse of(LocalDate startDate, LocalDate endDate, Integer totalSeconds,
                                         Integer level, String imageUrl) {
         return WeeklyStatResponse.builder()
                 .startDate(startDate)
                 .endDate(endDate)
-                .totalFocusMinutes(totalMinutes)
+                .totalFocusMinutes(totalSeconds / 60)
                 .lastLevel(level)
                 .lastCharacterImageUrl(imageUrl)
                 .build();

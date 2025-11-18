@@ -47,6 +47,10 @@ public class Member extends BaseEntity {
     private Boolean isPreRegistrationRewarded = false; // 사전예약 보상 수령 여부
 
     @Column(nullable = false)
+    @ColumnDefault("false")
+    private Boolean isSubscriptionRewarded = false;
+
+    @Column(nullable = false)
     @ColumnDefault("1")
     private Integer currentLevel = 1;
 
@@ -163,5 +167,9 @@ public class Member extends BaseEntity {
 
     public void markPreRegistrationRewarded() {
         this.isPreRegistrationRewarded = true;
+    }
+
+    public void firstSubscription() {
+        this.isSubscriptionRewarded = true;
     }
 }
