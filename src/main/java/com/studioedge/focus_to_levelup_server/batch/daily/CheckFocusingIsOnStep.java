@@ -1,0 +1,79 @@
+package com.studioedge.focus_to_levelup_server.batch.daily;
+
+import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
+import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.data.RepositoryItemReader;
+import org.springframework.batch.item.data.RepositoryItemWriter;
+import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
+import org.springframework.batch.item.data.builder.RepositoryItemWriterBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.Sort;
+import org.springframework.transaction.PlatformTransactionManager;
+
+import java.util.Map;
+
+@Slf4j
+@Configuration
+@RequiredArgsConstructor
+public class CheckFocusingIsOnStep {
+    private final JobRepository jobRepository;
+    private final PlatformTransactionManager platformTransactionManager;
+
+    private final MemberRepository memberRepository;
+    private final RankingRepository rankingRepository;
+
+
+    @Bean
+    public Step checkFocusingIsOn() {
+        return new StepBuilder("checkFocusingIsOn", jobRepository)
+                .<Member, Member> chunk(10, platformTransactionManager)
+                .reader(checkFocusingIsOnReader())
+                .processor(checkFocusingIsOnProcessor())
+                .writer(checkFocusingIsOnWriter())
+                .build();
+    }
+
+    @Bean
+    public RepositoryItemReader<Member> checkFocusingIsOnReader() {
+        return new RepositoryItemReaderBuilder<Member>()
+                .name("checkFocusingIsOnReader")
+                .pageSize(10)
+                .methodName("findAllByIsFocusingIsTrue")
+                .repository(memberRepository)
+                .sorts(Map.of("id", Sort.Direction.ASC))
+                .build();
+    }
+
+    @Bean
+    public ItemProcessor<Member, Member> checkFocusingIsOnProcessor() {
+        return member -> {
+            MemberSetting setting = member.getMemberSetting();
+            boolean isBanned = setting.warning();
+            if (isBanned) {
+                member.banRanking();
+                rankingRepository.deleteByMemberId(member.getId());
+            }
+            member.focusOff();
+
+            return member;
+        };
+    }
+
+    @Bean
+    public RepositoryItemWriter<Member> checkFocusingIsOnWriter() {
+        return new RepositoryItemWriterBuilder<Member>()
+                .repository(memberRepository)
+                .build();
+    }
+
+
+}

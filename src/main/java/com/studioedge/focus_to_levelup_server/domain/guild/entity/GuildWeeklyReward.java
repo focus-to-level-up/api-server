@@ -3,10 +3,10 @@ package com.studioedge.focus_to_levelup_server.domain.guild.entity;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -37,7 +37,12 @@ public class GuildWeeklyReward extends BaseEntity {
     @ColumnDefault("0")
     private Integer totalReward = 0;
 
-    public GuildWeeklyReward(Guild guild) {
+    @Builder
+    public GuildWeeklyReward(Guild guild, Integer avgStudyTime, Integer boostMemberCount,
+                             Integer totalReward) {
         this.guild = guild;
+        this.avgStudyTime = avgStudyTime;
+        this.boostMemberCount = boostMemberCount;
+        this.totalReward = totalReward;
     }
 }

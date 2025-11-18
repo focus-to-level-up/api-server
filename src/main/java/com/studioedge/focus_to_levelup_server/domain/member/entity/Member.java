@@ -3,6 +3,7 @@ package com.studioedge.focus_to_levelup_server.domain.member.entity;
 
 import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;
+import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -50,7 +51,11 @@ public class Member extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("false")
-    private Boolean isSubscriptionRewarded = false;
+    private Boolean isSubscriptionRewarded = false; // 첫 구독시 받는 보상 수령 여부
+
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private Boolean isReceivedWeeklyReward = false; // 주간 보상 수령 여부
 
     @Column(nullable = false)
     @ColumnDefault("1")
@@ -59,6 +64,10 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     @ColumnDefault("0")
     private Integer currentExp = 0;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "highest_tier")
+    private Tier highestTier;
 
     @Column(nullable = false)
     @ColumnDefault("false")
@@ -90,7 +99,8 @@ public class Member extends BaseEntity {
     @Builder
     public Member(SocialType socialType, String socialId, String nickname, String fcmToken,
                   String appleRefreshToken, String kakaoRefreshToken, String naverRefreshToken,
-                  String googleRefreshToken, MemberInfo memberInfo, MemberSetting memberSetting) {
+                  String googleRefreshToken, MemberInfo memberInfo, MemberSetting memberSetting,
+                  Tier highestTier) {
         this.socialType = socialType;
         this.socialId = socialId;
         this.nickname = nickname;
@@ -101,6 +111,7 @@ public class Member extends BaseEntity {
         this.googleRefreshToken = googleRefreshToken;
         this.memberInfo = memberInfo;
         this.memberSetting = memberSetting;
+        this.highestTier = highestTier;
     }
 
     // 비즈니스 로직
@@ -180,5 +191,12 @@ public class Member extends BaseEntity {
 
     public void firstSubscription() {
         this.isSubscriptionRewarded = true;
+    }
+    public boolean isNewRecordTier(Tier tier) {
+
+    }
+
+    public void updateHighestTier(Tier newHighestTier) {
+        this.highestTier = newHighestTier;
     }
 }

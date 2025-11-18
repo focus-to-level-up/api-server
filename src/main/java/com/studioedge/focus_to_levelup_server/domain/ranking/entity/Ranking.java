@@ -37,8 +37,9 @@ public class Ranking extends BaseEntity {
     private Tier tier;
 
     @Builder
-    public Ranking(League league, Member member) {
+    public Ranking(League league, Member member, Tier tier) {
         this.league = league;
         this.member = member;
+        this.tier = tier;
     }
 }

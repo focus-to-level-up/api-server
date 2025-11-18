@@ -52,4 +52,10 @@ public interface GuildMemberRepository extends JpaRepository<GuildMember, Long> 
             "JOIN FETCH gm.guild g " +
             "WHERE gm.member.id = :memberId AND gm.isBoosted = true")
     List<GuildMember> findAllByMemberIdAndIsBoostedTrueWithGuild(@Param("memberId") Long memberId);
+
+    @Query("SELECT gm FROM GuildMember gm " +
+            "JOIN FETCH gm.member " +  // Mail 생성을 위해 Member 정보 필요
+            "JOIN FETCH gm.guild " +   // groupingBy를 위해 Guild 정보 필요
+            "WHERE gm.guild.id IN :guildIds")
+    List<GuildMember> findAllByGuildIdIn(@Param("guildIds") List<Long> guildIds);
 }
