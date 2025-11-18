@@ -91,7 +91,7 @@ VALUES
 -- -----------------------------------------------------
 INSERT IGNORE INTO characters (name, rarity, price, description, background_image_url)
 VALUES ('에르핀', 'RARE', 6000, '', '');
-atus
+
 SET @character_id = LAST_INSERT_ID();
 SET @folder = 'elfin/';
 SET @file = 'elfin';
