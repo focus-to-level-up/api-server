@@ -36,6 +36,7 @@ public class GiftService {
     public GiftResponse giftSubscription(Long senderId, String receiverNickname, SubscriptionType subscriptionType, Integer durationDays) {
         // 1. 받는 사람 조회
         Member receiver = memberRepository.findByNickname(receiverNickname)
+
                 .orElseThrow(ReceiverNotFoundException::new);
 
         // 2. 수신자가 구독 활성 중인지 확인 (기본 성장 패키지 또는 프리미엄 성장 패키지)

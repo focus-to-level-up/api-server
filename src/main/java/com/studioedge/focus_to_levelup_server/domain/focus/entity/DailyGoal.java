@@ -41,7 +41,7 @@ public class DailyGoal extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer currentMinutes = 0;
+    private Integer currentSeconds = 0;
 
     @Column(nullable = false)
     @ColumnDefault("false")
@@ -77,7 +77,7 @@ public class DailyGoal extends BaseEntity {
         this.usingAllowedAppSeconds += usingAppSeconds;
     }
 
-    public void addCurrentMinutes(Integer minutes) {
-        this.currentMinutes += minutes;
+    public void addCurrentSeconds(Integer seconds) {
+        this.currentSeconds += seconds;
     }
 }

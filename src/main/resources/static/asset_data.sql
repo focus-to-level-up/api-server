@@ -89,9 +89,21 @@ VALUES
 INSERT IGNORE INTO assets (type, name, asset_url)
 VALUES
     ('CHARACTER_PROFILE_IMAGE', '밤톨냥 1단계 프로필 이미지', CONCAT(@s3_image_base, 'bamtolnyang1_profile_image.png')),
-    ('CHARACTER_PROFILE_IMAGE', '밤톨냥 2단계 프로필 이미지', CONCAT(@s3_image_base, 'bamtolnyang2_profile_image.png')), --
+    ('CHARACTER_PROFILE_IMAGE', '밤톨냥 2단계 프로필 이미지', CONCAT(@s3_image_base, 'bamtolnyang2_profile_image.png')),
     ('CHARACTER_PROFILE_IMAGE', '밤톨냥 3단계 프로필 이미지', CONCAT(@s3_image_base, 'bamtolnyang3_profile_image.png')),
     ('CHARACTER_PROFILE_BORDER', '밤톨냥 프로필 테두리', CONCAT(@s3_border_base, 'bamtolnyang_profile_border.png'));
+
+-- -----------------------------------------------------
+-- 8. 티어 테두리
+-- -----------------------------------------------------
+INSERT IGNORE INTO assets (type, name, asset_url)
+VALUES
+    ('CHARACTER_PROFILE_IMAGE', '브론즈 프로필 테두리', CONCAT(@s3_border_base, 'bronze_profile_border.png')),
+    ('CHARACTER_PROFILE_IMAGE', '실버 프로필 테두리', CONCAT(@s3_border_base, 'silver_profile_border.png')),
+    ('CHARACTER_PROFILE_IMAGE', '골드 프로필 테두리', CONCAT(@s3_border_base, 'gold_profile_border.png')),
+    ('CHARACTER_PROFILE_IMAGE', '플레티넘 프로필 테두리', CONCAT(@s3_border_base, 'platinum_profile_border.png')),
+    ('CHARACTER_PROFILE_IMAGE', '애매랄드 프로필 테두리', CONCAT(@s3_border_base, 'emerald_profile_border.png')),
+    ('CHARACTER_PROFILE_IMAGE', '마스터 프로필 테두리', CONCAT(@s3_border_base, 'master_profile_border.png'));
 
 -- -----------------------------------------------------
 SET FOREIGN_KEY_CHECKS = 1;

@@ -43,9 +43,10 @@ public class TotalStatService {
         );
 
         // 총합 및 평균 계산
-        long totalMinutes = goals.stream()
-                .mapToLong(DailyGoal::getCurrentMinutes)
+        long totalSeconds = goals.stream()
+                .mapToLong(DailyGoal::getCurrentSeconds)
                 .sum();
+        long totalMinutes = totalSeconds / 60;
 
         double averageMinutes = (goals.isEmpty()) ? 0 : (double) totalMinutes / goals.size();
 

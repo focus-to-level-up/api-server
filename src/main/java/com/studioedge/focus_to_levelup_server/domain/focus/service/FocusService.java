@@ -71,8 +71,8 @@ public class FocusService {
          * 현재 집중중 상태 해제
          * */
         int focusMinutes = request.focusSeconds() / 60;
-        LocalDate serviceDate = getServiceDate();
         int focusExp = focusMinutes * 10;
+        LocalDate serviceDate = getServiceDate();
 
 
         Member member = memberRepository.findById(m.getId())
@@ -102,10 +102,12 @@ public class FocusService {
 
         // 레벨 업
         member.levelUp(focusExp);
+        // 총 레벨 업
+        memberInfo.totalLevelUp(focusExp);
         // 골드 획득
         memberInfo.addGold(focusExp);
         // 일일 목표 공부 시간 더하기
-        dailyGoal.addCurrentMinutes(focusMinutes);
+        dailyGoal.addCurrentSeconds(request.focusSeconds());
         // 과목 공부 시간 더하기
         dailySubject.addSeconds(request.focusSeconds());
         // 캐릭터 친밀도 상승

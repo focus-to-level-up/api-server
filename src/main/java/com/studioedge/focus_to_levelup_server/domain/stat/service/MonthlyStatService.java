@@ -45,15 +45,15 @@ public class MonthlyStatService {
 
         // 3. [실시간 데이터] "현재 달"의 데이터만 실시간 계산
         LocalDate today = LocalDate.now();
-        Integer currentMonthLiveMinutes = 0;
+        Integer currentMonthLiveSeconds = 0;
 
         if (today.getYear() == year) {
             LocalDate startOfMonth = today.withDayOfMonth(1);
             List<DailyGoal> currentMonthGoals = dailyGoalRepository.findAllByMemberIdAndDailyGoalDateBetween(
                     memberId, startOfMonth, today
             );
-            currentMonthLiveMinutes = currentMonthGoals.stream()
-                    .mapToInt(DailyGoal::getCurrentMinutes)
+            currentMonthLiveSeconds = currentMonthGoals.stream()
+                    .mapToInt(DailyGoal::getCurrentSeconds)
                     .sum();
         }
 
@@ -62,7 +62,7 @@ public class MonthlyStatService {
         for (int month = 1; month <= 12; month++) {
             if (year == today.getYear() && month == today.getMonthValue()) {
                 // "현재 달"은 실시간 데이터로 덮어쓰기 (또는 추가)
-                responses.add(MonthlyStatResponse.of(month, currentMonthLiveMinutes));
+                responses.add(MonthlyStatResponse.of(month, currentMonthLiveSeconds));
             } else {
                 // "과거 달"은 집계 데이터 사용 (없으면 0)
                 Integer totalMinutes = aggregatedMap.getOrDefault(month, 0);
