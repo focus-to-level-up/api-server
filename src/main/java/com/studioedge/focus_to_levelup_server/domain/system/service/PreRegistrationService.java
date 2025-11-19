@@ -192,7 +192,7 @@ public class PreRegistrationService {
             return Mail.builder()
                     .receiver(member)
                     .senderName("Focus to Level Up")
-                    .type(MailType.SUBSCRIPTION)
+                    .type(MailType.GIFT_SUBSCRIPTION)
                     .title("사전예약 보상을 수령하세요")
                     .description(description)
                     .popupTitle("사전예약 프리미엄 구독권 수령")

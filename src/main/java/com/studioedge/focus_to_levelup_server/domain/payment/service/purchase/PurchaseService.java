@@ -19,9 +19,6 @@ import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionT
 import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.service.receipt.ReceiptValidationResult;
 import com.studioedge.focus_to_levelup_server.domain.payment.service.receipt.ReceiptValidator;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +38,6 @@ public class PurchaseService {
     private final MemberInfoRepository memberInfoRepository;
     private final GiftTicketRepository giftTicketRepository;
     private final SubscriptionRepository subscriptionRepository;
-    private final MailRepository mailRepository;
     private final ReceiptValidator receiptValidator;
 
     /**
@@ -70,13 +66,22 @@ public class PurchaseService {
         Product product = productRepository.findByIdAndIsActiveTrue(request.productId())
                 .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다"));
 
-        // 5. Member 및 MemberInfo 재조회 (영속성 컨텍스트 관리를 위해)
+        // 5. 구독권 상품인 경우 활성 구독 여부 체크 (구독 활성 중이면 구매 불가)
+        if (product.getType() == ProductType.BASIC_SUBSCRIPTION || product.getType() == ProductType.PREMIUM_SUBSCRIPTION) {
+            subscriptionRepository.findByMemberIdAndIsActiveTrue(member.getId()).ifPresent(subscription -> {
+                throw new IllegalStateException("이미 구독 중입니다. 구독 기간이 종료된 후 구매할 수 있습니다.");
+            });
+        }
+
+        // 6. Member 재조회 (영속성 컨텍스트 관리를 위해)
         Member managedMember = memberRepository.findById(member.getId())
                 .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다"));
+
+        // 7. MemberInfo 조회
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(member.getId())
                 .orElseThrow(() -> new EntityNotFoundException("회원 정보를 찾을 수 없습니다"));
 
-        // 6. PaymentLog 생성
+        // 8. PaymentLog 생성
         PaymentLog paymentLog = PaymentLog.builder()
                 .member(managedMember)
                 .product(product)
@@ -88,92 +93,69 @@ public class PurchaseService {
                 .build();
         paymentLogRepository.save(paymentLog);
 
-        // 7. 구독권 생성 (구독 상품인 경우)
+        // 9. 즉시 재화/보상 지급 (우편함을 거치지 않음)
+        int diamondRewarded = 0;
+        int bonusTicketsRewarded = 0;
         Boolean subscriptionCreated = false;
+
         if (product.getType() == ProductType.BASIC_SUBSCRIPTION || product.getType() == ProductType.PREMIUM_SUBSCRIPTION) {
+            subscriptionCreated = true;
             SubscriptionType subscriptionType = product.getType() == ProductType.BASIC_SUBSCRIPTION
                     ? SubscriptionType.NORMAL
                     : SubscriptionType.PREMIUM;
 
+            // 첫 구독인 경우 다이아 지급 및 플래그 설정
+            if (!managedMember.getIsSubscriptionRewarded()) {
+                if (product.getDiamondReward() != null && product.getDiamondReward() > 0) {
+                    memberInfo.addDiamond(product.getDiamondReward());
+                    diamondRewarded = product.getDiamondReward();
+                    log.info("First subscription: granted {} diamonds to member {}", diamondRewarded, managedMember.getId());
+                }
+                managedMember.updateSubscriptionReward(true);
+            }
+
+            // 보너스 티켓 즉시 지급 (count 증가)
+            int bonusTicketCount = subscriptionType.getBonusTicketCount();
+            memberInfo.addBonusTicket(bonusTicketCount);
+            bonusTicketsRewarded = bonusTicketCount;
+            log.info("Granted {} bonus tickets to member {}", bonusTicketCount, managedMember.getId());
+
+            // 구독권 생성 및 즉시 활성화
+            LocalDate startDate = LocalDate.now();
+            LocalDate endDate = startDate.plusMonths(1);
             Subscription subscription = Subscription.builder()
                     .member(managedMember)
                     .type(subscriptionType)
-                    .startDate(LocalDate.now())
-                    .endDate(LocalDate.now().plusMonths(1))
+                    .startDate(startDate)
+                    .endDate(endDate)
                     .isActive(true)
                     .isAutoRenew(true)
                     .source(SubscriptionSource.PURCHASE)
                     .build();
             subscriptionRepository.save(subscription);
+            log.info("Created and activated subscription for member {} with type {}", managedMember.getId(), subscriptionType);
 
-            subscriptionCreated = true;
-            log.info("Created {} subscription for member {}", subscriptionType, managedMember.getId());
+        } else if (product.getType() == ProductType.DIAMOND_PACK) {
+            // 다이아 팩 구매 - 즉시 다이아 지급
+            if (product.getDiamondReward() != null && product.getDiamondReward() > 0) {
+                memberInfo.addDiamond(product.getDiamondReward());
+                diamondRewarded = product.getDiamondReward();
+                log.info("Diamond pack: granted {} diamonds to member {}", diamondRewarded, member.getId());
+            }
         }
 
-        // 8. Mail 생성 (다이아 및 보너스 티켓 보상)
-        SubscriptionType mailSubscriptionType = subscriptionCreated
-                ? (product.getType() == ProductType.BASIC_SUBSCRIPTION ? SubscriptionType.NORMAL : SubscriptionType.PREMIUM)
-                : null;
-        if (subscriptionCreated && !managedMember.getIsSubscriptionRewarded()) {
-            memberInfo.addDiamond(product.getDiamondReward());
-            managedMember.firstSubscription();
-        } else {
-            createPurchaseMail(managedMember, product, mailSubscriptionType);
-        }
-
-        // 9. 응답 생성
+        // 10. 응답 생성
         return new PurchaseResponse(
                 paymentLog.getId(),
                 product.getName(),
                 paymentLog.getPaidAmount(),
-                0, // diamondRewarded - Mail로 지급
-                0, // bonusTicketsRewarded - Mail로 지급
+                diamondRewarded,
+                bonusTicketsRewarded,
                 0, // giftTicketsRewarded - 사용 안 함
                 subscriptionCreated,
                 paymentLog.getPlatform(),
                 paymentLog.getStatus(),
                 paymentLog.getCreatedAt()
         );
-    }
-
-    /**
-     * 구매 보상 우편 생성
-     */
-    private void createPurchaseMail(Member member, Product product, SubscriptionType subscriptionType) {
-        Integer diamondReward = (product.getDiamondReward() != null && product.getDiamondReward() > 0)
-                ? product.getDiamondReward()
-                : 0;
-
-        // 보너스 티켓 정보는 description에 JSON 형태로 저장
-        String description = product.getDescription();
-
-        // 구독권인 경우 SubscriptionType에서 bonusTicketCount 조회
-        if (subscriptionType != null && subscriptionType.getBonusTicketCount() > 0) {
-            description = String.format(
-                    "{\"bonusTicketCount\": %d, \"originalDescription\": \"%s\"}",
-                    subscriptionType.getBonusTicketCount(),
-                    product.getDescription()
-                            .replace("\\", "\\\\")  // 백슬래시 escape (먼저 처리)
-                            .replace("\"", "\\\"")  // 큰따옴표 escape
-                            .replace("\n", "\\n")   // 줄바꿈 escape
-                            .replace("\r", "\\r")   // 캐리지 리턴 escape
-                            .replace("\t", "\\t")   // 탭 escape
-            );
-        }
-
-        Mail mail = Mail.builder()
-                .receiver(member)
-                .senderName("Focus To Level Up")
-                .type(MailType.PURCHASE)
-                .title(product.getName() + " 구매 보상")
-                .description(description)
-                .reward(diamondReward)
-                .expiredAt(LocalDate.now().plusDays(30)) // 30일 후 만료
-                .build();
-
-        mailRepository.save(mail);
-        log.info("Created purchase mail for member {} with {} diamonds and {} bonus tickets",
-                member.getId(), diamondReward,
-                subscriptionType != null ? subscriptionType.getBonusTicketCount() : 0);
     }
 }
