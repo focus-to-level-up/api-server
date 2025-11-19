@@ -2,6 +2,8 @@ package com.studioedge.focus_to_levelup_server.domain.payment.controller;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.history.PaymentHistoryListResponse;
+import com.studioedge.focus_to_levelup_server.domain.payment.dto.purchase.GiftSubscriptionRequest;
+import com.studioedge.focus_to_levelup_server.domain.payment.dto.purchase.GiftSubscriptionResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.purchase.PurchaseRequest;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.purchase.PurchaseResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.refund.RefundRequest;
@@ -57,5 +59,15 @@ public class PurchaseController {
     ) {
         PaymentHistoryListResponse response = paymentHistoryService.getPaymentHistory(member.getId());
         return HttpResponseUtil.ok(response);
+    }
+
+    @Operation(summary = "구독권 선물 구매", description = "영수증 검증 후 다른 사용자에게 구독권을 선물합니다 (우편으로 전송)")
+    @PostMapping("/gift-subscription")
+    public ResponseEntity<CommonResponse<GiftSubscriptionResponse>> giftSubscription(
+            @AuthenticationPrincipal Member member,
+            @RequestBody @Valid GiftSubscriptionRequest request
+    ) {
+        GiftSubscriptionResponse response = purchaseService.giftSubscription(member, request);
+        return HttpResponseUtil.created(response);
     }
 }

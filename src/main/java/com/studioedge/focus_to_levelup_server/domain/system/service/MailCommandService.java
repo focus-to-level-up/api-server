@@ -108,6 +108,23 @@ public class MailCommandService {
 
         SubscriptionType subscriptionType = SubscriptionType.valueOf(subscriptionTypeStr);
 
+        // MemberInfo 조회 (보너스 티켓 지급용)
+        MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
+                .orElseThrow(InvalidMemberException::new);
+
+        // 보너스 티켓 지급 (metadata에 bonusTicketCount가 있으면 지급)
+        if (metadata.containsKey("bonusTicketCount")) {
+            Object bonusTicketObj = metadata.get("bonusTicketCount");
+            if (bonusTicketObj instanceof Number) {
+                int bonusTicketCount = ((Number) bonusTicketObj).intValue();
+                if (bonusTicketCount > 0) {
+                    memberInfo.addBonusTicket(bonusTicketCount);
+                    log.info("Rewarded {} bonus tickets to member {} from subscription gift",
+                            bonusTicketCount, memberId);
+                }
+            }
+        }
+
         // Subscription 엔티티 생성
         Subscription subscription = Subscription.builder()
                 .member(mail.getReceiver())
