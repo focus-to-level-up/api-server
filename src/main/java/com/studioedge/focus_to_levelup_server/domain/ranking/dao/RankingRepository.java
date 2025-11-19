@@ -48,7 +48,7 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
             "JOIN FETCH r.member m " +
             "WHERE r.league = :league " +
             "ORDER BY m.currentLevel DESC, m.currentExp DESC")
-    List<Ranking> findALlByLeague(League league);
+    List<Ranking> findAllBySortedLeague(League league);
 
     void deleteByMemberId(Long memberId);
 }

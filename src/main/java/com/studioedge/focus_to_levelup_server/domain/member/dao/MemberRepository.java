@@ -35,8 +35,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "AND m.status = 'ACTIVE'")
     List<Member> findActiveMembersWithoutRanking();
 
-    @Query("SELECT c FROM Character c LEFT JOIN FETCH c.characterImages WHERE c.id = :id")
-
     // Status가 ACTIVE이고, MemberSetting에서 랭킹이 활성화된 유저들만 조회
     @Query("SELECT m FROM Member m LEFT JOIN FETCH MemberSetting ms " +
             "WHERE ms.isRankingActive = true " +

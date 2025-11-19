@@ -32,7 +32,7 @@ public class MetaDBConfig {
     public DataSourceScriptDatabaseInitializer metaDbBatchSchemaInitializer() {
         DatabaseInitializationSettings settings = new DatabaseInitializationSettings();
         settings.setSchemaLocations(List.of("classpath:org/springframework/batch/core/schema-mysql.sql"));
-        settings.setMode(DatabaseInitializationMode.EMBEDDED);
+        settings.setMode(DatabaseInitializationMode.ALWAYS);
         settings.setContinueOnError(false);
         return new DataSourceScriptDatabaseInitializer(metaDBSource(), settings);
     }

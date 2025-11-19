@@ -20,7 +20,6 @@ public class WeeklyJobBatch {
      * 4. 승강제 결정
      * 5. 신규 유저 랭크 진입
      * 6. 레벨 / 아이템 초기화
-     * 7. 리그 주차 증가
      * */
 
     private final JobRepository jobRepository;
@@ -31,8 +30,7 @@ public class WeeklyJobBatch {
                          Step grantGuildWeeklyReward,
                          Step processLeaguePlacement,
                          Step placeNewMemberInRanking,
-                         Step resetMemberLevelAndItem,
-                         Step increaseLeagueWeek) {
+                         Step resetMemberLevelAndItem) {
         return new JobBuilder("weeklyJob", jobRepository)
                 .start(updateWeeklyStat)
                 .next(grantWeeklyReward)
@@ -40,7 +38,6 @@ public class WeeklyJobBatch {
                 .next(processLeaguePlacement)
                 .next(placeNewMemberInRanking)
                 .next(resetMemberLevelAndItem)
-                .next(increaseLeagueWeek)
                 .build();
     }
 }

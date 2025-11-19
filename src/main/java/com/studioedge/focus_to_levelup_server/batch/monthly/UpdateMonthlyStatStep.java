@@ -2,11 +2,9 @@ package com.studioedge.focus_to_levelup_server.batch.monthly;
 
 
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.stat.dao.MonthlyStatRepository;
-import com.studioedge.focus_to_levelup_server.domain.stat.dao.MonthlySubjectStatRepository;
 import com.studioedge.focus_to_levelup_server.domain.stat.entity.MonthlyStat;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,16 +37,14 @@ public class UpdateMonthlyStatStep {
 
     private final MemberRepository memberRepository;
     private final MonthlyStatRepository monthlyStatRepository;
-    private final MonthlySubjectStatRepository monthlySubjectStatRepository;
     private final DailyGoalRepository dailyGoalRepository;
-    private final DailySubjectRepository dailySubjectRepository;
 
     @Bean
-    public Step updateMonthlyStat() {
+    public Step updateMonthlyStat(ItemProcessor<Member, Member> passThroughMemberProcessor) {
         return new StepBuilder("updateMonthlyStat", jobRepository)
                 .<Member, Member> chunk(100, platformTransactionManager)
                 .reader(updateMonthlyStatReader())
-                .processor(passThroughMemberProcessor())
+                .processor(passThroughMemberProcessor)
                 .writer(updateMonthStatWriter())
                 .build();
     }
@@ -62,11 +58,6 @@ public class UpdateMonthlyStatStep {
                 .repository(memberRepository)
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
-    }
-
-    @Bean
-    public ItemProcessor<Member, Member> passThroughMemberProcessor() {
-        return member -> member;
     }
 
     @Bean

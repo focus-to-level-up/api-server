@@ -7,6 +7,9 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 public interface SeasonRepository extends JpaRepository<Season, Long> {
+    /**
+     * 현재 진행중인 시즌 조회
+     * */
     Optional<Season> findFirstByEndDateGreaterThanEqualOrderByStartDateDesc(LocalDate date);
 
     // endDate가 가장 최신인 Season 조회

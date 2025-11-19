@@ -10,6 +10,7 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.DayOfWeek;
@@ -20,6 +21,7 @@ import java.util.Optional;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
+@Profile("dev")
 public class GlobalBatchScheduler {
     private final JobLauncher jobLauncher;
     private final SeasonRepository seasonRepository;
@@ -66,7 +68,6 @@ public class GlobalBatchScheduler {
             // -------------------------------------------------------
             if (today.getDayOfMonth() == 1) {
                 log.info(">>> 2. Running Monthly Job (First Day of Month)");
-                // 주의: WeeklyJob의 레벨 초기화보다 먼저 실행되어야 정확한 월말 레벨 기록 가능
                 jobLauncher.run(monthlyJob, params);
             }
 
@@ -99,7 +100,6 @@ public class GlobalBatchScheduler {
      */
     private boolean isSeasonEndWeek(LocalDate today) {
         // 현재 진행 중이던 시즌의 종료일이 '어제(일요일)'였는지 확인
-        // 즉, 오늘(월요일)이 새 시즌을 시작해야 하는 날인지 판단
         LocalDate yesterday = today.minusDays(1);
 
         Optional<Season> endedSeason = seasonRepository.findByEndDate(yesterday);

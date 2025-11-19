@@ -50,6 +50,7 @@ public class GrantWeeklyRewardStep {
         return new RepositoryItemReaderBuilder<Member>()
                 .name("grantWeeklyRewardReader")
                 .pageSize(100)
+                // 1. 주간 보상을 수령하지 않은 유저만 조회
                 .methodName("findAllByIsReceivedWeeklyRewardIsFalse")
                 .repository(memberRepository)
                 .sorts(Map.of("id", Sort.Direction.ASC))
@@ -59,13 +60,9 @@ public class GrantWeeklyRewardStep {
     @Bean
     public ItemProcessor<Member, WeeklyReward> grantWeeklyRewardProcessor() {
         return member -> {
-            /**
-             * 현재 레벨 조회
-             * 대표 캐릭터 조회
-             * 다이아 보너스 티켓 조회
-             */
-            MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefaultTrue(member.getId())
-                    .orElseThrow();
+            // 2. 유저의 대표 캐릭터 정보 조회
+            MemberCharacter memberCharacter = memberCharacterRepository
+                    .findByMemberIdAndIsDefaultTrue(member.getId()).orElseThrow(IllegalStateException::new);
             return WeeklyReward.builder()
                     .member(member)
                     .lastCharacter(memberCharacter.getCharacter())

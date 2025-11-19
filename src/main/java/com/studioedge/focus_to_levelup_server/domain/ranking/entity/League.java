@@ -44,8 +44,8 @@ public class League extends BaseEntity {
     private Tier tier;
 
     @Column(nullable = false)
-    @ColumnDefault("1")
-    private Integer currentWeek = 1;
+    @ColumnDefault("0")
+    private Integer currentWeek = 0;
 
     @Column(nullable = false)
     private LocalDate startDate;
@@ -57,15 +57,21 @@ public class League extends BaseEntity {
     @ColumnDefault("0")
     private Integer currentMembers = 0; // 전체 인원수
 
+    @Column(nullable = false)
+    @ColumnDefault("true")
+    private Boolean isActive = true;
+
     @Builder
     public League(Season season, String name, CategoryMainType categoryType,
-                  LocalDate startDate, LocalDate endDate, Tier tier) {
+                  LocalDate startDate, LocalDate endDate, Tier tier,
+                  Integer currentWeek) {
         this.season = season;
         this.name = name;
         this.categoryType = categoryType;
         this.startDate = startDate;
         this.endDate = endDate;
         this.tier = tier;
+        this.currentWeek = currentWeek;
     }
 
     public void increaseCurrentMembers() {

@@ -55,9 +55,8 @@ public class PlaceNewMemberInRankingStep {
             Season currentSeason = seasonRepository.findFirstByEndDateGreaterThanEqualOrderByStartDateDesc(LocalDate.now())
                     .orElseThrow(() -> new IllegalStateException("진행 중인 시즌이 없습니다."));
 
-            // 2. 랭킹이 없는(미배치) 활성 유저 조회
+            // 2. 랭킹이 없는 유저 조회
             List<Member> newMembers = memberRepository.findActiveMembersWithoutRanking();
-
             if (newMembers.isEmpty()) {
                 log.info(">> 배치할 신규 유저가 없습니다.");
                 return RepeatStatus.FINISHED;
@@ -70,7 +69,7 @@ public class PlaceNewMemberInRankingStep {
             List<Ranking> newRankingsToSave = new ArrayList<>();
             List<League> leaguesToUpdate = new ArrayList<>();
 
-            // 4. 카테고리별 배치 로직 수행
+            // 4. 카테고리별 리그 배치
             for (Map.Entry<CategoryMainType, List<Member>> entry : membersByCategory.entrySet()) {
                 CategoryMainType category = entry.getKey();
                 List<Member> membersToPlace = entry.getValue();
@@ -78,7 +77,7 @@ public class PlaceNewMemberInRankingStep {
                 distributeToBronzeLeagues(currentSeason, category, membersToPlace, newRankingsToSave, leaguesToUpdate);
             }
 
-            // 5. 저장 (변경된 리그 정보와 새로 생긴 랭킹 정보)
+            // 5. 저장
             leagueRepository.saveAll(leaguesToUpdate);
             rankingRepository.saveAll(newRankingsToSave);
 
@@ -118,7 +117,6 @@ public class PlaceNewMemberInRankingStep {
                     break; // 찾음!
                 }
                 // 110명 이상이면 큐에서 영구 제거 (더 이상 이 리그엔 배정 안 함)
-                // (단, 이 리그가 DB에 업데이트는 되어야 할 수 있으므로 leaguesAccumulator에는 이미 포함되어 있어야 함)
                 if (!leaguesAccumulator.contains(candidate)) {
                     leaguesAccumulator.add(candidate);
                 }
@@ -136,8 +134,6 @@ public class PlaceNewMemberInRankingStep {
                         .endDate(season.getEndDate())
                         .build();
 
-                // 새 리그는 리포지토리에 바로 저장해서 ID를 확보하는 것이 안전할 수 있으나,
-                // 여기서는 saveAll로 일괄 처리한다고 가정 (Cascade 설정 필요할 수 있음)
                 leagueRepository.save(targetLeague);
                 leaguesAccumulator.add(targetLeague);
             }
@@ -150,14 +146,11 @@ public class PlaceNewMemberInRankingStep {
                     .build();
 
             rankingsAccumulator.add(newRanking);
-
-            targetLeague.increaseCurrentMembers(); // 인원수 +1
+            targetLeague.increaseCurrentMembers();
 
             // 4-6. 리그를 다시 큐에 넣음 (인원수가 늘어난 상태로 재정렬됨)
-            // 이미 큐에 넣기 전에 변경된 상태가 반영되어야 하므로, 다시 add
             leagueQueue.add(targetLeague);
 
-            // 변경된 리그 목록에 없으면 추가 (JPA Dirty Checking이 동작하겠지만, 명시적 관리를 위해)
             if (!leaguesAccumulator.contains(targetLeague)) {
                 leaguesAccumulator.add(targetLeague);
             }

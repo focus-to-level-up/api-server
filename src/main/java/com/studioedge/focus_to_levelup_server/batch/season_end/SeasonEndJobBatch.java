@@ -21,11 +21,17 @@ public class SeasonEndJobBatch {
     private final JobRepository jobRepository;
 
     @Bean
-    public Job seasonEndJob(Step analyzeSeason,
+    public Job seasonEndJob(Step updateWeeklyStat,
+                            Step grantWeeklyReward,
+                            Step grantGuildWeeklyReward,
+                            Step analyzeSeason,
                             Step grantSeasonReward,
                             Step startNewSeason) {
         return new JobBuilder("seasonEndJob", jobRepository)
-                .start(analyzeSeason)       // 1. 상위 10% 커트라인 계산
+                .start(updateWeeklyStat)
+                .next(grantWeeklyReward)
+                .next(grantGuildWeeklyReward)
+                .next(analyzeSeason)
                 .next(grantSeasonReward)    // 2. 시즌 보상 지급
                 .next(startNewSeason)       // 3. 새 시즌 생성 및 전원 브론즈 재배치
                 .build();

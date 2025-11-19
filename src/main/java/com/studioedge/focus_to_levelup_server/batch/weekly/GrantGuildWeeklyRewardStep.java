@@ -24,7 +24,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -51,7 +50,7 @@ public class GrantGuildWeeklyRewardStep {
     @Bean
     public Step grantGuildWeeklyReward() {
         return new StepBuilder("grantGuildWeeklyReward", jobRepository)
-                .<Guild, Guild> chunk(20, platformTransactionManager) // 길드 20개씩 처리 (멤버 수 고려)
+                .<Guild, Guild> chunk(20, platformTransactionManager)
                 .reader(grantGuildWeeklyRewardReader())
                 .processor(grantGuildWeeklyRewardProcessor())
                 .writer(grantGuildWeeklyRewardWriter())
@@ -80,7 +79,7 @@ public class GrantGuildWeeklyRewardStep {
             List<Guild> guilds = (List<Guild>) chunk.getItems();
             List<Long> guildIds = guilds.stream().map(Guild::getId).toList();
 
-            // 1. [DB 조회] 청크에 속한 모든 길드의 멤버들을 일괄 조회 (N+1 방지)
+            // 1. 모든 길드의 멤버들을 일괄 조회후, 길드-길드원 리스트 매핑.
             Map<Long, List<GuildMember>> membersByGuild = guildMemberRepository.findAllByGuildIdIn(guildIds)
                     .stream().collect(Collectors.groupingBy(gm -> gm.getGuild().getId()));
 
@@ -89,6 +88,7 @@ public class GrantGuildWeeklyRewardStep {
             List<Guild> guildsToUpdate = new ArrayList<>();
 
             for (Guild guild : guilds) {
+                // 2. 각 길드의 맴버들 조회
                 List<GuildMember> members = membersByGuild.getOrDefault(guild.getId(), Collections.emptyList());
                 int memberCount = members.size();
 
@@ -97,18 +97,18 @@ public class GrantGuildWeeklyRewardStep {
                     continue;
                 }
 
-                // 2. 통계 계산
+                // 3. 통계 계산
                 long totalSeconds = members.stream().mapToLong(GuildMember::getWeeklyFocusTime).sum();
                 // 평균 집중 시간 (초) = 총합 / 인원수
                 int avgSeconds = (int) (totalSeconds / memberCount);
                 double avgHours = avgSeconds / 3600.0;
 
+                // 부스트 사용한 유저의 수
                 int boostCount = (int) members.stream().filter(GuildMember::getIsBoosted).count();
 
-                // 3. 보상 다이아 계산
+                // 4. 보상 다이아 계산
                 int baseReward = calculateBaseReward(avgHours);
-                int boostReward = boostCount * BOOST_BONUS;
-                int totalReward = Math.min(baseReward + boostReward, MAX_REWARD);
+                int totalReward = Math.min(baseReward + boostCount * BOOST_BONUS, MAX_REWARD);
 
                 if (totalReward == 0) {
                     continue;
@@ -128,20 +128,18 @@ public class GrantGuildWeeklyRewardStep {
                         .build();
                 historyToSave.add(history);
 
-                // Guild 엔티티 업데이트 (Dirty Checking 또는 saveAll)
                 guild.updateAverageFocusTime(avgSeconds);
                 guild.updateLastWeekDiamondReward(totalReward);
                 guildsToUpdate.add(guild);
             }
 
             // 6. 일괄 저장
-            if (!CollectionUtils.isEmpty(mailsToSend)) {
+            if (!mailsToSend.isEmpty()) {
                 mailRepository.saveAll(mailsToSend);
             }
-            if (!CollectionUtils.isEmpty(historyToSave)) {
+            if (!historyToSave.isEmpty()) {
                 guildWeeklyRewardRepository.saveAll(historyToSave);
             }
-            // Guild는 영속성 컨텍스트가 관리하지만, 명시적으로 saveAll 호출도 무방함
             guildRepository.saveAll(guildsToUpdate);
 
             log.info(">> Granted rewards for {} guilds. Mails: {}, Histories: {}",
@@ -149,14 +147,16 @@ public class GrantGuildWeeklyRewardStep {
         };
     }
 
+    /**
+     * 평균 공부 시간에 따른 다이아 갯수 보상
+     */
     private int calculateBaseReward(double avgHours) {
         if (avgHours >= 45) return 300;
         if (avgHours >= 40) return 250;
         if (avgHours >= 35) return 200;
         if (avgHours >= 30) return 150;
         if (avgHours >= 25) return 100;
-        return 50; // 25시간 미만 (0시간 포함? 조건에 '이하'가 25에 붙어있지만 통상 미만 처리)
-        // 요구사항: "25시간 이하 > 50 다이아" -> 0~25는 50개 지급으로 해석했습니다.
+        return 50;
     }
 
     private Mail createDiamondMail(Member member, String guildName, int diamondAmount) {

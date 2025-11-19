@@ -90,15 +90,13 @@ public class UpdateWeeklyStatStep {
         log.info("WeeklyStats Processor: 집계 기간 {} ~ {}", startDate, endDate);
 
         return member -> {
-            // 1. [DB 조회] 지난주 DailyGoal (WeeklyStat용)
-            List<DailyGoal> goals = dailyGoalRepository.findAllByMemberIdAndDailyGoalDateBetween(
-                    member.getId(), startDate, endDate
-            );
+            // 1. 유저의 지난주 DailyGoal 조회 (WeeklyStat용)
+            List<DailyGoal> goals = dailyGoalRepository
+                    .findAllByMemberIdAndDailyGoalDateBetween(member.getId(), startDate, endDate);
 
-            // 2. [DB 조회] 지난주 DailySubject (WeeklySubjectStat용)
-            List<DailySubject> dailySubjects = dailySubjectRepository.findAllByMemberIdAndDateBetween(
-                    member.getId(), startDate, endDate
-            );
+            // 2. 유저의 지난주 DailySubject 조회 (WeeklySubjectStat용)
+            List<DailySubject> dailySubjects = dailySubjectRepository
+                    .findAllByMemberIdAndDateBetween(member.getId(), startDate, endDate);
 
             // 3. 둘 다 데이터가 없으면 통계 생성 skip
             if (goals.isEmpty() && dailySubjects.isEmpty()) {
@@ -125,7 +123,6 @@ public class UpdateWeeklyStatStep {
 
     @Bean
     public ItemWriter<WeeklyStatContainer> updateWeeklyStatWriter() {
-        // [REFACTOR] RepositoryItemWriterBuilder 대신 커스텀 ItemWriter 사용
         return chunk -> {
             List<WeeklyStat> statsToWrite = chunk.getItems().stream()
                     .map(WeeklyStatContainer::weeklyStat)
@@ -135,7 +132,7 @@ public class UpdateWeeklyStatStep {
             List<WeeklySubjectStat> subjectStatsToWrite = chunk.getItems().stream()
                     .map(WeeklyStatContainer::subjectStats)
                     .filter(Objects::nonNull) // DailySubject 데이터가 없는 경우 null일 수 있음
-                    .flatMap(List::stream) // List<List<WeeklySubjectStat>> -> List<WeeklySubjectStat>
+                    .flatMap(List::stream)
                     .collect(Collectors.toList());
 
             if (!CollectionUtils.isEmpty(statsToWrite)) {
