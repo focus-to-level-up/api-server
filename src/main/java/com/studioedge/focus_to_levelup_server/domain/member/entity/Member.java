@@ -193,10 +193,17 @@ public class Member extends BaseEntity {
         this.isSubscriptionRewarded = true;
     }
     public boolean isNewRecordTier(Tier tier) {
-
+        if (this.highestTier == null) {
+            return true;
+        }
+        return tier.compareTo(this.highestTier) > 0;
     }
 
     public void updateHighestTier(Tier newHighestTier) {
         this.highestTier = newHighestTier;
+    }
+
+    public void receiveWeeklyReward() {
+        this.isReceivedWeeklyReward = true;
     }
 }

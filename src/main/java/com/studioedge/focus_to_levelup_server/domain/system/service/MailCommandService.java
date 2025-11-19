@@ -2,11 +2,11 @@ package com.studioedge.focus_to_levelup_server.domain.system.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.character.repository.CharacterRepository;
-import com.studioedge.focus_to_levelup_server.domain.character.repository.MemberCharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.service.CharacterCommandService;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
@@ -24,7 +24,6 @@ import com.studioedge.focus_to_levelup_server.domain.system.dto.response.Charact
 import com.studioedge.focus_to_levelup_server.domain.system.dto.response.MailAcceptResponse;
 import com.studioedge.focus_to_levelup_server.domain.system.dto.response.SubscriptionInfo;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.MailAlreadyReceivedException;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.MailExpiredException;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.MailNotFoundException;

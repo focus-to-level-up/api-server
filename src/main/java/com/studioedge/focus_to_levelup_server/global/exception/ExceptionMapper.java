@@ -277,5 +277,7 @@ public class ExceptionMapper {
     private static void setUpSystemException() {
         mapper.put(BackgroundNotFoundException.class,
                 ExceptionSituation.of("배경을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(WeeklyRewardAlreadyReceivedException.class,
+                ExceptionSituation.of("주간 보상을 이미 수령하였거나 받을 수 있는 주간보상이 없습니다.", HttpStatus.NOT_FOUND));
     }
 }

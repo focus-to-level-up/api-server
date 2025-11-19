@@ -70,6 +70,7 @@ public class GrantWeeklyRewardStep {
                     .member(member)
                     .lastCharacter(memberCharacter.getCharacter())
                     .lastLevel(member.getCurrentLevel())
+                    .evolution(memberCharacter.getEvolution())
                     .build();
         };
     }
