@@ -44,9 +44,9 @@ public class MemberCharacter extends BaseEntity {
     @Column(nullable = false)
     private Integer evolution;
 
-    // TODO: 기능 정리 참고
+    // 캐릭터 위치 (1~9: 1층=1,2,3 / 2층=4,5,6 / 3층=7,8,9)
     @Column(nullable = false)
-    private Integer floor; // 캐릭터 층수
+    private Integer floor;
 
     @Column(nullable = false)
     private Integer remainReward; // 남아있는 훈련보상. 수령받으면 0개

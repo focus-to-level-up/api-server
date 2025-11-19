@@ -119,7 +119,7 @@ public class ExceptionMapper {
         mapper.put(MemberCharacterNotFoundException.class,
                 ExceptionSituation.of("보유하지 않은 캐릭터입니다.", HttpStatus.NOT_FOUND));
         mapper.put(CharacterSlotFullException.class,
-                ExceptionSituation.of("훈련장 슬롯이 가득 찼습니다. 캐릭터를 배치할 수 없습니다.", HttpStatus.BAD_REQUEST));
+                ExceptionSituation.of("훈련장 슬롯이 가득 찼습니다. 캐릭터를 배치할 수 없습니다. (최대 9개)", HttpStatus.BAD_REQUEST));
     }
 
     /**
