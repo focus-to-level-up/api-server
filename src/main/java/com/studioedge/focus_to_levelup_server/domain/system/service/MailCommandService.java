@@ -79,12 +79,22 @@ public class MailCommandService {
 
         // 2. MailType에 따른 보상 지급
         return switch (mail.getType()) {
-            case SUBSCRIPTION, PRE_REGISTRATION, GIFT_SUBSCRIPTION -> handleSubscriptionMail(mail, memberId);
-            case PURCHASE, GIFT_BONUS_TICKET -> handlePurchaseMail(mail, memberId);
+            case GIFT_SUBSCRIPTION -> handleSubscriptionMail(mail, memberId);
+            case GIFT_BONUS_TICKET -> handlePurchaseMail(mail, memberId);
             case CHARACTER_REWARD -> handleCharacterMail(mail, memberId);
             case CHARACTER_SELECTION_TICKET -> handleCharacterSelectionTicketMail(mail, memberId, characterId);
-            case EVENT, RANKING, GUILD, GUILD_WEEKLY, TIER_PROMOTION, SEASON_END -> handleDiamondMail(mail, memberId);
+            case EVENT, GUILD_WEEKLY, TIER_PROMOTION, SEASON_END -> handleDiamondMail(mail, memberId);
+            case COUPON -> handleCouponMail(mail, memberId);
         };
+    }
+
+    /**
+     * 쿠폰 우편 처리 (임시 구현 - 추후 쿠폰 타입에 따라 세분화)
+     * TODO: 쿠폰 보상 타입에 따라 구독권/캐릭터 등 다양한 보상 처리
+     */
+    private MailAcceptResponse handleCouponMail(Mail mail, Long memberId) {
+        // 현재는 다이아 보상만 처리 (기본 구현)
+        return handleDiamondMail(mail, memberId);
     }
 
     /**

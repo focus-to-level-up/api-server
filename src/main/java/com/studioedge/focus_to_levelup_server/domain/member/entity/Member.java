@@ -169,7 +169,7 @@ public class Member extends BaseEntity {
         this.isPreRegistrationRewarded = true;
     }
 
-    public void firstSubscription() {
-        this.isSubscriptionRewarded = true;
+    public void updateSubscriptionReward(boolean rewarded) {
+        this.isSubscriptionRewarded = rewarded;
     }
 }
