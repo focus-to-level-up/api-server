@@ -42,6 +42,9 @@ public class MemberItem extends BaseEntity {
     @Column(nullable = false)
     private Boolean isRewardReceived = false;
 
+    @Column(columnDefinition = "TEXT")
+    private String progressData; // 진행 상황 데이터 (JSON 형식, 클라이언트 표시용)
+
     @Builder
     public MemberItem(Member member, Item item, Integer selection) {
         this.member = member;
@@ -57,5 +60,9 @@ public class MemberItem extends BaseEntity {
 
     public void receiveReward() {
         this.isRewardReceived = true;
+    }
+
+    public void updateProgressData(String progressData) {
+        this.progressData = progressData;
     }
 }

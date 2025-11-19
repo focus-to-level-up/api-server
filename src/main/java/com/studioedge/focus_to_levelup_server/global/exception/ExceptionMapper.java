@@ -12,10 +12,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.stat.exception.StatMonthNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.payment.exception.*;
-import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
-import com.studioedge.focus_to_levelup_server.domain.store.exception.InvalidItemOptionException;
-import com.studioedge.focus_to_levelup_server.domain.store.exception.ItemAlreadyPurchasedException;
-import com.studioedge.focus_to_levelup_server.domain.store.exception.ItemNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.store.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.*;
 import org.springframework.http.HttpStatus;
 
@@ -79,6 +76,12 @@ public class ExceptionMapper {
                 ExceptionSituation.of("유효하지 않은 아이템 옵션입니다.", HttpStatus.BAD_REQUEST));
         mapper.put(InsufficientGoldException.class,
                 ExceptionSituation.of("골드가 부족합니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(MemberItemNotFoundException.class,
+                ExceptionSituation.of("존재하지 않는 아이템이거나 권한이 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(ItemNotCompletedException.class,
+                ExceptionSituation.of("아직 달성하지 않은 아이템입니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(RewardAlreadyReceivedException.class,
+                ExceptionSituation.of("이미 보상을 받은 아이템입니다.", HttpStatus.CONFLICT));
     }
 
     /**
@@ -223,6 +226,8 @@ public class ExceptionMapper {
                 ExceptionSituation.of("잘못된 캐릭터 선택입니다.", HttpStatus.BAD_REQUEST));
         mapper.put(ReceiverNotFoundException.class,
                 ExceptionSituation.of("선물을 받을 유저를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(InvalidMailMetadataException.class,
+                ExceptionSituation.of("우편 메타데이터 형식이 올바르지 않습니다.", HttpStatus.BAD_REQUEST));
     }
 
     /**

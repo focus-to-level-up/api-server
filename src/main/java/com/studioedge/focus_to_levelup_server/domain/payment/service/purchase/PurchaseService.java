@@ -1,9 +1,9 @@
 package com.studioedge.focus_to_levelup_server.domain.payment.service.purchase;
 
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
+import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.payment.dao.BonusTicketRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.GiftTicketRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.PaymentLogRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.ProductRepository;
@@ -37,8 +37,8 @@ import java.time.LocalDate;
 public class PurchaseService {
     private final ProductRepository productRepository;
     private final PaymentLogRepository paymentLogRepository;
+    private final MemberRepository memberRepository;
     private final MemberInfoRepository memberInfoRepository;
-    private final BonusTicketRepository bonusTicketRepository;
     private final GiftTicketRepository giftTicketRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final MailRepository mailRepository;
@@ -70,13 +70,15 @@ public class PurchaseService {
         Product product = productRepository.findByIdAndIsActiveTrue(request.productId())
                 .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다"));
 
-        // 5. MemberInfo 조회
+        // 5. Member 및 MemberInfo 재조회 (영속성 컨텍스트 관리를 위해)
+        Member managedMember = memberRepository.findById(member.getId())
+                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다"));
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(member.getId())
                 .orElseThrow(() -> new EntityNotFoundException("회원 정보를 찾을 수 없습니다"));
 
         // 6. PaymentLog 생성
         PaymentLog paymentLog = PaymentLog.builder()
-                .member(member)
+                .member(managedMember)
                 .product(product)
                 .productTransactionId(transactionId)
                 .platform(request.platform())
@@ -94,7 +96,7 @@ public class PurchaseService {
                     : SubscriptionType.PREMIUM;
 
             Subscription subscription = Subscription.builder()
-                    .member(member)
+                    .member(managedMember)
                     .type(subscriptionType)
                     .startDate(LocalDate.now())
                     .endDate(LocalDate.now().plusMonths(1))
@@ -105,18 +107,18 @@ public class PurchaseService {
             subscriptionRepository.save(subscription);
 
             subscriptionCreated = true;
-            log.info("Created {} subscription for member {}", subscriptionType, member.getId());
+            log.info("Created {} subscription for member {}", subscriptionType, managedMember.getId());
         }
 
         // 8. Mail 생성 (다이아 및 보너스 티켓 보상)
         SubscriptionType mailSubscriptionType = subscriptionCreated
                 ? (product.getType() == ProductType.BASIC_SUBSCRIPTION ? SubscriptionType.NORMAL : SubscriptionType.PREMIUM)
                 : null;
-        if (subscriptionCreated && !member.getIsSubscriptionRewarded()) {
+        if (subscriptionCreated && !managedMember.getIsSubscriptionRewarded()) {
             memberInfo.addDiamond(product.getDiamondReward());
-            member.firstSubscription();
+            managedMember.firstSubscription();
         } else {
-            createPurchaseMail(member, product, mailSubscriptionType);
+            createPurchaseMail(managedMember, product, mailSubscriptionType);
         }
 
         // 9. 응답 생성

@@ -3,7 +3,6 @@ package com.studioedge.focus_to_levelup_server.domain.payment.service.refund;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
-import com.studioedge.focus_to_levelup_server.domain.payment.dao.BonusTicketRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.PaymentLogRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.refund.RefundRequest;
@@ -26,7 +25,6 @@ public class RefundService {
 
     private final PaymentLogRepository paymentLogRepository;
     private final MemberInfoRepository memberInfoRepository;
-    private final BonusTicketRepository bonusTicketRepository;
     private final SubscriptionRepository subscriptionRepository;
 
     /**
@@ -74,6 +72,15 @@ public class RefundService {
 
             if (!subscription.getIsActive()) {
                 throw new RefundNotAllowedException(); // 이미 비활성화된 구독권은 환불 불가
+            }
+
+            // 보너스 티켓 회수
+            Integer bonusTicketCount = subscription.getType().getBonusTicketCount();
+            if (bonusTicketCount > 0) {
+                if (memberInfo.getBonusTicketCount() < bonusTicketCount) {
+                    throw new RefundNotAllowedException(); // 보너스 티켓을 이미 사용하여 환불 불가
+                }
+                memberInfo.decreaseBonusTicket(bonusTicketCount);
             }
 
             subscription.deactivate();
