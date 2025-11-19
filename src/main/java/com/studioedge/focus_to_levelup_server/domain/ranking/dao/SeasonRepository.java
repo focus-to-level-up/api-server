@@ -11,4 +11,6 @@ public interface SeasonRepository extends JpaRepository<Season, Long> {
 
     // endDate가 가장 최신인 Season 조회
     Optional<Season> findFirstByOrderByEndDateDesc();
+
+    Optional<Season> findByEndDate(LocalDate date);
 }

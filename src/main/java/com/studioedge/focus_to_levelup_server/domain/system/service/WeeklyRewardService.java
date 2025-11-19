@@ -37,7 +37,7 @@ public class WeeklyRewardService {
                 .map(Subscription::getType)
                 .orElse(SubscriptionType.NONE);
 
-        // @TODO: 보너스 티켓 객체 생긴것에 따라 다름.
+        // @TODO: memberInfo -> 보너스티켓수 확인. 티켓 > 0 ? true : false
         boolean hasTicket = bonusTicketRepository.findByMemberId(member.getId()).isPresent();
 //
 //        boolean hasTicket;
@@ -56,6 +56,6 @@ public class WeeklyRewardService {
         member.receiveWeeklyReward();
         member.getMemberInfo().addDiamond(request.rewardDiamond());
         weeklyRewardRepository.deleteById(request.weeklyRewardId());
-        // @TODO: 보너스 티켓 차감
+        // @TODO: memberInfo 보너스 티켓 차감
     }
 }

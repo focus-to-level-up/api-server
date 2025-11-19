@@ -74,6 +74,4 @@ public class CheckFocusingIsOnStep {
                 .repository(memberRepository)
                 .build();
     }
-
-
 }

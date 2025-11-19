@@ -43,7 +43,7 @@ public class RestoreExcludeRankingStep {
     @Bean
     public Step restoreExcludeRanking() {
         return new StepBuilder("restoreExcludeRanking", jobRepository)
-                .<MemberSetting, Member> chunk(50, platformTransactionManager)
+                .<MemberSetting, Member> chunk(25, platformTransactionManager)
                 .reader(restoreExcludeRankingReader())
                 .processor(restoreExcludeRankingProcessor())
                 .writer(restoreExcludeRankingWriter())
@@ -54,7 +54,7 @@ public class RestoreExcludeRankingStep {
     public RepositoryItemReader<MemberSetting> restoreExcludeRankingReader() {
         return new RepositoryItemReaderBuilder<MemberSetting>()
                 .name("checkFocusingIsOnReader")
-                .pageSize(50)
+                .pageSize(25)
                 .methodName("findBannedMembersWithExpiredWarning")
                 .repository(memberSettingRepository)
                 .arguments(LocalDate.now().minusWeeks(2))

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.data.RepositoryItemReader;
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
@@ -28,8 +29,9 @@ public class DeleteExpiredMailStep {
     @Bean
     public Step deleteExpiredMail() {
         return new StepBuilder("deleteExpiredMail", jobRepository)
-                .<Mail, Mail> chunk(10, platformTransactionManager)
+                .<Mail, Mail> chunk(50, platformTransactionManager)
                 .reader(deleteExpiredMailReader())
+                .processor(passThroughMailProcessor())
                 .writer(deleteExpiredMailWriter())
                 .build();
     }
@@ -38,11 +40,16 @@ public class DeleteExpiredMailStep {
     public RepositoryItemReader<Mail> deleteExpiredMailReader() {
         return new RepositoryItemReaderBuilder<Mail>()
                 .name("deleteExpiredMailReader")
-                .pageSize(10)
+                .pageSize(50)
                 .methodName("findExpiredMails")
                 .repository(mailRepository)
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
+    }
+
+    @Bean
+    public ItemProcessor<Mail, Mail> passThroughMailProcessor() {
+        return mail -> mail;
     }
 
     @Bean

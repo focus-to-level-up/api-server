@@ -8,6 +8,17 @@ public enum Tier {
     DIAMOND,
     MASTER;
 
+    public static int getSeasonRewardDiamonds(Tier tier) {
+        switch (tier) {
+            case BRONZE: return 500;
+            case SILVER: return 1000;
+            case GOLD: return 1500;
+            case PLATINUM: return 2000;
+            case DIAMOND: return 3000; // 마스터도 다이아 기반으로 시작
+            default: return 0;
+        }
+    }
+
     public static int getRewardDiamonds(Tier tier) {
         switch (tier) {
             case SILVER: return 100;

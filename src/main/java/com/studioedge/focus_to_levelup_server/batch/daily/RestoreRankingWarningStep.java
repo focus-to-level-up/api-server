@@ -57,9 +57,9 @@ public class RestoreRankingWarningStep {
     public ItemProcessor<MemberSetting, MemberSetting> restoreRankingWarningProcessor() {
         return new ItemProcessor<MemberSetting, MemberSetting>() {
             @Override
-            public MemberSetting process(MemberSetting item) throws Exception {
-                item.clearRankingWarning();
-                return item;
+            public MemberSetting process(MemberSetting memberSetting) throws Exception {
+                memberSetting.clearRankingWarning();
+                return memberSetting;
             }
         };
     }

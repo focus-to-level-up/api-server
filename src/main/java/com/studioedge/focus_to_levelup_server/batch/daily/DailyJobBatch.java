@@ -14,12 +14,11 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class DailyJobBatch {
     /**
-     * 1. `clearPlannersStep`
-     * 2. `deleteExpiredMailsStep`
-     * 3. `checkSubscriptionsStep` -> ?
-     * 4. `checkRankingWarningsStep`
-     * 5. `checkFocusModeIsOn`
-     * 6. `checkExcludeRanking`
+     * 1. 플래너 전체 삭제
+     * 2. 만료된 우편 삭제
+     * 3. 유저 랭킹 경고 만료 확인 -> 만료시, null
+     * 5. 집중중인 유저 확인 -> 랭킹 경고
+     * 6. 랭킹 제외유저 복귀
      * */
     private final JobRepository jobRepository;
 

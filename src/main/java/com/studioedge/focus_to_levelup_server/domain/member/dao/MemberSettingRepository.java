@@ -16,7 +16,7 @@ public interface MemberSettingRepository extends JpaRepository<MemberSetting, Lo
     @Query("SELECT ms FROM MemberSetting ms WHERE ms.rankingWarningAt IS NOT NULL AND ms.rankingWarningAt <= :cutoffDate")
     Page<MemberSetting> findExpiredRankingCautions(@Param("cutoffDate") LocalDate cutoffDate, Pageable pageable);
 
-    @Query("SELECT ms FROM MemberSetting ms JOIN ms.member m WHERE m.status = 'RANKING_BANNED' " +
+    @Query("SELECT ms FROM MemberSetting ms JOIN FETCH ms.member m WHERE m.status = 'RANKING_BANNED' " +
             "AND ms.rankingWarningAt IS NOT NULL AND ms.rankingWarningAt <= :cutoffDate")
     Page<MemberSetting> findBannedMembersWithExpiredWarning(@Param("cutoffDate") LocalDate cutoffDate, Pageable pageable);
 }
