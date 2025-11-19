@@ -5,10 +5,10 @@ import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Season;
 import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
 import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,9 +22,6 @@ public interface LeagueRepository extends JpaRepository<League, Long> {
             "LIMIT 1")
     Optional<League> findSmallestBronzeLeagueForCategory(@Param("category") CategoryMainType category);
 
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE League l SET l.currentWeek = l.currentWeek + 1")
-    int increaseAllLeagueWeeks();
 
     // 특정 시즌, 카테고리, 티어에 해당하는 모든 리그 조회하기
     List<League> findAllBySeasonAndCategoryTypeAndTier(Season season, CategoryMainType categoryType, Tier tier);
@@ -37,4 +34,12 @@ public interface LeagueRepository extends JpaRepository<League, Long> {
     List<League> findAllBySeasonAndCategoryTypeWithRankings(
             @Param("season") Season season,
             @Param("categoryType") CategoryMainType categoryType
-    );}
+    );
+
+    @Query("SELECT DISTINCT l FROM League l " +
+            "JOIN FETCH l.season s " +
+            "LEFT JOIN FETCH l.rankings r " +
+            "LEFT JOIN FETCH r.member m " +
+            "WHERE s.endDate = :endDate")
+    List<League> findAllBySeasonEndDateWithRankings(@Param("endDate") LocalDate endDate);
+}

@@ -37,4 +37,8 @@ public interface MailRepository extends JpaRepository<Mail, Long> {
     @Query("SELECT m FROM Mail m WHERE m.expiredAt < CURRENT_DATE")
     Page<Mail> findExpiredMails(Pageable pageable);
 
+    /**
+     * 특정 결제 로그와 연결된 우편 조회 (환불 시 사용)
+     */
+    List<Mail> findByPaymentLogId(Long paymentLogId);
 }

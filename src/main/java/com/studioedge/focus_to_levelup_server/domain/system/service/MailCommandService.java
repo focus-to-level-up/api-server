@@ -8,6 +8,7 @@ import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.character.service.CharacterCommandService;
+import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberAssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
@@ -19,11 +20,15 @@ import com.studioedge.focus_to_levelup_server.domain.payment.entity.BonusTicket;
 import com.studioedge.focus_to_levelup_server.domain.payment.entity.Subscription;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionSource;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
+import com.studioedge.focus_to_levelup_server.domain.system.dao.AssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
+import com.studioedge.focus_to_levelup_server.domain.system.dto.response.AssetRewardInfo;
 import com.studioedge.focus_to_levelup_server.domain.system.dto.response.CharacterRewardInfo;
 import com.studioedge.focus_to_levelup_server.domain.system.dto.response.MailAcceptResponse;
 import com.studioedge.focus_to_levelup_server.domain.system.dto.response.SubscriptionInfo;
+import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
+import com.studioedge.focus_to_levelup_server.domain.system.entity.MemberAsset;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.MailAlreadyReceivedException;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.MailExpiredException;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.MailNotFoundException;
@@ -48,6 +53,8 @@ public class MailCommandService {
     private final BonusTicketRepository bonusTicketRepository;
     private final CharacterRepository characterRepository;
     private final MemberCharacterRepository memberCharacterRepository;
+    private final AssetRepository assetRepository;
+    private final MemberAssetRepository memberAssetRepository;
     private final CharacterCommandService characterCommandService;
     private final ObjectMapper objectMapper;
 
@@ -78,12 +85,23 @@ public class MailCommandService {
 
         // 2. MailType에 따른 보상 지급
         return switch (mail.getType()) {
-            case SUBSCRIPTION, PRE_REGISTRATION, GIFT_SUBSCRIPTION -> handleSubscriptionMail(mail, memberId);
-            case PURCHASE, GIFT_BONUS_TICKET -> handlePurchaseMail(mail, memberId);
+            case GIFT_SUBSCRIPTION -> handleSubscriptionMail(mail, memberId);
+            case GIFT_BONUS_TICKET -> handlePurchaseMail(mail, memberId);
             case CHARACTER_REWARD -> handleCharacterMail(mail, memberId);
             case CHARACTER_SELECTION_TICKET -> handleCharacterSelectionTicketMail(mail, memberId, characterId);
-            case EVENT, RANKING, GUILD, GUILD_WEEKLY, TIER_PROMOTION, SEASON_END -> handleDiamondMail(mail, memberId);
+            case PROFILE_BORDER -> handleBorderMail(mail, memberId);
+            case EVENT, GUILD_WEEKLY, TIER_PROMOTION, SEASON_END -> handleDiamondMail(mail, memberId);
+            case COUPON -> handleCouponMail(mail, memberId);
         };
+    }
+
+    /**
+     * 쿠폰 우편 처리 (임시 구현 - 추후 쿠폰 타입에 따라 세분화)
+     * TODO: 쿠폰 보상 타입에 따라 구독권/캐릭터 등 다양한 보상 처리
+     */
+    private MailAcceptResponse handleCouponMail(Mail mail, Long memberId) {
+        // 현재는 다이아 보상만 처리 (기본 구현)
+        return handleDiamondMail(mail, memberId);
     }
 
     /**
@@ -142,6 +160,48 @@ public class MailCommandService {
                 mail.getId(),
                 mail.getTitle(),
                 diamondReward
+        );
+    }
+
+    /**
+     * 테두리 우편 처리
+     */
+    private MailAcceptResponse handleBorderMail(Mail mail, Long memberId) {
+        Map<String, Object> metadata = parseMailDescription(mail.getDescription());
+        String assetName = (String) metadata.get("assetName");
+
+        if (assetName == null) {
+            throw new IllegalArgumentException("우편에 에셋 정보가 존재하지 않습니다.");
+        }
+
+        // Asset 조회
+        Asset asset = assetRepository.findByName(assetName)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 에셋입니다: " + assetName));
+
+        // Member 조회
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(InvalidMemberException::new);
+
+        // 이미 보유 중인지 확인 후 지급
+        if (!memberAssetRepository.existsByMemberIdAndAssetId(memberId, asset.getId())) {
+            MemberAsset memberAsset = MemberAsset.builder()
+                    .member(member)
+                    .asset(asset)
+                    .build();
+            memberAssetRepository.save(memberAsset);
+            log.info("Granted asset '{}' to member {}", assetName, memberId);
+        } else {
+            log.info("Member {} already owns asset '{}'. Skipping grant.", memberId, assetName);
+        }
+
+        // 5. 수령 처리
+        mail.markAsReceived();
+
+        // 6. 응답 반환
+        return MailAcceptResponse.ofAsset(
+                mail.getId(),
+                mail.getTitle(),
+                AssetRewardInfo.from(asset)
         );
     }
 

@@ -46,7 +46,7 @@ public class LocalTestScheduler {
                     .toJobParameters();
 
             // 3. Job 실행
-            jobLauncher.run(job, jobParameters);
+//            jobLauncher.run(job, jobParameters);
 
             log.info("########## [TEST] Job Finished: {} ##########", targetJobName);
 

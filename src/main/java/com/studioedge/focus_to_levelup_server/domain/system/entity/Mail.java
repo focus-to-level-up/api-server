@@ -57,9 +57,12 @@ public class Mail extends BaseEntity {
     @Column(nullable = false)
     private LocalDate expiredAt;
 
+    @Column(name = "payment_log_id")
+    private Long paymentLogId; // 구매 관련 우편의 경우 결제 로그 ID 저장
+
     @Builder
     public Mail(Member receiver, String senderName, MailType type, String title,
-                String description, String popupTitle, String popupContent, Integer reward, LocalDate expiredAt)
+                String description, String popupTitle, String popupContent, Integer reward, LocalDate expiredAt, Long paymentLogId)
     {
         this.receiver = receiver;
         this.senderName = senderName != null ? senderName : "운영자";
@@ -70,6 +73,7 @@ public class Mail extends BaseEntity {
         this.popupContent = popupContent;
         this.reward = reward != null ? reward : 0;
         this.expiredAt = expiredAt;
+        this.paymentLogId = paymentLogId;
     }
 
     // 비즈니스 메서드

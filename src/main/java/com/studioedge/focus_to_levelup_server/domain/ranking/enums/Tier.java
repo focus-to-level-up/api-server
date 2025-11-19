@@ -61,12 +61,22 @@ public enum Tier {
                 if (percentile <= 0.8) return Tier.DIAMOND; // 80% 유지 (마스터 승급 실패 포함)
                 return Tier.PLATINUM; // 하위 20% 강등
             case MASTER:
-                // 마지막 주차에만 존재하므로, 사실상 6주 차가 끝나면 시즌 종료 로직으로 넘어감.
-                // 로직상으로는 다이아로 강등되지 않으려면 상위권을 유지해야 함을 명시.
                 if (percentile <= 0.8) return Tier.MASTER;
                 return Tier.DIAMOND; // 강등 시 다이아로
             default:
                 return Tier.BRONZE;
+        }
+    }
+
+    public static String getBorderAssetName(Tier tier) {
+        switch (tier) {
+            case BRONZE: return "브론즈 프로필 테두리";
+            case SILVER: return "실버 프로필 테두리";
+            case GOLD: return "골드 프로필 테두리";
+            case PLATINUM: return "플레티넘 프로필 테두리";
+            case DIAMOND: return "애매랄드 프로필 테두리"; // SQL 데이터 반영 (Diamond -> Emerald)
+            case MASTER: return "마스터 프로필 테두리";
+            default: return "브론즈 프로필 테두리";
         }
     }
 }

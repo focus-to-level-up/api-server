@@ -54,6 +54,10 @@ public class StartNewSeasonStep {
         return (contribution, chunkContext) -> {
             log.info(">> Step 3: 새 시즌 생성 및 유저 재배치 시작");
 
+            rankingRepository.deleteAllInBatch();
+            leagueRepository.deleteAllInBatch();
+            log.info(">> 기존 시즌 데이터(League, Ranking) 삭제 완료");
+
             LocalDate today = LocalDate.now();
 
             // 1. 새 시즌 생성
