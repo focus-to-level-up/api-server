@@ -19,28 +19,37 @@ public class CharacterCommandService {
     private final MemberCharacterRepository memberCharacterRepository;
 
     /**
-     * 캐릭터를 배치할 층수를 자동으로 결정
-     * 우선순위: 2층 → 3층 → 1층
-     * 각 층당 최대 2개까지 배치 가능
+     * 캐릭터를 배치할 위치를 자동으로 결정
+     * 위치 1~9 (1층: 1,2,3 / 2층: 4,5,6 / 3층: 7,8,9)
+     * 우선순위: 2층(4→5→6) → 3층(7→8→9) → 1층(1→2→3)
      *
      * @param memberId 유저 ID
-     * @return 배치할 층수 (1, 2, 3)
-     * @throws CharacterSlotFullException 모든 층이 가득 찬 경우
+     * @return 배치할 위치 (1~9)
+     * @throws CharacterSlotFullException 모든 슬롯이 가득 찬 경우
      */
     public Integer assignFloor(Long memberId) {
-        // 2층 확인
-        if (memberCharacterRepository.countByMemberIdAndFloor(memberId, 2) < 2) {
-            return 2;
+        // 2층 확인 (4, 5, 6)
+        for (int position = 4; position <= 6; position++) {
+            if (memberCharacterRepository.countByMemberIdAndFloor(memberId, position) == 0) {
+                return position;
+            }
         }
-        // 3층 확인
-        if (memberCharacterRepository.countByMemberIdAndFloor(memberId, 3) < 2) {
-            return 3;
+
+        // 3층 확인 (7, 8, 9)
+        for (int position = 7; position <= 9; position++) {
+            if (memberCharacterRepository.countByMemberIdAndFloor(memberId, position) == 0) {
+                return position;
+            }
         }
-        // 1층 확인
-        if (memberCharacterRepository.countByMemberIdAndFloor(memberId, 1) < 2) {
-            return 1;
+
+        // 1층 확인 (1, 2, 3)
+        for (int position = 1; position <= 3; position++) {
+            if (memberCharacterRepository.countByMemberIdAndFloor(memberId, position) == 0) {
+                return position;
+            }
         }
-        // 모든 층이 가득 참
+
+        // 모든 슬롯이 가득 찬 경우
         throw new CharacterSlotFullException();
     }
 

@@ -155,6 +155,10 @@ public class Member extends BaseEntity {
         }
     }
 
+    public void addLevel(Integer level) {
+        this.currentLevel += level;
+    }
+
     public void withdraw() {
         this.status = MemberStatus.WITHDRAWN;
         this.refreshToken = null;
