@@ -292,6 +292,24 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
+    @Override
+    @Transactional
+    public void updateFcmToken(Long memberId, String fcmToken) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(InvalidMemberException::new);
+
+        member.setFcmToken(fcmToken);
+    }
+
+    @Override
+    @Transactional
+    public void deleteFcmToken(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(InvalidMemberException::new);
+
+        member.setFcmToken(null);
+    }
+
     // ----------------------------- PRIVATE CLASS ---------------------------------
     private record SubscriptionState (SubscriptionType type, boolean isBoosted) {}
 }

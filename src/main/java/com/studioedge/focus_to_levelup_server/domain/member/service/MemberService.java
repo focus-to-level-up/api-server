@@ -26,6 +26,10 @@ public interface MemberService {
 
     MemberCurrencyResponse getMemberCurrency(Member member);
 
+    void updateFcmToken(Long memberId, String fcmToken);
+
+    void deleteFcmToken(Long memberId);
+
     // 테스트용
     void updateCurrency(Long memberId, Integer gold, Integer diamond);
 

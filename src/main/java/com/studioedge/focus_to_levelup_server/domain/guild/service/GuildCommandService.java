@@ -17,11 +17,13 @@ import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberReposi
 import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
+import com.studioedge.focus_to_levelup_server.global.fcm.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -36,6 +38,7 @@ public class GuildCommandService {
     private final GuildMemberRepository guildMemberRepository;
     private final MemberRepository memberRepository;
     private final GuildQueryService guildQueryService;
+    private final NotificationService notificationService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     /**
@@ -213,5 +216,51 @@ public class GuildCommandService {
 
         // Guild 삭제
         guildRepository.delete(guild);
+    }
+
+    /**
+     * 길드 집중 요청 (FCM 푸시 알림)
+     * - 요청자를 제외한 모든 길드원에게 푸시 알림 전송
+     * - 길드 알림 설정이 켜진 유저에게만 발송
+     */
+    public void requestFocus(Long guildId, Long requesterId, String requesterNickname) {
+        // 길드 존재 확인
+        Guild guild = guildQueryService.findGuildById(guildId);
+
+        // 요청자가 길드원인지 확인
+        GuildMember requester = guildMemberRepository.findByGuildIdAndMemberId(guildId, requesterId)
+                .orElseThrow(NotGuildMemberException::new);
+
+        // 길드의 모든 멤버 조회 (요청자 제외)
+        List<GuildMember> members = guildMemberRepository.findAllByGuildId(guildId);
+
+        // FCM 토큰 리스트 추출 (요청자 제외 + 길드 알림 ON + FCM 토큰 있는 유저)
+        List<String> fcmTokens = members.stream()
+                .filter(gm -> !gm.getMember().getId().equals(requesterId)) // 요청자 제외
+                .map(GuildMember::getMember)
+                .filter(member -> member.getFcmToken() != null) // FCM 토큰 있는 유저
+                .filter(member -> {
+                    // 길드 알림 설정 확인 (MemberSetting이 null이면 기본값 true)
+                    if (member.getMemberSetting() == null) {
+                        return true;
+                    }
+                    return member.getMemberSetting().isGuildNotificationEnabled();
+                })
+                .map(Member::getFcmToken)
+                .toList();
+
+        // FCM 알림 발송
+        int sentCount = notificationService.sendGuildFocusRequestNotification(
+                guildId,
+                requesterId,
+                fcmTokens,
+                requesterNickname
+        );
+
+        // 로그 (선택사항)
+        if (sentCount > 0) {
+            System.out.println(String.format("Guild focus request sent: %d/%d members notified",
+                    sentCount, fcmTokens.size()));
+        }
     }
 }

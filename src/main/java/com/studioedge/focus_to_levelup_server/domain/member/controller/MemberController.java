@@ -314,6 +314,47 @@ public class MemberController {
         return HttpResponseUtil.ok(memberService.getMemberCurrency(member));
     }
 
+    @PostMapping("/v1/member/fcm-token")
+    @Operation(summary = "FCM 토큰 등록/갱신", description = """
+            ### 기능
+            - 푸시 알림을 위한 FCM 토큰을 등록하거나 갱신합니다.
+            - 로그인 시 또는 토큰이 변경될 때마다 호출해야 합니다.
+
+            ### 요청
+            - `fcmToken`: Firebase Cloud Messaging 토큰
+            """)
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "FCM 토큰 등록/갱신 성공"
+            )
+    })
+    public ResponseEntity<CommonResponse<Void>> registerFcmToken(
+            @AuthenticationPrincipal Member member,
+            @RequestBody @Valid com.studioedge.focus_to_levelup_server.domain.member.dto.request.FcmTokenRequest request
+    ) {
+        memberService.updateFcmToken(member.getId(), request.fcmToken());
+        return HttpResponseUtil.ok(null);
+    }
+
+    @DeleteMapping("/v1/member/fcm-token")
+    @Operation(summary = "FCM 토큰 삭제", description = """
+            ### 기능
+            - 로그아웃 시 FCM 토큰을 삭제하여 푸시 알림을 받지 않도록 합니다.
+            """)
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "FCM 토큰 삭제 성공"
+            )
+    })
+    public ResponseEntity<CommonResponse<Void>> deleteFcmToken(
+            @AuthenticationPrincipal Member member
+    ) {
+        memberService.deleteFcmToken(member.getId());
+        return HttpResponseUtil.ok(null);
+    }
+
     // ============= 테스트용 API =============
     @PutMapping("/v1/member/test/currency")
     @Operation(summary = "[테스트용] 골드/다이아 수정", description = "테스트를 위해 골드와 다이아를 수정합니다.")
