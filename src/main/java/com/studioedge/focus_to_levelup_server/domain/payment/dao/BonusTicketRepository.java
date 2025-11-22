@@ -1,15 +1,15 @@
 package com.studioedge.focus_to_levelup_server.domain.payment.dao;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.entity.BonusTicket;
+import com.studioedge.focus_to_levelup_server.domain.payment.entity.GiftTicket;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 import java.util.List;
 
-public interface BonusTicketRepository extends JpaRepository<BonusTicket, Long> {
+public interface BonusTicketRepository extends JpaRepository<GiftTicket, Long> {
     void deleteAllByMemberId(Long memberId);
 
-    Optional<BonusTicket> findByMemberId(Long memberId);
+    Optional<GiftTicket> findByMemberId(Long memberId);
     /**
      * 미사용(비활성) 보너스 티켓 개수 조회
      */
@@ -18,5 +18,5 @@ public interface BonusTicketRepository extends JpaRepository<BonusTicket, Long> 
     /**
      * 미사용(비활성) 보너스 티켓 목록 조회
      */
-    List<BonusTicket> findByMemberIdAndIsActiveFalse(Long memberId);
+    List<GiftTicket> findByMemberIdAndIsActiveFalse(Long memberId);
 }
