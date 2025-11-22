@@ -11,12 +11,12 @@ public interface BonusTicketRepository extends JpaRepository<GiftTicket, Long> {
 
     Optional<GiftTicket> findByMemberId(Long memberId);
     /**
-     * 미사용(비활성) 보너스 티켓 개수 조회
+     * 미사용 보너스 티켓 개수 조회
      */
-    long countByMemberIdAndIsActiveFalse(Long memberId);
+    long countByMemberIdAndIsUsedFalse(Long memberId);
 
     /**
-     * 미사용(비활성) 보너스 티켓 목록 조회
+     * 미사용 보너스 티켓 목록 조회
      */
-    List<GiftTicket> findByMemberIdAndIsActiveFalse(Long memberId);
+    List<GiftTicket> findByMemberIdAndIsUsedFalse(Long memberId);
 }
