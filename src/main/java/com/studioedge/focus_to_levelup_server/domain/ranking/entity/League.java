@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.ranking.entity;
 
+import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
 import jakarta.persistence.*;
@@ -10,6 +11,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "leagues")
@@ -25,6 +28,9 @@ public class League extends BaseEntity {
     @JoinColumn(name = "season_id", nullable = false)
     private Season season;
 
+    @OneToMany(mappedBy = "league", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Ranking> rankings = new ArrayList<>();
+
     @Column(unique = true, nullable = false)
     private String name;
 
@@ -32,9 +38,14 @@ public class League extends BaseEntity {
     @Column(nullable = false)
     private CategoryMainType categoryType;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @ColumnDefault("1")
-    private Integer currentWeek = 1;
+    @ColumnDefault("'BRONZE'")
+    private Tier tier;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer currentWeek = 0;
 
     @Column(nullable = false)
     private LocalDate startDate;
@@ -42,13 +53,28 @@ public class League extends BaseEntity {
     @Column(nullable = false)
     private LocalDate endDate;
 
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer currentMembers = 0; // 전체 인원수
+
+    @Column(nullable = false)
+    @ColumnDefault("true")
+    private Boolean isActive = true;
+
     @Builder
     public League(Season season, String name, CategoryMainType categoryType,
-                  LocalDate startDate, LocalDate endDate) {
+                  LocalDate startDate, LocalDate endDate, Tier tier,
+                  Integer currentWeek) {
         this.season = season;
         this.name = name;
         this.categoryType = categoryType;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.tier = tier;
+        this.currentWeek = currentWeek;
+    }
+
+    public void increaseCurrentMembers() {
+        this.currentMembers += 1;
     }
 }

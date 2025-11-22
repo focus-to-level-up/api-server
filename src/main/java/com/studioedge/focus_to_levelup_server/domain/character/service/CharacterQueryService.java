@@ -4,7 +4,7 @@ import com.studioedge.focus_to_levelup_server.domain.character.dto.response.Char
 import com.studioedge.focus_to_levelup_server.domain.character.dto.response.CharacterResponse;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.character.repository.CharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterRepository;
 import com.studioedge.focus_to_levelup_server.global.common.enums.Rarity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -12,7 +12,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.sql.Time;
 
 @Entity
-@Table(name = "planner")
+@Table(name = "planners")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Planner extends BaseEntity {

@@ -23,10 +23,10 @@ public class CharacterImage {
     @Column(nullable = false)
     private Integer evolution;
 
-    @Column(nullable = false)
+    @Column(name = "image_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private CharacterImageType imageType;
 
-    @Column(length = 2048, nullable = false)
+    @Column(name = "image_url", length = 2048, nullable = false)
     private String imageUrl;
 }

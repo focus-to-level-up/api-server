@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.domain.payment.repository;
+package com.studioedge.focus_to_levelup_server.domain.payment.dao;
 
 import com.studioedge.focus_to_levelup_server.domain.payment.entity.Subscription;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
-
     /**
      * 회원의 구독권 조회 (단건)
      */

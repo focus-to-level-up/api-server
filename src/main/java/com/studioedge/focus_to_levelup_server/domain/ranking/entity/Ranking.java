@@ -9,7 +9,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -35,11 +34,12 @@ public class Ranking extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'BRONZE'")
-    private Tier tier = Tier.BRONZE;
+    private Tier tier;
 
     @Builder
-    public Ranking(League league, Member member) {
+    public Ranking(League league, Member member, Tier tier) {
         this.league = league;
         this.member = member;
+        this.tier = tier;
     }
 }

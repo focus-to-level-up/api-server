@@ -9,6 +9,7 @@ import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFo
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingExcludeException;
 import com.studioedge.focus_to_levelup_server.domain.stat.exception.StatMonthNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.payment.exception.*;
@@ -198,6 +199,8 @@ public class ExceptionMapper {
     private static void setUpRankingException() {
         mapper.put(RankingNotFoundException.class,
                 ExceptionSituation.of("랭킹에 포함되어있지 않습니다. 랭킹은 첫 생성날의 다음주부터 참여됩니다.", HttpStatus.NOT_FOUND));
+        mapper.put(RankingExcludeException.class,
+                ExceptionSituation.of("사용자는 2회 경고로 인해 랭킹에서 제외되었습니다. 2주간 정지됩니다.", HttpStatus.NOT_FOUND));
     }
 
     /**
@@ -279,5 +282,7 @@ public class ExceptionMapper {
     private static void setUpSystemException() {
         mapper.put(BackgroundNotFoundException.class,
                 ExceptionSituation.of("배경을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(WeeklyRewardAlreadyReceivedException.class,
+                ExceptionSituation.of("주간 보상을 이미 수령하였거나 받을 수 있는 주간보상이 없습니다.", HttpStatus.NOT_FOUND));
     }
 }

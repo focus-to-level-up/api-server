@@ -39,7 +39,7 @@ public class Character {
     @Column(length = 500, nullable = false)
     private String description;
 
-    @Column(length = 2048, nullable = false)
+    @Column(name = "background_image_url", length = 2048, nullable = false)
     private String backgroundImageUrl;
 
     @Builder

@@ -51,6 +51,9 @@ dependencies {
 	// gson (for social login APIs)
 	implementation 'com.google.code.gson:gson:2.10.1'
 
+	// spring batch
+	implementation 'org.springframework.boot:spring-boot-starter-batch'
+
 	// google oauth (for Google Sign In) - using WebClient instead of Google API Client
 	// We'll verify Google ID Token using our existing JWT library
 

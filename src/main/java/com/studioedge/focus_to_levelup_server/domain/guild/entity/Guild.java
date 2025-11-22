@@ -61,7 +61,10 @@ public class Guild extends BaseEntity {
     private List<GuildMember> members = new ArrayList<>();
 
     @Builder
-    public Guild(String name, String description, Integer targetFocusTime, Boolean isPublic, String password, GuildCategory category, Integer maxMembers, Integer currentMembers, Integer averageFocusTime, Integer lastWeekDiamondReward) {
+    public Guild(String name, String description, Integer targetFocusTime,
+                 Boolean isPublic, String password, GuildCategory category,
+                 Integer maxMembers, Integer currentMembers, Integer averageFocusTime,
+                 Integer lastWeekDiamondReward) {
         this.name = name;
         this.description = description;
         this.targetFocusTime = targetFocusTime;

@@ -9,5 +9,7 @@ public enum MailType {
     EVENT,                     // 이벤트 보상 (다이아, 골드, 사전예약 다이아 등)
     CHARACTER_SELECTION_TICKET,// 캐릭터 선택권 (사전예약)
     CHARACTER_REWARD,          // 캐릭터 보상 (쿠폰)
-    COUPON                     // 쿠폰 보상 (기타 보상용)
+    COUPON,                     // 쿠폰 보상 (기타 보상용)
+    PROFILE_BORDER              // 테두리 보상
+
 }

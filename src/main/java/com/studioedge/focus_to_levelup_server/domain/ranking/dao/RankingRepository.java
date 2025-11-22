@@ -4,12 +4,14 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Season;
+import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface RankingRepository extends JpaRepository<Ranking, Long> {
@@ -30,4 +32,23 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
             @Param("league") League league,
             Pageable pageable
     );
+
+    @Query("SELECT r FROM Ranking r " +
+            "JOIN FETCH r.member m " +          // Member 정보 즉시 로딩
+            "JOIN r.league l " +                // League 조인
+            "WHERE l.season = :season " +       // 시즌 조건
+            "AND r.tier = :tier " +             // 티어 조건
+            "ORDER BY m.currentLevel DESC, m.currentExp DESC") // 점수(레벨, 경험치) 정렬
+    List<Ranking> findAllBySeasonAndTierOrderByScoreDesc(
+            @Param("season") Season season,
+            @Param("tier") Tier tier
+    );
+
+    @Query(value = "SELECT r FROM Ranking r " +
+            "JOIN FETCH r.member m " +
+            "WHERE r.league = :league " +
+            "ORDER BY m.currentLevel DESC, m.currentExp DESC")
+    List<Ranking> findAllBySortedLeague(League league);
+
+    void deleteByMemberId(Long memberId);
 }

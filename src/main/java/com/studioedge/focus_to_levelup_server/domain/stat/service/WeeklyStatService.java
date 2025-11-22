@@ -16,6 +16,7 @@ import com.studioedge.focus_to_levelup_server.domain.stat.dto.WeeklyStatListResp
 import com.studioedge.focus_to_levelup_server.domain.stat.dto.WeeklyStatResponse;
 import com.studioedge.focus_to_levelup_server.domain.stat.entity.WeeklyStat;
 import com.studioedge.focus_to_levelup_server.domain.stat.entity.WeeklySubjectStat;
+import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +27,6 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
 
 @Service
 @RequiredArgsConstructor
@@ -41,15 +40,24 @@ public class WeeklyStatService {
 
     @Transactional(readOnly = true)
     public WeeklyStatListResponse getWeeklyStats(Long memberId, int year, int month) {
+        LocalDate serviceDate = AppConstants.getServiceDate();
+        LocalDate startOfThisWeek = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 
-        LocalDate startDateOfMonth = LocalDate.of(year, month, 1);
-        LocalDate today = getServiceDate();
+        // [수정] 1. 조회할 월의 '진짜' 시작/종료 범위 계산
+        LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
+        LocalDate lastDayOfMonth = firstDayOfMonth.with(TemporalAdjusters.lastDayOfMonth());
 
-        // 1. [집계 데이터] 조회할 달의 시작 ~ "이번 주 시작일" 전까지의 WeeklyStat 조회
-        LocalDate startOfThisWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        // e.g., 11월 1일(토) -> 10월 27일(월)
+        LocalDate queryStartDate = firstDayOfMonth.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        // e.g., 11월 30일(일) -> 11월 30일(일)
+        LocalDate queryEndDate = lastDayOfMonth.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
+
+        // 2. [집계 데이터] "이번 주"를 제외한 모든 'WeeklyStat' 조회
         List<WeeklyStat> aggregatedWeeks = weeklyStatRepository.findAllByMemberIdAndDateRange(
-                memberId, startDateOfMonth, startOfThisWeek.minusDays(1)
+                memberId,
+                queryStartDate, // [수정] startDateOfMonth -> queryStartDate
+                startOfThisWeek.minusDays(1) // (이번 주 시작일 전날까지)
         );
 
         // 2. DTO로 변환
@@ -58,12 +66,12 @@ public class WeeklyStatService {
                 .collect(Collectors.toList());
 
         // 3. [실시간 데이터] 조회하려는 달이 "현재 달"이고, "오늘"이 해당 월에 포함될 경우
-        if (startDateOfMonth.getMonth().equals(today.getMonth()) &&
-                startDateOfMonth.getYear() == today.getYear()) {
+        if (firstDayOfMonth.getMonth().equals(serviceDate.getMonth()) &&
+                firstDayOfMonth.getYear() == serviceDate.getYear()) {
 
             // 3-1. "이번 주"의 DailyGoal 데이터를 실시간 조회
             List<DailyGoal> currentWeekGoals = dailyGoalRepository
-                    .findAllByMemberIdAndDailyGoalDateBetween(memberId, startOfThisWeek, today);
+                    .findAllByMemberIdAndDailyGoalDateBetween(memberId, startOfThisWeek, serviceDate);
 
             // 3-2. 실시간 데이터 합산
             int currentWeekSeconds = currentWeekGoals.stream()
@@ -80,7 +88,7 @@ public class WeeklyStatService {
             // 3-4. 실시간 DTO 생성 및 리스트에 추가
             responses.add(WeeklyStatResponse.of(
                     startOfThisWeek,
-                    today,
+                    serviceDate,
                     currentWeekSeconds,
                     member.getCurrentLevel(),
                     imageUrl
@@ -98,30 +106,30 @@ public class WeeklyStatService {
     @Transactional(readOnly = true)
     public List<SubjectStatResponse> getWeeklySubjectStats(Member member, int year, int month) {
 
-        LocalDate startDateOfMonth = LocalDate.of(year, month, 1);
-
-        // "서비스 기준일" (새벽 4시 기준)
-        LocalDate serviceDate = getServiceDate();
+        LocalDate serviceDate = AppConstants.getServiceDate();
         LocalDate startOfThisWeek = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 
-        // 1. [집계 데이터] 요청된 월의 "지난 주차" 통계 조회
+        // [수정] 1. 조회할 월의 '진짜' 시작 범위 계산
+        LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
+        LocalDate queryStartDate = firstDayOfMonth.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+
+        // 2. [집계 데이터] 요청된 월의 "지난 주차" 통계 조회
         List<WeeklySubjectStat> pastWeeksStats = weeklySubjectStatRepository
                 .findAllByMemberIdAndDateRangeWithSubject(
                         member.getId(),
-                        startDateOfMonth,
-                        startOfThisWeek.minusDays(1) // 이번 주 시작일 직전까지
+                        queryStartDate, // [수정] startDateOfMonth -> queryStartDate
+                        startOfThisWeek.minusDays(1)
                 );
 
         // 2. [실시간 데이터] "이번 주" 데이터는 'DailySubject' 엔티티에서 직접 조회
         List<DailySubject> currentWeekStats;
 
         if (serviceDate.getYear() == year && serviceDate.getMonthValue() == month) {
-            // [수정] SubjectRepository -> DailySubjectRepository
             currentWeekStats = dailySubjectRepository
                     .findAllByMemberIdAndDateRangeWithSubject(
                             member.getId(),
                             startOfThisWeek,
-                            serviceDate // 오늘까지
+                            serviceDate
                     );
         } else {
             currentWeekStats = List.of(); // 빈 리스트

@@ -1,19 +1,19 @@
 package com.studioedge.focus_to_levelup_server.domain.guild.service;
 
+import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildBoostRepository;
+import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildListResponse;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildBoost;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.MaxBoostLimitExceededException;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.NotGuildMemberException;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildBoostRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.entity.Subscription;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
 import com.studioedge.focus_to_levelup_server.domain.payment.exception.PremiumSubscriptionRequiredException;
-import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

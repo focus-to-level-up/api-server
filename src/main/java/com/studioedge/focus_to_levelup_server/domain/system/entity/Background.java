@@ -25,6 +25,6 @@ public class Background {
     @Enumerated(EnumType.STRING)
     private BackgroundImageType type;
 
-    @Column(length = 2048, nullable = false)
+    @Column(name = "image_url", length = 2048, nullable = false)
     private String imageUrl;
 }

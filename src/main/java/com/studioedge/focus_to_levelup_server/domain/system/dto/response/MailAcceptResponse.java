@@ -12,7 +12,8 @@ public record MailAcceptResponse(
         String rewardDescription, // "다이아 1000개 지급", "프리미엄 구독권 30일 지급", "캐릭터 '티비' 지급"
         Integer diamondRewarded,
         SubscriptionInfo subscriptionInfo, // 구독권인 경우만
-        CharacterRewardInfo characterRewardInfo // 캐릭터인 경우만
+        CharacterRewardInfo characterRewardInfo, // 캐릭터인 경우만
+        AssetRewardInfo assetRewardInfo
 ) {
     public static MailAcceptResponse ofDiamond(Long mailId, String title, Integer diamond) {
         return MailAcceptResponse.builder()
@@ -50,6 +51,16 @@ public record MailAcceptResponse(
                 .diamondRewarded(0)
                 .subscriptionInfo(null)
                 .characterRewardInfo(characterRewardInfo)
+                .build();
+    }
+
+    public static MailAcceptResponse ofAsset(Long mailId, String title, AssetRewardInfo assetRewardInfo) {
+        return MailAcceptResponse.builder()
+                .mailId(mailId)
+                .title(title)
+                .rewardDescription(String.format("아이템 '%s' 지급", assetRewardInfo.name()))
+                .diamondRewarded(0)
+                .assetRewardInfo(assetRewardInfo)
                 .build();
     }
 }

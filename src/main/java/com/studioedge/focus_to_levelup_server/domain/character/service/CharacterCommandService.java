@@ -1,9 +1,9 @@
 package com.studioedge.focus_to_levelup_server.domain.character.service;
 
+import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterSlotFullException;
-import com.studioedge.focus_to_levelup_server.domain.character.repository.MemberCharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -14,10 +14,14 @@ services:
       MYSQL_USER: focus
       MYSQL_PASSWORD: focus
     volumes:
+      - ./src/main/resources/db:/docker-entrypoint-initdb.d
       - ./mysql/data:/var/lib/mysql
       - ./mysql/config:/etc/mysql/conf.d
     networks:
       - focus-network
+
+volumes:
+  mysql-data:
 
 networks:
   focus-network:

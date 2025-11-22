@@ -27,6 +27,6 @@ public class MonsterImage {
     @Enumerated(EnumType.STRING)
     private MonsterImageType type;
 
-    @Column(length = 2048, nullable = false)
+    @Column(name = "image_url", length = 2048, nullable = false)
     private String imageUrl;
 }

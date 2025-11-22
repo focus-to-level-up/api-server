@@ -5,15 +5,18 @@ import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
+import com.studioedge.focus_to_levelup_server.domain.payment.dao.BonusTicketRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.PaymentLogRepository;
-import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
+import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.refund.RefundRequest;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.refund.RefundResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.entity.PaymentLog;
 import com.studioedge.focus_to_levelup_server.domain.payment.entity.Product;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.ProductType;
-import com.studioedge.focus_to_levelup_server.domain.payment.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
+import com.studioedge.focus_to_levelup_server.domain.payment.exception.PurchaseNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.payment.exception.RefundNotAllowedException;
+import com.studioedge.focus_to_levelup_server.domain.payment.exception.UnauthorizedRefundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,7 @@ public class RefundService {
 
     private final PaymentLogRepository paymentLogRepository;
     private final MemberInfoRepository memberInfoRepository;
+    private final BonusTicketRepository bonusTicketRepository;
     private final MemberRepository memberRepository;
     private final SubscriptionRepository subscriptionRepository;
 

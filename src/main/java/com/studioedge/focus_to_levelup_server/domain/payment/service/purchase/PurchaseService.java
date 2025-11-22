@@ -4,6 +4,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoReposi
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
+import com.studioedge.focus_to_levelup_server.domain.payment.dao.*;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.GiftTicketRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.PaymentLogRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.ProductRepository;
@@ -18,7 +19,6 @@ import com.studioedge.focus_to_levelup_server.domain.payment.enums.ProductType;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.PurchaseStatus;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionSource;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
-import com.studioedge.focus_to_levelup_server.domain.payment.repository.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.service.receipt.ReceiptValidationResult;
 import com.studioedge.focus_to_levelup_server.domain.payment.service.receipt.ReceiptValidator;
 import jakarta.persistence.EntityNotFoundException;

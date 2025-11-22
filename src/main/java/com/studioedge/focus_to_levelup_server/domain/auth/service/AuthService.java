@@ -216,6 +216,7 @@ public class AuthService {
                 .orElse(null);
 
         if (member == null) {
+            System.out.println("socialId = " + socialId);
             // 신규 회원 생성
             member = Member.builder()
                     .socialType(socialType)

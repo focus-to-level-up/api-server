@@ -24,7 +24,7 @@ public class Asset {
     @Column(nullable = false)
     private String name;
 
-    @Column(length = 2048, nullable = false)
+    @Column(name = "asset_url", length = 2048, nullable = false)
     private String assetUrl;
 
     @Builder
