@@ -2,6 +2,7 @@ package com.studioedge.focus_to_levelup_server.domain.store.dto.response;
 
 import com.studioedge.focus_to_levelup_server.domain.store.entity.MemberItem;
 import com.studioedge.focus_to_levelup_server.domain.store.enums.ItemType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.time.LocalDate;
@@ -11,16 +12,45 @@ import java.time.LocalDate;
  */
 @Builder
 public record MemberItemResponse(
+        @Schema(description = "유저 아이템 ID", example = "1")
         Long memberItemId,
+
+        @Schema(description = "아이템 ID", example = "1")
         Long itemId,
+
+        @Schema(description = "아이템 이름", example = "집중력 폭발")
         String itemName,
+
+        @Schema(description = "아이템 타입")
         ItemType itemType,
-        Integer selectedParameter,   // 선택한 옵션 (60, 90, 120 등)
+
+        @Schema(description = "선택한 옵션 (60, 90, 120 등)", example = "60")
+        Integer selectedParameter,
+
+        @Schema(description = "달성 완료 여부", example = "false")
         Boolean isCompleted,
+
+        @Schema(description = "달성 완료 날짜", example = "2025-11-22")
         LocalDate completedDate,
+
+        @Schema(description = "보상 수령 여부", example = "false")
         Boolean isRewardReceived,
-        Integer rewardLevel,         // 보상 레벨
-        String guideMessage          // 달성 가이드 메시지
+
+        @Schema(description = "보상 레벨 (골드 지급량)", example = "1")
+        Integer rewardLevel,
+
+        @Schema(description = "달성 가이드 메시지", example = "60분 연속 집중하기")
+        String guideMessage,
+
+        @Schema(description = """
+                진행 상황 데이터 (JSON 형식)
+                - 집중력 폭발: {"requiredMinutes":60,"currentFocusMinutes":30}
+                - 시작 시간 사수: {"currentStartTime":"09:00","earliestStartTime":"07:00","requiredHour":8,"recordedDate":"2025-11-22"}
+                - 마지막 생존자: {"currentEndTime":"20:00","latestEndTime":"22:30","requiredHour":22,"recordedDate":"2025-11-22"}
+                - 달성 시 추가: "achievedDate":"2025-11-22", "achievedDay":"토요일"
+                """,
+                example = "{\"requiredMinutes\":60,\"currentFocusMinutes\":30}")
+        String progressData
 ) {
     public static MemberItemResponse from(MemberItem memberItem, Integer rewardLevel) {
         return MemberItemResponse.builder()
@@ -34,6 +64,7 @@ public record MemberItemResponse(
                 .isRewardReceived(memberItem.getIsRewardReceived())
                 .rewardLevel(rewardLevel)
                 .guideMessage(generateGuideMessage(memberItem))
+                .progressData(memberItem.getProgressData())
                 .build();
     }
 

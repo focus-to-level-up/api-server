@@ -111,81 +111,148 @@ public class ItemAchievementService {
         int focusMinutes = focusSeconds / 60;
         int requiredMinutes = memberItem.getSelection();
 
-        if (focusMinutes >= requiredMinutes) {
-            // progressData 업데이트
-            Map<String, Object> progressData = new HashMap<>();
-            progressData.put("maxFocusMinutes", focusMinutes);
+        // progressData 항상 업데이트 (달성 여부와 관계없이)
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("currentFocusMinutes", focusMinutes);
+        progressData.put("requiredMinutes", requiredMinutes);
+
+        boolean isAchieved = focusMinutes >= requiredMinutes;
+
+        if (isAchieved) {
             progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
             progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
-
-            try {
-                memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
-            } catch (Exception e) {
-                log.error("Error updating progressData for 집중력 폭발", e);
-            }
-
-            return true;
         }
 
-        return false;
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 집중력 폭발", e);
+        }
+
+        return isAchieved;
     }
 
     /**
      * 2. 시작 시간 사수: 시작 시각 < parameter (6시/7시/8시)
      * 단, 새벽 4시 이후 시작만 인정
+     * 오늘 중 가장 빠른 시작 시각 추적
      */
     private boolean checkMorningStart(MemberItem memberItem, LocalDateTime sessionStartTime, LocalDate serviceDate) {
         int startHour = sessionStartTime.getHour();
         int requiredHour = memberItem.getSelection();
 
-        // 새벽 4시 이후 시작이면서, 요구 시간보다 이른 경우
-        if (startHour >= 4 && startHour < requiredHour) {
-            // progressData 업데이트
-            Map<String, Object> progressData = new HashMap<>();
-            progressData.put("earliestStartTime", sessionStartTime.format(TIME_FORMATTER));
-            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
-            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
+        // 기존 progressData 파싱
+        String existingProgressData = memberItem.getProgressData();
+        LocalDateTime earliestStartTime = sessionStartTime;
+        String recordedDate = null;
 
+        if (existingProgressData != null && !existingProgressData.isEmpty()) {
             try {
-                memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
-            } catch (Exception e) {
-                log.error("Error updating progressData for 시작 시간 사수", e);
-            }
+                Map<String, Object> existingData = objectMapper.readValue(existingProgressData, Map.class);
+                recordedDate = (String) existingData.get("recordedDate");
+                String earliestTimeStr = (String) existingData.get("earliestStartTime");
 
-            return true;
+                // 같은 날짜이고 기존 기록이 있으면 비교
+                if (serviceDate.format(DATE_FORMATTER).equals(recordedDate) && earliestTimeStr != null) {
+                    LocalDateTime existingEarliestTime = LocalDateTime.parse(
+                            serviceDate.format(DATE_FORMATTER) + "T" + earliestTimeStr
+                    );
+                    // 더 빠른 시각 선택
+                    if (sessionStartTime.isBefore(existingEarliestTime)) {
+                        earliestStartTime = sessionStartTime;
+                    } else {
+                        earliestStartTime = existingEarliestTime;
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to parse existing progressData for 시작 시간 사수", e);
+            }
         }
 
-        return false;
+        // progressData 업데이트
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("recordedDate", serviceDate.format(DATE_FORMATTER));
+        progressData.put("earliestStartTime", earliestStartTime.format(TIME_FORMATTER));
+        progressData.put("currentStartTime", sessionStartTime.format(TIME_FORMATTER));
+        progressData.put("requiredHour", requiredHour);
+
+        // 달성 조건: 새벽 4시 이후 && 요구 시간보다 이른 경우
+        boolean isAchieved = earliestStartTime.getHour() >= 4 && earliestStartTime.getHour() < requiredHour;
+
+        if (isAchieved) {
+            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
+            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
+        }
+
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 시작 시간 사수", e);
+        }
+
+        return isAchieved;
     }
 
     /**
      * 3. 마지막 생존자: 종료 시각 >= parameter (22시/23시/자정)
+     * 오늘 중 가장 늦은 종료 시각 추적
      */
     private boolean checkLateNightEnd(MemberItem memberItem, LocalDateTime sessionEndTime, LocalDate serviceDate) {
         int endHour = sessionEndTime.getHour();
         int requiredHour = memberItem.getSelection();
 
-        // 자정(0시)의 경우 처리: 0-4시 사이도 인정
-        boolean isAchieved = (requiredHour == 0 && endHour >= 0 && endHour < 4) ||
-                             (requiredHour > 0 && endHour >= requiredHour);
+        // 기존 progressData 파싱
+        String existingProgressData = memberItem.getProgressData();
+        LocalDateTime latestEndTime = sessionEndTime;
+        String recordedDate = null;
 
-        if (isAchieved) {
-            // progressData 업데이트
-            Map<String, Object> progressData = new HashMap<>();
-            progressData.put("latestEndTime", sessionEndTime.format(TIME_FORMATTER));
-            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
-            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
-
+        if (existingProgressData != null && !existingProgressData.isEmpty()) {
             try {
-                memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
-            } catch (Exception e) {
-                log.error("Error updating progressData for 마지막 생존자", e);
-            }
+                Map<String, Object> existingData = objectMapper.readValue(existingProgressData, Map.class);
+                recordedDate = (String) existingData.get("recordedDate");
+                String latestTimeStr = (String) existingData.get("latestEndTime");
 
-            return true;
+                // 같은 날짜이고 기존 기록이 있으면 비교
+                if (serviceDate.format(DATE_FORMATTER).equals(recordedDate) && latestTimeStr != null) {
+                    LocalDateTime existingLatestTime = LocalDateTime.parse(
+                            serviceDate.format(DATE_FORMATTER) + "T" + latestTimeStr
+                    );
+                    // 더 늦은 시각 선택
+                    if (sessionEndTime.isAfter(existingLatestTime)) {
+                        latestEndTime = sessionEndTime;
+                    } else {
+                        latestEndTime = existingLatestTime;
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to parse existing progressData for 마지막 생존자", e);
+            }
         }
 
-        return false;
+        // progressData 업데이트
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("recordedDate", serviceDate.format(DATE_FORMATTER));
+        progressData.put("latestEndTime", latestEndTime.format(TIME_FORMATTER));
+        progressData.put("currentEndTime", sessionEndTime.format(TIME_FORMATTER));
+        progressData.put("requiredHour", requiredHour);
+
+        // 달성 조건: 자정(0시)의 경우 0-4시 사이도 인정
+        int latestHour = latestEndTime.getHour();
+        boolean isAchieved = (requiredHour == 0 && latestHour >= 0 && latestHour < 4) ||
+                             (requiredHour > 0 && latestHour >= requiredHour);
+
+        if (isAchieved) {
+            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
+            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
+        }
+
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 마지막 생존자", e);
+        }
+
+        return isAchieved;
     }
 
     /**
