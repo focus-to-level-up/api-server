@@ -26,7 +26,7 @@ public class LocalTestScheduler {
     // [TEST SETTING] 여기에 실행하고 싶은 Job Bean 이름을 적으세요.
     // 후보: "dailyJob", "weeklyJob", "monthlyJob", "seasonEndJob"
     // =========================================================
-    private final String targetJobName = "seasonEndJob";
+    private final String targetJobName = "dailyJob";
 
     /**
      * 10초마다 설정된 Job을 실행합니다.
@@ -46,7 +46,7 @@ public class LocalTestScheduler {
                     .toJobParameters();
 
             // 3. Job 실행
-//            jobLauncher.run(job, jobParameters);
+            jobLauncher.run(job, jobParameters);
 
             log.info("########## [TEST] Job Finished: {} ##########", targetJobName);
 

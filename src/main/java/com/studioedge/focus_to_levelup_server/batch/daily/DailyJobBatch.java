@@ -22,7 +22,6 @@ public class DailyJobBatch {
      * */
     private final JobRepository jobRepository;
 
-
     @Bean
     public Job dailyJob(Step clearPlanner,
                         Step deleteExpiredMail,

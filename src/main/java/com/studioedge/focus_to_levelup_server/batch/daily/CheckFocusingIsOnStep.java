@@ -34,6 +34,7 @@ public class CheckFocusingIsOnStep {
 
     @Bean
     public Step checkFocusingIsOn() {
+        log.info("Step: ");
         return new StepBuilder("checkFocusingIsOn", jobRepository)
                 .<Member, Member> chunk(10, platformTransactionManager)
                 .reader(checkFocusingIsOnReader())
