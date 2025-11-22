@@ -130,8 +130,9 @@ jobs:
             echo "Waiting for MySQL to be ready..."
             sleep 10
 
-            # Load environment variables
-            source /opt/focus-to-level-up/.env
+            # Extract DB credentials from .env file
+            DB_ROOT_PASSWORD=$(grep '^DB_ROOT_PASSWORD=' /opt/focus-to-level-up/.env | cut -d '=' -f2)
+            DB_USERNAME=$(grep '^DB_USERNAME=' /opt/focus-to-level-up/.env | cut -d '=' -f2)
 
             # Create focus_meta_db if not exists
             docker exec focus-mysql mysql -uroot -p${DB_ROOT_PASSWORD} -e "CREATE DATABASE IF NOT EXISTS focus_meta_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || true
