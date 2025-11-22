@@ -95,6 +95,10 @@ public class MemberInfo {
     @ColumnDefault("0")
     private Integer trainingReward = 0; // 훈련 보상 누적량 (다이아)
 
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer bonusTicketCount = 0; // 보너스 티켓 보유 개수 (주간 보상 10% 증가)
+
     @Builder
     public MemberInfo(Member member, Integer age, Gender gender, CategoryMainType categoryMain,
                       CategorySubType categorySub, String belonging, String profileMessage,
@@ -177,5 +181,26 @@ public class MemberInfo {
             this.totalLevel += (this.totalExp / 600);
             this.totalExp %= 600;
         }
+    }
+
+    // 보너스 티켓 추가
+    public void addBonusTicket(Integer count) {
+        this.bonusTicketCount += count;
+    }
+
+    // 보너스 티켓 사용
+    public void useBonusTicket() {
+        if (this.bonusTicketCount <= 0) {
+            throw new IllegalStateException("보유한 보너스 티켓이 없습니다.");
+        }
+        this.bonusTicketCount -= 1;
+    }
+
+    // 보너스 티켓 차감 (환불 시 사용)
+    public void decreaseBonusTicket(Integer count) {
+        if (this.bonusTicketCount < count) {
+            throw new IllegalStateException("보유한 보너스 티켓이 부족합니다.");
+        }
+        this.bonusTicketCount -= count;
     }
 }

@@ -13,15 +13,14 @@ import com.studioedge.focus_to_levelup_server.domain.payment.dto.refund.RefundRe
 import com.studioedge.focus_to_levelup_server.domain.payment.entity.PaymentLog;
 import com.studioedge.focus_to_levelup_server.domain.payment.entity.Product;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.ProductType;
-import com.studioedge.focus_to_levelup_server.domain.payment.exception.*;
-import com.studioedge.focus_to_levelup_server.domain.payment.entity.BonusTicket;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
+import com.studioedge.focus_to_levelup_server.domain.payment.exception.PurchaseNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.payment.exception.RefundNotAllowedException;
+import com.studioedge.focus_to_levelup_server.domain.payment.exception.UnauthorizedRefundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Slf4j
 @Service
@@ -32,8 +31,8 @@ public class RefundService {
     private final PaymentLogRepository paymentLogRepository;
     private final MemberInfoRepository memberInfoRepository;
     private final BonusTicketRepository bonusTicketRepository;
-    private final SubscriptionRepository subscriptionRepository;
     private final MemberRepository memberRepository;
+    private final SubscriptionRepository subscriptionRepository;
 
     /**
      * 결제 환불 처리
@@ -139,11 +138,10 @@ public class RefundService {
             }
         }
 
-        // 보너스 티켓 보유 확인 (미사용 티켓만 카운트)
-        long availableBonusTickets = bonusTicketRepository.countByMemberIdAndIsActiveFalse(memberId);
-        if (availableBonusTickets < bonusTicketCount) {
-            log.warn("Subscription refund failed: member {} has {} unused bonus tickets but needs {}",
-                    memberId, availableBonusTickets, bonusTicketCount);
+        // 보너스 티켓 보유 확인
+        if (memberInfo.getBonusTicketCount() < bonusTicketCount) {
+            log.warn("Subscription refund failed: member {} has {} bonus tickets but needs {}",
+                    memberId, memberInfo.getBonusTicketCount(), bonusTicketCount);
             throw new RefundNotAllowedException();
         }
 
@@ -158,17 +156,9 @@ public class RefundService {
             log.info("Reset subscription reward flag for member {} due to refund", memberId);
         }
 
-        // 보너스 티켓 회수 (미사용 티켓부터 삭제)
-        List<BonusTicket> unusedTickets = bonusTicketRepository
-                .findByMemberIdAndIsActiveFalse(memberId);
-
-        if (unusedTickets.size() < bonusTicketCount) {
-            throw new RefundNotAllowedException();
-        }
-
-        List<BonusTicket> ticketsToDelete = unusedTickets.subList(0, bonusTicketCount);
-        bonusTicketRepository.deleteAll(ticketsToDelete);
-        log.info("Deleted {} bonus tickets from member {}", bonusTicketCount, memberId);
+        // 보너스 티켓 회수
+        memberInfo.decreaseBonusTicket(bonusTicketCount);
+        log.info("Decreased {} bonus tickets from member {}", bonusTicketCount, memberId);
 
         // 구독권 비활성화
         subscriptionRepository.findByMemberIdAndIsActiveTrue(memberId)

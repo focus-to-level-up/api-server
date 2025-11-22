@@ -14,9 +14,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
-import com.studioedge.focus_to_levelup_server.domain.payment.dao.BonusTicketRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
-import com.studioedge.focus_to_levelup_server.domain.payment.entity.BonusTicket;
 import com.studioedge.focus_to_levelup_server.domain.payment.entity.Subscription;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionSource;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
@@ -29,6 +27,7 @@ import com.studioedge.focus_to_levelup_server.domain.system.dto.response.Subscri
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.MemberAsset;
+import com.studioedge.focus_to_levelup_server.domain.system.exception.InvalidMailMetadataException;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.MailAlreadyReceivedException;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.MailExpiredException;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.MailNotFoundException;
@@ -50,7 +49,6 @@ public class MailCommandService {
     private final MemberInfoRepository memberInfoRepository;
     private final MemberRepository memberRepository;
     private final SubscriptionRepository subscriptionRepository;
-    private final BonusTicketRepository bonusTicketRepository;
     private final CharacterRepository characterRepository;
     private final MemberCharacterRepository memberCharacterRepository;
     private final AssetRepository assetRepository;
@@ -116,6 +114,23 @@ public class MailCommandService {
         Integer giftCount = metadata.containsKey("giftCount") ? (Integer) metadata.get("giftCount") : 0;
 
         SubscriptionType subscriptionType = SubscriptionType.valueOf(subscriptionTypeStr);
+
+        // MemberInfo 조회 (보너스 티켓 지급용)
+        MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
+                .orElseThrow(InvalidMemberException::new);
+
+        // 보너스 티켓 지급 (metadata에 bonusTicketCount가 있으면 지급)
+        if (metadata.containsKey("bonusTicketCount")) {
+            Object bonusTicketObj = metadata.get("bonusTicketCount");
+            if (bonusTicketObj instanceof Number) {
+                int bonusTicketCount = ((Number) bonusTicketObj).intValue();
+                if (bonusTicketCount > 0) {
+                    memberInfo.addBonusTicket(bonusTicketCount);
+                    log.info("Rewarded {} bonus tickets to member {} from subscription gift",
+                            bonusTicketCount, memberId);
+                }
+            }
+        }
 
         // Subscription 엔티티 생성
         Subscription subscription = Subscription.builder()
@@ -220,25 +235,19 @@ public class MailCommandService {
         }
 
         // 보너스 티켓 지급 (description에서 JSON 파싱)
+        Map<String, Object> metadata = parseMailDescription(mail.getDescription());
         int bonusTicketCount = 0;
-        try {
-            Map<String, Object> metadata = parseMailDescription(mail.getDescription());
-            bonusTicketCount = metadata.containsKey("bonusTicketCount")
-                    ? (Integer) metadata.get("bonusTicketCount")
-                    : 0;
-
-            if (bonusTicketCount > 0) {
-                for (int i = 0; i < bonusTicketCount; i++) {
-                    BonusTicket bonusTicket = BonusTicket.builder()
-                            .member(mail.getReceiver())
-                            .build();
-                    bonusTicketRepository.save(bonusTicket);
-                }
-                log.info("Rewarded {} bonus tickets to member {}", bonusTicketCount, memberId);
+        if (metadata.containsKey("bonusTicketCount")) {
+            Object bonusTicketObj = metadata.get("bonusTicketCount");
+            if (!(bonusTicketObj instanceof Number)) {
+                throw new InvalidMailMetadataException();
             }
-        } catch (Exception e) {
-            // description이 JSON이 아니면 보너스 티켓 없음
-            log.debug("No bonus ticket info in mail description: {}", mail.getDescription());
+            bonusTicketCount = ((Number) bonusTicketObj).intValue();
+        }
+
+        if (bonusTicketCount > 0) {
+            memberInfo.addBonusTicket(bonusTicketCount);
+            log.info("Rewarded {} bonus tickets to member {}", bonusTicketCount, memberId);
         }
 
         // 우편 수령 처리

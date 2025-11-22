@@ -36,6 +36,7 @@ import com.studioedge.focus_to_levelup_server.domain.system.entity.Monster;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.MonsterImage;
 import com.studioedge.focus_to_levelup_server.domain.system.enums.MonsterImageType;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.BackgroundNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.store.service.ItemAchievementService;
 import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -65,6 +66,7 @@ public class FocusService {
     private final MonsterImageRepository monsterImageRepository;
     private final BackgroundRepository backgroundRepository;
     private final RankingRepository rankingRepository;
+    private final ItemAchievementService itemAchievementService;
 
     @Transactional
     public void saveFocus(Member m, Long subjectId, SaveFocusRequest request) {
@@ -142,6 +144,8 @@ public class FocusService {
             gm.addWeeklyFocusTime(request.focusSeconds());
         }
 
+        // 아이템 달성 조건 체크 (DailySubject 저장 이후)
+        itemAchievementService.checkAchievements(m.getId(), request.focusSeconds(), request.startTime());
     }
 
     @Transactional
