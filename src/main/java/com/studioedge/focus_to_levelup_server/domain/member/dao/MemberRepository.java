@@ -23,8 +23,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByNickname(String nickname);
 
-    Page<Member> findAllByIsReceivedWeeklyRewardIsFalse(Pageable pageable);
-
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Member m SET m.currentLevel = 1, m.currentExp = 0")
     int resetAllMemberLevels();

@@ -4,6 +4,7 @@ import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterImag
 import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.CharacterImage;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
+import com.studioedge.focus_to_levelup_server.domain.character.enums.CharacterImageType;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
@@ -159,8 +160,10 @@ public class UpdateWeeklyStatStep {
         // 3-2. 대표 캐릭터 이미지 조회 (N+1 발생 지점이지만, 원본 로직 유지)
         MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefaultTrue(member.getId())
                 .orElseThrow(() -> new IllegalStateException("현재 맴버의 대표 캐릭터가 설정되어있지 않습니다. ID: " + member.getId()));
-        CharacterImage characterImage = characterImageRepository.findByCharacterIdAndEvolution(
-                memberCharacter.getCharacter().getId(), memberCharacter.getDefaultEvolution()
+        CharacterImage characterImage = characterImageRepository.findByCharacterIdAndEvolutionAndImageType(
+                memberCharacter.getCharacter().getId(),
+                memberCharacter.getDefaultEvolution(),
+                CharacterImageType.IDLE
         ).orElseThrow(() -> new IllegalStateException("맴버의 대표 캐릭터 이미지를 조회할 수 없습니다. CharID: " + memberCharacter.getCharacter().getId()));
 
         // 3-3. WeeklyStat 엔티티 생성
