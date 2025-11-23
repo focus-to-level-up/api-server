@@ -2,14 +2,14 @@
 spring:
   # Data db (API용)
   datasource-data:
-    jdbc-url: jdbc:mysql://localhost:13307/focus_db?useSSL=false&useUnicode=true&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    jdbc-url: jdbc:mysql://localhost:13307/focus_db?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
     username: focus
     password: focus
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   # Meta DB (Batch 메타데이터용)
   datasource-meta:
-    jdbc-url: jdbc:mysql://localhost:13307/focus_meta_db?useSSL=false&useUnicode=true&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    jdbc-url: jdbc:mysql://localhost:13307/focus_meta_db?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
     username: focus
     password: focus
     driver-class-name: com.mysql.cj.jdbc.Driver
