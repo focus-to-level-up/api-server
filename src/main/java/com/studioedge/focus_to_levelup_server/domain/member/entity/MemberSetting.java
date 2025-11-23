@@ -58,6 +58,7 @@ public class MemberSetting {
     private Integer rankingDeactivatedCount = 0; // 랭킹에서 비활성화 횟수
 
     @Column(nullable = false)
+    @ColumnDefault("'FFFF00'")
     private String totalStatColor = "FFFF00"; // 노란색 초기값
 
     @Builder
@@ -80,6 +81,7 @@ public class MemberSetting {
     public void clearRankingWarning() {
         this.isRankingCaution = false;
         this.rankingWarningAt = null;
+        this.isRankingActive = true;
     }
 
     public boolean warning() {

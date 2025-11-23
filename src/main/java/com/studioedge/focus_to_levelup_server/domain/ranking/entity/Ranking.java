@@ -34,7 +34,7 @@ public class Ranking extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'BRONZE'")
-    private Tier tier;
+    private Tier tier = Tier.BRONZE;
 
     @Builder
     public Ranking(League league, Member member, Tier tier) {

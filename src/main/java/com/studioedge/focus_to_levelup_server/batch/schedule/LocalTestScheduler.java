@@ -31,7 +31,7 @@ public class LocalTestScheduler {
     /**
      * 10초마다 설정된 Job을 실행합니다.
      */
-    @Scheduled(fixedDelay = 10000) // 10초마다 실행 (이전 작업 종료 후 10초 대기)
+    @Scheduled(fixedDelay = 15000) // 10초마다 실행 (이전 작업 종료 후 10초 대기)
     public void runTestJob() {
         try {
             log.info("########## [TEST] Starting Job: {} ##########", targetJobName);

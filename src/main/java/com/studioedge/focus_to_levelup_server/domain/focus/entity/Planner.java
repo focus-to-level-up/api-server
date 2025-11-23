@@ -18,7 +18,7 @@ import java.sql.Time;
 public class Planner extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "planner")
+    @Column(name = "planner_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

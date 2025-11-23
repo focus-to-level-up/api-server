@@ -58,11 +58,16 @@ public class CheckFocusingIsOnStep {
     public ItemProcessor<Member, Member> checkFocusingIsOnProcessor() {
         return member -> {
             MemberSetting setting = member.getMemberSetting();
-            boolean isBanned = setting.warning();
-            if (isBanned) {
+            boolean isJustWarned = setting.warning();
+
+            if (!isJustWarned) {
+                log.info(">> 사용자 밴 처리 및 랭킹 삭제: {}", member.getNickname());
                 member.banRanking();
                 rankingRepository.deleteByMemberId(member.getId());
+            } else {
+                log.info(">> 사용자 경고 부여: {}", member.getNickname());
             }
+
             member.focusOff();
 
             return member;
