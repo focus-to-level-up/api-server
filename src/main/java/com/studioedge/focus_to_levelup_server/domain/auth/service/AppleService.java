@@ -227,9 +227,10 @@ public class AppleService {
         try {
             // Remove header, footer, and whitespace
             String privateKeyPEM = privateKeyContent
+                    .replace("\\n", "\n")  // Convert literal \n to actual newline
                     .replace("-----BEGIN PRIVATE KEY-----", "")
                     .replace("-----END PRIVATE KEY-----", "")
-                    .replaceAll("\\s", "");
+                    .replaceAll("\\s+", "");  // Remove all whitespace
 
             byte[] encoded = Base64.getDecoder().decode(privateKeyPEM);
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
@@ -237,7 +238,10 @@ public class AppleService {
 
             return keyFactory.generatePrivate(keySpec);
         } catch (Exception e) {
-            log.error("Failed to load private key", e);
+            log.error("Failed to load private key - length: {}, first 50 chars: {}",
+                     privateKeyContent != null ? privateKeyContent.length() : 0,
+                     privateKeyContent != null && privateKeyContent.length() > 50 ?
+                             privateKeyContent.substring(0, 50) + "..." : privateKeyContent, e);
             throw new InvalidAppleTokenException();
         }
     }
