@@ -1,6 +1,7 @@
 package com.studioedge.focus_to_levelup_server.global.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.studioedge.focus_to_levelup_server.domain.auth.exception.WithdrawnMemberException;
 import com.studioedge.focus_to_levelup_server.global.exception.ExceptionResponse;
 import com.studioedge.focus_to_levelup_server.global.exception.ExceptionSituation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,17 +25,31 @@ public class CustomJwtAuthenticationEntryPoint implements AuthenticationEntryPoi
 
     @Override
     public void commence(HttpServletRequest request,
-                        HttpServletResponse response,
-                        AuthenticationException authException) throws IOException {
+                         HttpServletResponse response,
+                         AuthenticationException authException) throws IOException {
         log.error("Unauthorized error: {}", authException.getMessage());
 
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        Object exception = request.getAttribute("exception");
+
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
 
-        ExceptionResponse errorResponse = ExceptionResponse.from(
-                ExceptionSituation.of("인증이 필요합니다.", HttpStatus.UNAUTHORIZED)
-        );
+        ExceptionResponse errorResponse;
+
+        if (exception instanceof WithdrawnMemberException) {
+            log.error("WithdrawnMemberException detected in EntryPoint");
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            errorResponse = ExceptionResponse.from(
+                    ExceptionSituation.of("탈퇴한 회원입니다. 재가입이 필요합니다.", HttpStatus.FORBIDDEN)
+            );
+        } else {
+            log.error("Unauthorized error: {}", authException.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+            errorResponse = ExceptionResponse.from(
+                    ExceptionSituation.of("인증이 필요합니다.", HttpStatus.UNAUTHORIZED)
+            );
+        }
 
         String jsonResponse = objectMapper.writeValueAsString(errorResponse);
         response.getWriter().write(jsonResponse);

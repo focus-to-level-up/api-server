@@ -133,7 +133,7 @@ public class AuthController {
             )
     })
     public ResponseEntity<CommonResponse<Void>> resign(
-            @Parameter(description = "소셜 로그인 타입 (apple, kakao, naver, google)", example = "apple", hidden = true)
+            @Parameter(description = "소셜 로그인 타입 (apple, kakao, naver, google)", example = "apple")
             @PathVariable String socialType,
             @AuthenticationPrincipal Member member
     ) {
