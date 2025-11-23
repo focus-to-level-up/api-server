@@ -15,6 +15,7 @@ import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingNo
 import com.studioedge.focus_to_levelup_server.domain.payment.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.*;
+import com.studioedge.focus_to_levelup_server.global.fcm.exception.*;
 import org.springframework.http.HttpStatus;
 
 import java.util.LinkedHashMap;
@@ -39,6 +40,7 @@ public class ExceptionMapper {
         setUpSystemException();
         setUpStatException();
         setUpEventException();
+        setUpFcmException();
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -284,5 +286,15 @@ public class ExceptionMapper {
                 ExceptionSituation.of("배경을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         mapper.put(WeeklyRewardAlreadyReceivedException.class,
                 ExceptionSituation.of("주간 보상을 이미 수령하였거나 받을 수 있는 주간보상이 없습니다.", HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * FCM 관련 예외 등록
+     */
+    private static void setUpFcmException() {
+        mapper.put(FcmSendException.class,
+                ExceptionSituation.of("FCM 푸시 알림 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR));
+        mapper.put(EmptyFcmTokenListException.class,
+                ExceptionSituation.of("FCM 토큰 리스트가 비어있습니다.", HttpStatus.BAD_REQUEST));
     }
 }

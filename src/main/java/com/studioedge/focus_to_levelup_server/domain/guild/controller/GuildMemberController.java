@@ -6,6 +6,7 @@ import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildBoostSer
 import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildCommandService;
 import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildMemberQueryService;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.global.fcm.FcmService;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
 import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,6 +34,7 @@ public class GuildMemberController {
     private final GuildCommandService guildCommandService;
     private final GuildMemberQueryService guildMemberQueryService;
     private final GuildBoostService guildBoostService;
+    private final FcmService fcmService;
 
     @PostMapping("/guilds/{guildId}/join")
     @Operation(summary = "길드 가입", description = """
@@ -190,7 +192,26 @@ public class GuildMemberController {
         return HttpResponseUtil.ok(response);
     }
 
-    // TODO: 길드원 집중 요청 (FCM 푸시 알림)
-    // @PostMapping("/guilds/{guildId}/focus-request")
-    // FCM 서비스가 구현되면 추가 예정
+    @PostMapping("/guilds/{guildId}/focus-request")
+    @Operation(summary = "길드원 집중 요청", description = """
+            ### 기능
+            - 길드의 모든 멤버에게 집중 요청 푸시 알림을 발송합니다.
+            - 요청자 본인은 제외됩니다.
+
+            ### 푸시 알림 내용
+            - Title: "집중요청알림"
+            - Body: "{요청자닉네임}님이 집중을 요청했어요!"
+            """)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "집중 요청 성공"),
+            @ApiResponse(responseCode = "404", description = "길드를 찾을 수 없음"),
+            @ApiResponse(responseCode = "403", description = "길드원이 아님")
+    })
+    public ResponseEntity<CommonResponse<Void>> requestFocus(
+            @Parameter(description = "길드 ID") @PathVariable Long guildId,
+            @AuthenticationPrincipal Member member
+    ) {
+        guildCommandService.sendFocusRequest(guildId, member.getId());
+        return HttpResponseUtil.ok(null);
+    }
 }

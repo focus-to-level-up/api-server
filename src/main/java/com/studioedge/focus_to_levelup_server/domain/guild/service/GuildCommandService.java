@@ -17,16 +17,20 @@ import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberReposi
 import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
+import com.studioedge.focus_to_levelup_server.global.fcm.FcmService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
  * 길드 생성/수정/삭제 서비스
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -36,6 +40,7 @@ public class GuildCommandService {
     private final GuildMemberRepository guildMemberRepository;
     private final MemberRepository memberRepository;
     private final GuildQueryService guildQueryService;
+    private final FcmService fcmService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     /**
@@ -213,5 +218,35 @@ public class GuildCommandService {
 
         // Guild 삭제
         guildRepository.delete(guild);
+    }
+
+    /**
+     * 길드원 집중 요청 (FCM 푸시 알림)
+     * 요청자 본인에게만 알림 전송
+     */
+    public void sendFocusRequest(Long guildId, Long requesterId) {
+        Guild guild = guildQueryService.findGuildById(guildId);
+
+        // 요청자 확인
+        GuildMember requester = guildMemberRepository.findByGuildIdAndMemberId(guildId, requesterId)
+                .orElseThrow(NotGuildMemberException::new);
+
+        Member requesterMember = requester.getMember();
+
+        // FCM 토큰 확인
+        if (requesterMember.getFcmToken() == null) {
+            return; // 토큰이 없으면 알림 전송 불가
+        }
+
+        // 요청자 본인에게 알림 전송
+        try {
+            fcmService.sendToOne(
+                    requesterMember.getFcmToken(),
+                    "집중요청알림",
+                    requesterMember.getNickname() + " 님이 집중을 요청했어요!"
+            );
+        } catch (Exception e) {
+            log.error(">> Failed to send focus request FCM to member: {}", requesterId, e);
+        }
     }
 }
