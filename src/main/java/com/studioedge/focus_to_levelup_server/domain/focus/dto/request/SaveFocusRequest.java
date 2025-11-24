@@ -16,6 +16,10 @@ public record SaveFocusRequest(
 
         @NotNull(message = "집중 시작 시각은 필수입니다.")
         @Schema(description = "집중 시작 시각 (ISO 8601, UTC 또는 로컬 시간)", example = "2025-11-19T14:30:00")
-        LocalDateTime startTime
+        LocalDateTime startTime,
+
+        @NotNull(message = "최대 집중 시간은 필수입니다.")
+        @Schema(description = "최대 집중 시간(초)", example = "2400")
+        Integer maxConsecutiveSeconds
 ) {
 }

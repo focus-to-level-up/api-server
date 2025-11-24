@@ -34,8 +34,9 @@ public class StatController {
     @Operation(summary = "일간 통계 조회 (캘린더)", description = """
             ### 기능
             - 특정 연도(`year`)와 월(`month`)을 기준으로, 해당 월의 모든 날짜에 대한 학습 데이터를 조회합니다.
-            - `DailyGoal` 테이블에서 `currentMinutes`와 `targetMinutes`를 조회합니다.
-            - 데이터가 없는 날짜는 `currentMinutes = 0`으로 반환됩니다.
+            - 실제 집중했던 시간(`focusSeconds`)와 하루 최대 집중시간(`maxConsecutiveSeconds`)는 초단위
+            - 목표 시간(`targetMinutes`)는 분단위 입니다.
+            - 데이터가 없는 날짜는 `currentSeconds = 0`으로 반환됩니다.
             """
     )
     @ApiResponses({

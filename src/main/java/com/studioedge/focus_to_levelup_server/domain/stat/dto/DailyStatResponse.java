@@ -12,14 +12,17 @@ public record DailyStatResponse(
         LocalDate date,
         @Schema(description = "목표 시간(분)", example = "240")
         Integer targetMinutes,
-        @Schema(description = "실제 학습 시간(분)", example = "180")
-        Integer focusMinutes
+        @Schema(description = "실제 집중 시간(초)", example = "1800")
+        Integer focusSeconds,
+        @Schema(description = "하루 최대 연속 집중시간(초)", example = "1400")
+        Integer maxConsecutiveSeconds
 ) {
     public static DailyStatResponse of(DailyGoal dailyGoal) {
         return DailyStatResponse.builder()
                 .date(dailyGoal.getDailyGoalDate())
                 .targetMinutes(dailyGoal.getTargetMinutes())
-                .focusMinutes(dailyGoal.getCurrentSeconds())
+                .focusSeconds(dailyGoal.getCurrentSeconds())
+                .maxConsecutiveSeconds(dailyGoal.getMaxConsecutiveSeconds())
                 .build();
     }
 
@@ -28,7 +31,8 @@ public record DailyStatResponse(
         return DailyStatResponse.builder()
                 .date(date)
                 .targetMinutes(0)
-                .focusMinutes(0)
+                .focusSeconds(0)
+                .maxConsecutiveSeconds(0)
                 .build();
     }
 }

@@ -44,12 +44,12 @@ public record MemberItemResponse(
 
         @Schema(description = """
                 진행 상황 데이터 (JSON 형식)
-                - 집중력 폭발: {"requiredMinutes":60,"currentFocusMinutes":30}
+                - 집중력 폭발: {"requiredMinutes":60,"currentFocusMinutes":30,"maxConsecutiveMinutes:20"}
                 - 시작 시간 사수: {"currentStartTime":"09:00","earliestStartTime":"07:00","requiredHour":8,"recordedDate":"2025-11-22"}
                 - 마지막 생존자: {"currentEndTime":"20:00","latestEndTime":"22:30","requiredHour":22,"recordedDate":"2025-11-22"}
                 - 달성 시 추가: "achievedDate":"2025-11-22", "achievedDay":"토요일"
                 """,
-                example = "{\"requiredMinutes\":60,\"currentFocusMinutes\":30}")
+                example = "{\"requiredMinutes\":60,\"currentFocusMinutes\":30,\"maxConsecutiveMinutes\":20}")
         String progressData
 ) {
     public static MemberItemResponse from(MemberItem memberItem, Integer rewardLevel) {
