@@ -110,7 +110,6 @@ public class SubjectController {
             - `subjectId`: [경로] 학습한 과목 PK
             - `focusSeconds`: [Body] [필수] 실제 학습한 시간(분)
             - `startTime`: [Body] [필수] 집중 시작 시간
-            - `maxConsecutiveSeconds`: [Body] [필수] 최대 연속 집중 시간
             """
     )
     @ApiResponses({
