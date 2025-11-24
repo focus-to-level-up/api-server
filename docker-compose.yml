@@ -9,10 +9,12 @@ services:
     ports:
       - 13307:3306
     environment:
+      TZ: Asia/Seoul
       MYSQL_DATABASE: focus_db
       MYSQL_ROOT_PASSWORD: focus
       MYSQL_USER: focus
       MYSQL_PASSWORD: focus
+    command: --default-time-zone='+09:00'
     volumes:
       - ./src/main/resources/db:/docker-entrypoint-initdb.d
       - ./mysql/data:/var/lib/mysql
