@@ -44,6 +44,10 @@ public class DailyGoal extends BaseEntity {
     private Integer currentSeconds = 0;
 
     @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer maxConsecutiveSeconds = 0;
+
+    @Column(nullable = false)
     @ColumnDefault("false")
     private Boolean isReceived = false; // 목표 완료 수령 여부
 
@@ -71,6 +75,10 @@ public class DailyGoal extends BaseEntity {
         }
         this.isReceived = true;
         return true;
+    }
+
+    public void renewMaxConsecutiveSeconds(Integer maxFocusSeconds) {
+        this.maxConsecutiveSeconds = maxFocusSeconds;
     }
 
     public void useApp(Integer usingAppSeconds) {
