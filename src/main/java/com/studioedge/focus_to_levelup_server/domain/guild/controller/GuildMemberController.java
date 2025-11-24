@@ -192,26 +192,30 @@ public class GuildMemberController {
         return HttpResponseUtil.ok(response);
     }
 
-    @PostMapping("/guilds/{guildId}/focus-request")
+    @PostMapping("/guilds/{guildId}/members/{targetMemberId}/focus-request")
     @Operation(summary = "길드원 집중 요청", description = """
             ### 기능
-            - 길드의 모든 멤버에게 집중 요청 푸시 알림을 발송합니다.
-            - 요청자 본인은 제외됩니다.
+            - 특정 길드원에게 집중 요청 푸시 알림을 발송합니다.
 
             ### 푸시 알림 내용
             - Title: "집중요청알림"
             - Body: "{요청자닉네임}님이 집중을 요청했어요!"
+
+            ### 검증
+            - 요청자와 대상자 모두 같은 길드에 속해야 합니다.
+            - 대상자의 FCM 토큰이 필요합니다.
             """)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "집중 요청 성공"),
-            @ApiResponse(responseCode = "404", description = "길드를 찾을 수 없음"),
+            @ApiResponse(responseCode = "404", description = "길드 또는 멤버를 찾을 수 없음"),
             @ApiResponse(responseCode = "403", description = "길드원이 아님")
     })
     public ResponseEntity<CommonResponse<Void>> requestFocus(
             @Parameter(description = "길드 ID") @PathVariable Long guildId,
+            @Parameter(description = "대상 멤버 ID") @PathVariable Long targetMemberId,
             @AuthenticationPrincipal Member member
     ) {
-        guildCommandService.sendFocusRequest(guildId, member.getId());
+        guildCommandService.sendFocusRequest(guildId, member.getId(), targetMemberId);
         return HttpResponseUtil.ok(null);
     }
 }

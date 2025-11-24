@@ -222,31 +222,36 @@ public class GuildCommandService {
 
     /**
      * 길드원 집중 요청 (FCM 푸시 알림)
-     * 요청자 본인에게만 알림 전송
+     * 특정 길드원에게 알림 전송
      */
-    public void sendFocusRequest(Long guildId, Long requesterId) {
-        Guild guild = guildQueryService.findGuildById(guildId);
-
-        // 요청자 확인
+    public void sendFocusRequest(Long guildId, Long requesterId, Long targetMemberId) {
+        // 요청자 검증
         GuildMember requester = guildMemberRepository.findByGuildIdAndMemberId(guildId, requesterId)
                 .orElseThrow(NotGuildMemberException::new);
 
-        Member requesterMember = requester.getMember();
+        // 대상자 검증 (같은 길드에 속해있는지)
+        GuildMember target = guildMemberRepository.findByGuildIdAndMemberId(guildId, targetMemberId)
+                .orElseThrow(NotGuildMemberException::new);
 
-        // FCM 토큰 확인
-        if (requesterMember.getFcmToken() == null) {
+        Member requesterMember = requester.getMember();
+        Member targetMember = target.getMember();
+
+        // 대상자의 FCM 토큰 확인
+        if (targetMember.getFcmToken() == null) {
+            log.warn(">> Target member {} has no FCM token", targetMemberId);
             return; // 토큰이 없으면 알림 전송 불가
         }
 
-        // 요청자 본인에게 알림 전송
+        // 대상자에게 알림 전송
         try {
             fcmService.sendToOne(
-                    requesterMember.getFcmToken(),
+                    targetMember.getFcmToken(),
                     "집중요청알림",
-                    requesterMember.getNickname() + " 님이 집중을 요청했어요!"
+                    requesterMember.getNickname() + "님이 집중을 요청했어요!"
             );
+            log.info(">> Focus request sent from member {} to member {} in guild {}", requesterId, targetMemberId, guildId);
         } catch (Exception e) {
-            log.error(">> Failed to send focus request FCM to member: {}", requesterId, e);
+            log.error(">> Failed to send focus request FCM from {} to {}", requesterId, targetMemberId, e);
         }
     }
 }
