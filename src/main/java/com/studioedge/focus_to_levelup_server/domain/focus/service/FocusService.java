@@ -145,12 +145,12 @@ public class FocusService {
         }
 
         // 하루 최대 집중시간 확인하기
-        if (dailyGoal.getMaxConsecutiveSeconds() > request.maxConsecutiveSeconds()) {
+        if (request.maxConsecutiveSeconds() > dailyGoal.getMaxConsecutiveSeconds()) {
             dailyGoal.renewMaxConsecutiveSeconds(request.maxConsecutiveSeconds());
         }
 
         // 아이템 달성 조건 체크 (DailySubject 저장 이후)
-        itemAchievementService.checkAchievements(m.getId(), request);
+        itemAchievementService.checkAchievements(m.getId(), request, dailyGoal);
     }
 
     @Transactional
