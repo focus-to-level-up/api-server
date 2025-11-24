@@ -141,4 +141,28 @@ public class AuthController {
         authService.resign(member.getId(), type);
         return HttpResponseUtil.ok(null);
     }
+
+    @PostMapping("/heartbeat")
+    @Operation(
+            summary = "하트비트 (앱 활성 상태 갱신)",
+            description = "앱 실행 시 호출하여 마지막 로그인 시간을 갱신합니다. 캐싱된 토큰으로 자동 로그인 시에도 접속 기록을 남기기 위해 사용됩니다.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "하트비트 성공",
+                    content = @Content(schema = @Schema(implementation = HeartbeatResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패"
+            )
+    })
+    public ResponseEntity<CommonResponse<HeartbeatResponse>> heartbeat(
+            @AuthenticationPrincipal Member member
+    ) {
+        HeartbeatResponse response = authService.heartbeat(member.getId());
+        return HttpResponseUtil.ok(response);
+    }
 }

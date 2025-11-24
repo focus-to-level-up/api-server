@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 
 @Slf4j
@@ -301,6 +302,23 @@ public class AuthService {
         member.withdraw();
 
         log.info("Member resigned: memberId={}, socialType={}", memberId, socialType);
+    }
+
+    /**
+     * 하트비트 (마지막 로그인 시간 갱신)
+     */
+    @Transactional
+    public HeartbeatResponse heartbeat(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 회원 ID입니다."));
+
+        // 마지막 로그인 시간 갱신
+        LocalDateTime now = LocalDateTime.now();
+        member.updateLastLoginDateTime(now);
+
+        log.info("Heartbeat updated: memberId={}, lastLoginDateTime={}", memberId, now);
+
+        return HeartbeatResponse.of(now);
     }
 
 
