@@ -3,6 +3,7 @@ package com.studioedge.focus_to_levelup_server.domain.stat.entity;
 
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -20,7 +21,7 @@ import org.hibernate.annotations.OnDeleteAction;
         })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MonthlySubjectStat {
+public class MonthlySubjectStat extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "monthly_subject_stat_id")

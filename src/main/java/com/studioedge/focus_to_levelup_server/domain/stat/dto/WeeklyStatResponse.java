@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Builder
 public record WeeklyStatResponse(
@@ -17,28 +18,32 @@ public record WeeklyStatResponse(
         @Schema(description = "주간 마지막 레벨", example = "15")
         Integer lastLevel,
         @Schema(description = "주간 마지막 캐릭터 이미지 URL", example = "http://...")
-        String lastCharacterImageUrl
+        String lastCharacterImageUrl,
+        @Schema(description = "요일별 집중 시간(초) 리스트 (월~일 순서)", example = "[3600, 0, 7200, ...]")
+        List<Integer> focusSecondsPerDayList
 ) {
     // 집계된 WeeklyStat 엔티티로부터 생성
-    public static WeeklyStatResponse of(WeeklyStat weeklyStat) {
+    public static WeeklyStatResponse of(WeeklyStat weeklyStat, List<Integer> focusSecondsPerDayList) {
         return WeeklyStatResponse.builder()
                 .startDate(weeklyStat.getStartDate())
                 .endDate(weeklyStat.getEndDate())
                 .totalFocusMinutes(weeklyStat.getTotalFocusMinutes())
                 .lastLevel(weeklyStat.getTotalLevel())
                 .lastCharacterImageUrl(weeklyStat.getLastCharacterImageUrl())
+                .focusSecondsPerDayList(focusSecondsPerDayList)
                 .build();
     }
 
     // 실시간 계산된 '현재 주'로부터 생성
-    public static WeeklyStatResponse of(LocalDate startDate, LocalDate endDate, Integer totalSeconds,
-                                        Integer level, String imageUrl) {
+    public static WeeklyStatResponse of(LocalDate startDate, LocalDate endDate, Integer totalMinutes,
+                                        Integer level, String imageUrl, List<Integer> focusSecondsPerDayList) {
         return WeeklyStatResponse.builder()
                 .startDate(startDate)
                 .endDate(endDate)
-                .totalFocusMinutes(totalSeconds / 60)
+                .totalFocusMinutes(totalMinutes)
                 .lastLevel(level)
                 .lastCharacterImageUrl(imageUrl)
+                .focusSecondsPerDayList(focusSecondsPerDayList)
                 .build();
     }
 }

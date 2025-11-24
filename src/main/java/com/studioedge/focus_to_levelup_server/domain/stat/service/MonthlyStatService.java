@@ -3,23 +3,21 @@ package com.studioedge.focus_to_levelup_server.domain.stat.service;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailySubject;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.stat.dao.MonthlyStatRepository;
 import com.studioedge.focus_to_levelup_server.domain.stat.dao.MonthlySubjectStatRepository;
+import com.studioedge.focus_to_levelup_server.domain.stat.dto.MonthlyDetailResponse;
 import com.studioedge.focus_to_levelup_server.domain.stat.dto.MonthlyStatListResponse;
 import com.studioedge.focus_to_levelup_server.domain.stat.dto.MonthlyStatResponse;
-import com.studioedge.focus_to_levelup_server.domain.stat.dto.SubjectStatResponse;
 import com.studioedge.focus_to_levelup_server.domain.stat.entity.MonthlyStat;
-import com.studioedge.focus_to_levelup_server.domain.stat.entity.MonthlySubjectStat;
 import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -78,61 +76,97 @@ public class MonthlyStatService {
         return MonthlyStatListResponse.of(responses, totalFocusMinutes);
     }
 
+    /**
+     * [신규] 월간 상세 조회 (4개월 비교 + 일별 데이터)
+     */
     @Transactional(readOnly = true)
-    public List<SubjectStatResponse> getMonthlySubjectStats(Member member, int year) {
+    public MonthlyDetailResponse getMonthlyDetail(Long memberId, int year, int month) {
 
-        // "서비스 기준일" (새벽 4시 기준)
-        LocalDate serviceDate = AppConstants.getServiceDate();
-        int currentMonth = serviceDate.getMonthValue();
+        LocalDate serviceDate = AppConstants.getServiceDate(); // 오늘 (새벽 4시 기준)
+        LocalDate targetDate = LocalDate.of(year, month, 1); // 선택한 달의 1일
 
-        // 1. [집계 데이터] 요청된 연도의 "지난 달"까지의 통계 조회
-        List<MonthlySubjectStat> pastMonthsStats = monthlySubjectStatRepository
-                .findAllByMemberIdAndYearAndMonthBeforeWithSubject(
-                        member.getId(),
-                        year,
-                        currentMonth
+        // --- 1. 4개월 비교 데이터 생성 (선택한 달 포함 과거 4개월) ---
+        List<MonthlyDetailResponse.MonthlyComparisonData> comparisonList = new ArrayList<>();
+
+        // i=3 (3달전) -> i=0 (이번달) 순서로 반복 (e.g., 8월, 9월, 10월, 11월)
+        for (int i = 3; i >= 0; i--) {
+            LocalDate queryDate = targetDate.minusMonths(i);
+            int queryYear = queryDate.getYear();
+            int queryMonth = queryDate.getMonthValue();
+
+            int totalSeconds = 0;
+
+            // 현재 달(진행 중)인 경우 -> DailyGoal 실시간 집계
+            if (queryYear == serviceDate.getYear() && queryMonth == serviceDate.getMonthValue()) {
+                List<DailyGoal> goals = dailyGoalRepository.findAllByMemberIdAndDailyGoalDateBetween(
+                        memberId, queryDate, serviceDate
                 );
+                totalSeconds = goals.stream().mapToInt(DailyGoal::getCurrentSeconds).sum();
+            }
+            // 미래인 경우 -> 0
+            else if (queryDate.isAfter(serviceDate)) {
+                totalSeconds = 0;
+            }
+            // 과거 달(완료됨)인 경우 -> MonthlyStat 집계 데이터 조회
+            else {
+                totalSeconds = monthlyStatRepository.findByMemberIdAndYearAndMonth(memberId, queryYear, queryMonth)
+                        .map(MonthlyStat::getTotalFocusMinutes)
+                        .orElse(0);
+            }
 
-        // 2. (집계) 과목(Subject)을 기준으로 합산 (Map<Subject, Integer>)
-        Map<Subject, Integer> totalMinutesPerSubject = pastMonthsStats.stream()
-                .collect(Collectors.toMap(
-                        MonthlySubjectStat::getSubject,
-                        MonthlySubjectStat::getTotalMinutes,
-                        Integer::sum
-                ));
+            comparisonList.add(MonthlyDetailResponse.MonthlyComparisonData.builder()
+                    .year(queryYear)
+                    .month(queryMonth)
+                    .totalFocusMinutes(totalSeconds / 60)
+                    .build());
+        }
 
-        // 3. [실시간 데이터] 요청된 연도가 "현재 연도"일 경우, "이번 달" 데이터 실시간 집계
-        if (serviceDate.getYear() == year) {
 
-            // 3-1. "현재 월"의 시작일 ~ 오늘까지의 DailySubject 데이터 조회
-            LocalDate startOfThisMonth = serviceDate.withDayOfMonth(1);
+        // --- 2. 선택한 달의 일별 데이터 생성 (1일 ~ 말일/오늘) ---
+        List<MonthlyDetailResponse.DailyFocusData> dailyFocusList;
 
-            List<DailySubject> currentMonthStats = dailySubjectRepository
-                    .findAllByMemberIdAndDateRangeWithSubject(
-                            member.getId(),
-                            startOfThisMonth,
-                            serviceDate // 오늘까지
-                    );
+        // 미래의 달을 조회한 경우 -> 빈 리스트
+        if (targetDate.isAfter(serviceDate)) {
+            dailyFocusList = Collections.emptyList();
+        }
+        else {
+            LocalDate startDate = targetDate; // 1일
+            LocalDate endDate;
 
-            // 3-2. (집계) "현재 월"의 실시간 데이터를 2번 Map에 합산
-            for (DailySubject stat : currentMonthStats) {
-                int minutes = stat.getFocusSeconds() / 60; // 초 -> 분
-                totalMinutesPerSubject.merge(stat.getSubject(), minutes, Integer::sum);
+            // 선택한 달이 '이번 달'이면 -> '오늘'까지만 조회 (e.g., 1일 ~ 16일)
+            if (targetDate.getYear() == serviceDate.getYear() && targetDate.getMonthValue() == serviceDate.getMonthValue()) {
+                endDate = serviceDate;
+            }
+            // 선택한 달이 '과거'이면 -> '말일'까지 조회 (e.g., 1일 ~ 30일)
+            else {
+                endDate = targetDate.with(TemporalAdjusters.lastDayOfMonth());
+            }
+
+            // DB에서 해당 기간의 DailyGoal 조회
+            List<DailyGoal> dailyGoals = dailyGoalRepository.findAllByMemberIdAndDailyGoalDateBetween(
+                    memberId, startDate, endDate
+            );
+
+            // Map으로 변환 (날짜 -> 시간)
+            Map<LocalDate, Integer> goalMap = dailyGoals.stream()
+                    .collect(Collectors.toMap(DailyGoal::getDailyGoalDate, DailyGoal::getCurrentSeconds));
+
+            // 1일부터 endDate까지 리스트 생성 (빈 날짜는 0으로 채움)
+            dailyFocusList = new ArrayList<>();
+            LocalDate current = startDate;
+            while (!current.isAfter(endDate)) {
+                int seconds = goalMap.getOrDefault(current, 0);
+                dailyFocusList.add(MonthlyDetailResponse.DailyFocusData.builder()
+                        .date(current)
+                        .focusMinutes(seconds / 60)
+                        .build());
+                current = current.plusDays(1);
             }
         }
 
-        // 5. (계산) 모든 과목의 총 합산 시간 계산
-        double totalAllSubjectsMinutes = totalMinutesPerSubject.values().stream()
-                .mapToDouble(Integer::doubleValue)
-                .sum();
-
-        // 6. (변환) Map을 DTO 리스트로 변환 (퍼센트 계산 포함)
-        return totalMinutesPerSubject.entrySet().stream()
-                .map(entry -> SubjectStatResponse.of(
-                        entry.getKey(), // Subject
-                        entry.getValue(), // TotalMinutes
-                        totalAllSubjectsMinutes
-                ))
-                .collect(Collectors.toList());
+        return MonthlyDetailResponse.builder()
+                .monthlyComparison(comparisonList)
+                .dailyFocusList(dailyFocusList)
+                .build();
     }
 }
