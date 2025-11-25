@@ -55,10 +55,22 @@ public class PurchaseService {
      */
     public PurchaseResponse purchase(Member member, PurchaseRequest request) {
         // 1. 영수증 검증
-        ReceiptValidationResult validationResult = receiptValidator.validate(
-                request.receiptData(),
-                request.platform()
-        );
+        ReceiptValidationResult validationResult;
+
+        if (request.platform() == com.studioedge.focus_to_levelup_server.domain.payment.enums.PaymentPlatform.GOOGLE) {
+            // Google: purchaseToken과 googleProductId 필수
+            if (request.purchaseToken() == null || request.googleProductId() == null) {
+                throw new IllegalArgumentException("Google 결제는 purchaseToken과 googleProductId가 필요합니다");
+            }
+            validationResult = ((com.studioedge.focus_to_levelup_server.domain.payment.service.receipt.ReceiptValidationService) receiptValidator)
+                    .validateGoogle(request.purchaseToken(), request.googleProductId());
+        } else {
+            // Apple: receiptData 사용
+            if (request.receiptData() == null) {
+                throw new IllegalArgumentException("Apple 결제는 receiptData가 필요합니다");
+            }
+            validationResult = receiptValidator.validate(request.receiptData(), request.platform());
+        }
 
         if (!validationResult.isValid()) {
             throw new IllegalArgumentException("영수증 검증 실패: " + validationResult.getErrorMessage());
@@ -176,10 +188,22 @@ public class PurchaseService {
      */
     public GiftSubscriptionResponse giftSubscription(Member sender, GiftSubscriptionRequest request) {
         // 1. 영수증 검증
-        ReceiptValidationResult validationResult = receiptValidator.validate(
-                request.receiptData(),
-                request.platform()
-        );
+        ReceiptValidationResult validationResult;
+
+        if (request.platform() == com.studioedge.focus_to_levelup_server.domain.payment.enums.PaymentPlatform.GOOGLE) {
+            // Google: purchaseToken과 googleProductId 필수
+            if (request.purchaseToken() == null || request.googleProductId() == null) {
+                throw new IllegalArgumentException("Google 결제는 purchaseToken과 googleProductId가 필요합니다");
+            }
+            validationResult = ((com.studioedge.focus_to_levelup_server.domain.payment.service.receipt.ReceiptValidationService) receiptValidator)
+                    .validateGoogle(request.purchaseToken(), request.googleProductId());
+        } else {
+            // Apple: receiptData 사용
+            if (request.receiptData() == null) {
+                throw new IllegalArgumentException("Apple 결제는 receiptData가 필요합니다");
+            }
+            validationResult = receiptValidator.validate(request.receiptData(), request.platform());
+        }
 
         if (!validationResult.isValid()) {
             throw new IllegalArgumentException("영수증 검증 실패: " + validationResult.getErrorMessage());

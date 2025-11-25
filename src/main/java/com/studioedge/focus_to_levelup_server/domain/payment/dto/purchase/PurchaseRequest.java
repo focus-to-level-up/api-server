@@ -11,10 +11,13 @@ public record PurchaseRequest(
         @Schema(description = "결제 플랫폼", example = "APPLE")
         PaymentPlatform platform,
 
-        @Schema(description = "플랫폼 트랜잭션 ID (영수증)", example = "1000000123456789")
-        String transactionId,
+        @Schema(description = "[Apple 전용] 영수증 데이터 (Base64 인코딩)", example = "eyJhbGciOiJIUzI1NiJ9...")
+        String receiptData,
 
-        @Schema(description = "영수증 데이터 (Base64 인코딩)", example = "eyJhbGciOiJIUzI1NiJ9...")
-        String receiptData
+        @Schema(description = "[Google 전용] Purchase Token", example = "abcdefghijklmnop...")
+        String purchaseToken,
+
+        @Schema(description = "[Google 전용] Google Play Console Product ID", example = "premium_subscription")
+        String googleProductId
 ) {
 }
