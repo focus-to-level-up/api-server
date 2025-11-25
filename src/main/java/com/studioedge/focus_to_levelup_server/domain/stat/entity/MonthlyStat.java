@@ -31,14 +31,19 @@ public class MonthlyStat extends BaseEntity {
     private Member member;
 
     @Column(nullable = false)
+    private Integer year;
+
+    @Column(nullable = false)
     private Integer month;
 
     @Column(nullable = false)
     private Integer totalFocusMinutes;
 
     @Builder
-    public MonthlyStat(Member member, Integer month, Integer totalFocusMinutes) {
+    public MonthlyStat(Member member, Integer year,
+                       Integer month, Integer totalFocusMinutes) {
         this.member = member;
+        this.year = year;
         this.month = month;
         this.totalFocusMinutes = totalFocusMinutes;
     }

@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.global.jwt;
 
+import com.studioedge.focus_to_levelup_server.domain.auth.exception.WithdrawnMemberException;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -59,6 +60,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } else {
                 log.debug("No JWT token found in request");
             }
+        } catch (WithdrawnMemberException e) {
+            log.warn("Withdrawn member access attempt");
+            request.setAttribute("exception", e);
         } catch (Exception e) {
             log.error("Could not set user authentication in security context", e);
         }

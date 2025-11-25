@@ -94,6 +94,7 @@ public class UpdateMonthlyStatStep {
 
                 MonthlyStat monthlyStat = MonthlyStat.builder()
                         .member(member)
+                        .year(LocalDate.now().getYear())
                         .month(lastMonthValue)
                         .totalFocusMinutes(totalSeconds / 60) // 초 -> 분 변환
                         .build();

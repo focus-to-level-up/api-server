@@ -2,6 +2,8 @@ package com.studioedge.focus_to_levelup_server.domain.store.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
+import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailySubject;
 import com.studioedge.focus_to_levelup_server.domain.store.entity.MemberItem;
 import com.studioedge.focus_to_levelup_server.domain.store.dao.MemberItemRepository;
@@ -46,10 +48,13 @@ public class ItemAchievementService {
      * 집중 세션 종료 시 모든 달성 조건 체크
      *
      * @param memberId 회원 ID
-     * @param focusSeconds 집중 시간 (초)
-     * @param sessionStartTime 집중 시작 시각 (클라이언트에서 전달)
+     * @param request 요청온 유저의 집중 시간 정보
+     * @param dailyGoal 오늘의 목표 정보 (최대 집중 시간 포함)
      */
-    public void checkAchievements(Long memberId, Integer focusSeconds, LocalDateTime sessionStartTime) {
+    public void checkAchievements(Long memberId, SaveFocusRequest request, DailyGoal dailyGoal) {
+        int focusSeconds = request.focusSeconds();
+        LocalDateTime sessionStartTime = request.startTime();
+
         log.info("=== checkAchievements called: memberId={}, focusSeconds={}, startTime={}", memberId, focusSeconds, sessionStartTime);
         LocalDateTime sessionEndTime = LocalDateTime.now();
         LocalDate serviceDate = getServiceDate();
@@ -79,7 +84,7 @@ public class ItemAchievementService {
             // Item.name으로 switch 분기
             try {
                 isAchieved = switch (itemName) {
-                    case "집중력 폭발" -> checkConsecutiveFocus(memberItem, focusSeconds, serviceDate);
+                    case "집중력 폭발" -> checkConsecutiveFocus(memberItem, dailyGoal, serviceDate);
                     case "시작 시간 사수" -> checkMorningStart(memberItem, sessionStartTime, serviceDate);
                     case "마지막 생존자" -> checkLateNightEnd(memberItem, sessionEndTime, serviceDate);
                     case "휴식은 사치" -> checkLimitedRest(memberItem, memberId, serviceDate);
@@ -106,17 +111,21 @@ public class ItemAchievementService {
 
     /**
      * 1. 집중력 폭발: 연속 집중 시간 >= parameter (60/90/120분)
+     * DailyGoal의 maxConsecutiveSeconds를 Single Source of Truth로 사용
      */
-    private boolean checkConsecutiveFocus(MemberItem memberItem, Integer focusSeconds, LocalDate serviceDate) {
-        int focusMinutes = focusSeconds / 60;
+    private boolean checkConsecutiveFocus(MemberItem memberItem, DailyGoal dailyGoal, LocalDate serviceDate) {
         int requiredMinutes = memberItem.getSelection();
 
-        // progressData 항상 업데이트 (달성 여부와 관계없이)
+        // DailyGoal에서 최대 집중 시간 가져오기 (Single Source of Truth)
+        int maxConsecutiveMinutes = dailyGoal.getMaxConsecutiveSeconds() / 60;
+
+        // progressData 업데이트 (표시용으로만 사용, DailyGoal의 값을 반영)
         Map<String, Object> progressData = new HashMap<>();
-        progressData.put("currentFocusMinutes", focusMinutes);
+        progressData.put("maxConsecutiveMinutes", maxConsecutiveMinutes); // DailyGoal에서 읽은 값
         progressData.put("requiredMinutes", requiredMinutes);
 
-        boolean isAchieved = focusMinutes >= requiredMinutes;
+        // 달성 여부는 DailyGoal의 최대값으로 판단
+        boolean isAchieved = maxConsecutiveMinutes >= requiredMinutes;
 
         if (isAchieved) {
             progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MonthlyStatRepository extends JpaRepository<MonthlyStat, Long> {
     @Query("SELECT ms FROM MonthlyStat ms " +
@@ -14,5 +15,12 @@ public interface MonthlyStatRepository extends JpaRepository<MonthlyStat, Long> 
     List<MonthlyStat> findAllByMemberIdAndYear(
             @Param("memberId") Long memberId,
             @Param("year") int year
+    );
+
+    @Query("SELECT ms FROM MonthlyStat ms WHERE ms.member.id = :memberId AND ms.year = :year AND ms.month = :month")
+    Optional<MonthlyStat> findByMemberIdAndYearAndMonth(
+            @Param("memberId") Long memberId,
+            @Param("year") int year,
+            @Param("month") int month
     );
 }

@@ -17,16 +17,20 @@ import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberReposi
 import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
+import com.studioedge.focus_to_levelup_server.global.fcm.FcmService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
  * 길드 생성/수정/삭제 서비스
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -36,6 +40,7 @@ public class GuildCommandService {
     private final GuildMemberRepository guildMemberRepository;
     private final MemberRepository memberRepository;
     private final GuildQueryService guildQueryService;
+    private final FcmService fcmService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     /**
@@ -213,5 +218,40 @@ public class GuildCommandService {
 
         // Guild 삭제
         guildRepository.delete(guild);
+    }
+
+    /**
+     * 길드원 집중 요청 (FCM 푸시 알림)
+     * 특정 길드원에게 알림 전송
+     */
+    public void sendFocusRequest(Long guildId, Long requesterId, Long targetMemberId) {
+        // 요청자 검증
+        GuildMember requester = guildMemberRepository.findByGuildIdAndMemberId(guildId, requesterId)
+                .orElseThrow(NotGuildMemberException::new);
+
+        // 대상자 검증 (같은 길드에 속해있는지)
+        GuildMember target = guildMemberRepository.findByGuildIdAndMemberId(guildId, targetMemberId)
+                .orElseThrow(NotGuildMemberException::new);
+
+        Member requesterMember = requester.getMember();
+        Member targetMember = target.getMember();
+
+        // 대상자의 FCM 토큰 확인
+        if (targetMember.getFcmToken() == null) {
+            log.warn(">> Target member {} has no FCM token", targetMemberId);
+            return; // 토큰이 없으면 알림 전송 불가
+        }
+
+        // 대상자에게 알림 전송
+        try {
+            fcmService.sendToOne(
+                    targetMember.getFcmToken(),
+                    "집중요청알림",
+                    requesterMember.getNickname() + "님이 집중을 요청했어요!"
+            );
+            log.info(">> Focus request sent from member {} to member {} in guild {}", requesterId, targetMemberId, guildId);
+        } catch (Exception e) {
+            log.error(">> Failed to send focus request FCM from {} to {}", requesterId, targetMemberId, e);
+        }
     }
 }

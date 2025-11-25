@@ -15,5 +15,7 @@ GRANT ALL PRIVILEGES ON `focus_db`.* TO 'focus'@'%';
 -- 'focus_meta_db' (배치 DB)에 대한 모든 권한 부여
 GRANT ALL PRIVILEGES ON `focus_meta_db`.* TO 'focus'@'%';
 
+GRANT ALL PRIVILEGES ON *.* TO 'focus'@'%' WITH GRANT OPTION;
+
 -- 권한 적용
 FLUSH PRIVILEGES;

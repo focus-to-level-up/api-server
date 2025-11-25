@@ -16,6 +16,7 @@ import com.studioedge.focus_to_levelup_server.domain.stat.dto.WeeklyStatListResp
 import com.studioedge.focus_to_levelup_server.domain.stat.dto.WeeklyStatResponse;
 import com.studioedge.focus_to_levelup_server.domain.stat.entity.WeeklyStat;
 import com.studioedge.focus_to_levelup_server.domain.stat.entity.WeeklySubjectStat;
+import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
 import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,8 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,45 +54,50 @@ public class WeeklyStatService {
 
 
         // 2. [집계 데이터] "이번 주"를 제외한 모든 'WeeklyStat' 조회
-        List<WeeklyStat> aggregatedWeeks = weeklyStatRepository.findAllByMemberIdAndDateRange(
-                memberId,
-                queryStartDate, // [수정] startDateOfMonth -> queryStartDate
-                startOfThisWeek.minusDays(1) // (이번 주 시작일 전날까지)
+        List<WeeklyStat> weeklyStats = weeklyStatRepository.findAllByMemberIdAndDateRange(
+                memberId, queryStartDate, startOfThisWeek.minusDays(1)
         );
+        Map<LocalDate, WeeklyStat> weeklyStatMap = weeklyStats.stream()
+                .collect(Collectors.toMap(WeeklyStat::getStartDate, stat -> stat));
 
-        // 2. DTO로 변환
-        List<WeeklyStatResponse> responses = aggregatedWeeks.stream()
-                .map(WeeklyStatResponse::of)
-                .collect(Collectors.toList());
+        // 3. [상세 데이터 준비] 조회 범위 전체의 'DailyGoal'을 한 번에 조회 (N+1 방지 & 그래프용 일별 데이터)
+        List<DailyGoal> allDailyGoals = dailyGoalRepository.findAllByMemberIdAndDailyGoalDateBetween(
+                memberId, queryStartDate, queryEndDate
+        );
+        Map<LocalDate, Integer> dailySecondsMap = allDailyGoals.stream()
+                .collect(Collectors.toMap(
+                        DailyGoal::getDailyGoalDate,
+                        DailyGoal::getCurrentSeconds
+                ));
 
-        // 3. [실시간 데이터] 조회하려는 달이 "현재 달"이고, "오늘"이 해당 월에 포함될 경우
-        if (firstDayOfMonth.getMonth().equals(serviceDate.getMonth()) &&
-                firstDayOfMonth.getYear() == serviceDate.getYear()) {
+        // 4. [핵심 수정] 캘린더 기준으로 주차별 데이터 생성 (빈 주차도 포함)
+        List<WeeklyStatResponse> responses = new ArrayList<>();
+        LocalDate currentMonday = queryStartDate;
 
-            // 3-1. "이번 주"의 DailyGoal 데이터를 실시간 조회
-            List<DailyGoal> currentWeekGoals = dailyGoalRepository
-                    .findAllByMemberIdAndDailyGoalDateBetween(memberId, startOfThisWeek, serviceDate);
+        while (!currentMonday.isAfter(queryEndDate)) {
+            // 현재 반복중인 주차의 범위
+            LocalDate currentSunday = currentMonday.plusDays(6);
 
-            // 3-2. 실시간 데이터 합산
-            int currentWeekSeconds = currentWeekGoals.stream()
-                    .mapToInt(DailyGoal::getCurrentSeconds)
-                    .sum();
+            // 4-1. 이번 주(This Week)인 경우 -> 실시간 집계
+            if (currentMonday.isEqual(startOfThisWeek)) {
+                responses.add(createCurrentWeekStat(memberId, currentMonday, currentSunday, dailySecondsMap));
+            }
+            // 4-2. 과거 주차인 경우 -> DB 데이터 사용 (없으면 0으로 채움)
+            else if (currentMonday.isBefore(startOfThisWeek)) {
+                WeeklyStat stat = weeklyStatMap.get(currentMonday);
+                if (stat != null) {
+                    // DB에 데이터가 있는 경우
+                    List<Integer> secondsList = createDailySecondsList(currentMonday, dailySecondsMap);
+                    responses.add(WeeklyStatResponse.of(stat, secondsList));
+                } else {
+                    // DB에 데이터가 없는 경우 (누락된 주차) -> 빈 객체 생성
+                    responses.add(createEmptyWeekStat(currentMonday, currentSunday));
+                }
+            }
+            // (미래 주차는 포함하지 않음, 필요하다면 else if로 추가 가능)
 
-            // 3-3. 현재 레벨과 이미지 URL 조회를 위해 MemberInfo 조회 (N+1 방지 쿼리 사용)
-            MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                    .orElseThrow(InvalidMemberException::new);
-
-            Member member = memberInfo.getMember();
-            String imageUrl = memberInfo.getProfileImage().getAsset().getAssetUrl();
-
-            // 3-4. 실시간 DTO 생성 및 리스트에 추가
-            responses.add(WeeklyStatResponse.of(
-                    startOfThisWeek,
-                    serviceDate,
-                    currentWeekSeconds,
-                    member.getCurrentLevel(),
-                    imageUrl
-            ));
+            // 다음 주로 이동
+            currentMonday = currentMonday.plusWeeks(1);
         }
 
         // 한 달동안의 총 집중 시간 합
@@ -102,67 +107,103 @@ public class WeeklyStatService {
 
         return WeeklyStatListResponse.of(responses, totalFocusMinutes);
     }
-
     @Transactional(readOnly = true)
-    public List<SubjectStatResponse> getWeeklySubjectStats(Member member, int year, int month) {
+    public List<SubjectStatResponse> getSubjectStatsByPeriod(Member member, LocalDate startDate, LocalDate endDate) {
 
         LocalDate serviceDate = AppConstants.getServiceDate();
         LocalDate startOfThisWeek = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 
-        // [수정] 1. 조회할 월의 '진짜' 시작 범위 계산
-        LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
-        LocalDate queryStartDate = firstDayOfMonth.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        Map<Subject, Integer> totalMinutesPerSubject = new HashMap<>();
 
-        // 2. [집계 데이터] 요청된 월의 "지난 주차" 통계 조회
-        List<WeeklySubjectStat> pastWeeksStats = weeklySubjectStatRepository
-                .findAllByMemberIdAndDateRangeWithSubject(
-                        member.getId(),
-                        queryStartDate, // [수정] startDateOfMonth -> queryStartDate
-                        startOfThisWeek.minusDays(1)
-                );
+        // Case 1: 요청 기간이 완전히 "과거(지난주 이전)"인 경우 -> 집계 테이블 사용
+        if (endDate.isBefore(startOfThisWeek)) {
+            List<WeeklySubjectStat> pastStats = weeklySubjectStatRepository
+                    .findAllByMemberIdAndDateRangeWithSubject(member.getId(), startDate, endDate);
 
-        // 2. [실시간 데이터] "이번 주" 데이터는 'DailySubject' 엔티티에서 직접 조회
-        List<DailySubject> currentWeekStats;
+            for (WeeklySubjectStat stat : pastStats) {
+                totalMinutesPerSubject.merge(stat.getSubject(), stat.getTotalMinutes(), Integer::sum);
+            }
+        }
+        // Case 2: 요청 기간이 "이번 주"인 경우 -> 실시간 테이블 사용
+        else {
+            List<DailySubject> realtimeStats = dailySubjectRepository
+                    .findAllByMemberIdAndDateRangeWithSubject(member.getId(), startDate, endDate);
 
-        if (serviceDate.getYear() == year && serviceDate.getMonthValue() == month) {
-            currentWeekStats = dailySubjectRepository
-                    .findAllByMemberIdAndDateRangeWithSubject(
-                            member.getId(),
-                            startOfThisWeek,
-                            serviceDate
-                    );
-        } else {
-            currentWeekStats = List.of(); // 빈 리스트
+            for (DailySubject stat : realtimeStats) {
+                int seconds = stat.getFocusSeconds();
+                totalMinutesPerSubject.merge(stat.getSubject(), seconds, Integer::sum);
+            }
         }
 
-        // 3. (집계) 과목(Subject)을 기준으로 모든 시간(분)을 합산 (Map<Subject, Integer>)
-        Map<Subject, Integer> totalMinutesPerSubject = pastWeeksStats.stream()
-                .collect(Collectors.toMap(
-                        WeeklySubjectStat::getSubject,
-                        WeeklySubjectStat::getTotalMinutes,
-                        Integer::sum // (같은 과목의 주차가 여러 개 있으면 합산)
-                ));
+        return convertToSubjectStatResponse(totalMinutesPerSubject);
+    }
 
-        // 4. (집계) 3번 Map에 "이번 주" 실시간 데이터 덮어쓰기 (또는 추가)
-        for (DailySubject stat : currentWeekStats) {
-            // [수정] DailySubject의 focusSeconds를 분으로 변환하여 합산
-            int minutes = stat.getFocusSeconds() / 60;
-            totalMinutesPerSubject.merge(stat.getSubject(), minutes, Integer::sum);
-        }
+    // ----------------------------- PRIVATE METHOD ---------------------------------
 
+    // [Helper] 이번 주 실시간 통계 생성
+    private WeeklyStatResponse createCurrentWeekStat(Long memberId, LocalDate startData, LocalDate endDate, Map<LocalDate, Integer> dailySecondsMap) {
+        // 일별 데이터 리스트 생성
+        List<Integer> secondsList = createDailySecondsList(startData, dailySecondsMap);
+        int totalMinutes = secondsList.stream().mapToInt(s -> s / 60).sum();
 
-        // 5. (계산) 모든 과목의 총 합산 시간 계산
-        double totalAllSubjectsMinutes = totalMinutesPerSubject.values().stream()
+        // 유저 정보 조회 (레벨, 이미지)
+        MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
+                .orElseThrow(InvalidMemberException::new); // 혹은 빈 정보 반환 처리
+
+        String imageUrl = Optional.ofNullable(memberInfo.getProfileImage())
+                .flatMap(asset -> Optional.ofNullable(asset.getAsset()))
+                .map(Asset::getAssetUrl)
+                .orElse(null);
+
+        return WeeklyStatResponse.of(
+                startData,
+                endDate, // 종료일도 일요일로 표기 (혹은 endDate 대신 AppConstants.getServiceDate() 사용 가능)
+                totalMinutes,
+                memberInfo.getMember().getCurrentLevel(),
+                imageUrl,
+                secondsList
+        );
+    }
+
+    // [Helper] 데이터가 없는 주차 생성 (0으로 채움)
+    private WeeklyStatResponse createEmptyWeekStat(LocalDate startDate, LocalDate endDate) {
+        return WeeklyStatResponse.of(
+                startDate,
+                endDate,
+                0,
+                0, // 혹은 1 (기본 레벨)
+                null, // 기본 이미지 URL 혹은 null
+                List.of(0, 0, 0, 0, 0, 0, 0)
+        );
+    }
+
+    private List<SubjectStatResponse> convertToSubjectStatResponse(Map<Subject, Integer> totalMinutesPerSubject) {
+        double totalAllSubjectsSeconds = totalMinutesPerSubject.values().stream()
                 .mapToDouble(Integer::doubleValue)
                 .sum();
 
-        // 6. (변환) Map을 DTO 리스트로 변환 (퍼센트 계산 포함)
         return totalMinutesPerSubject.entrySet().stream()
                 .map(entry -> SubjectStatResponse.of(
-                        entry.getKey(), // Subject
-                        entry.getValue(), // TotalMinutes
-                        totalAllSubjectsMinutes
+                        entry.getKey(),
+                        entry.getValue(),
+                        totalAllSubjectsSeconds / 60
                 ))
+                .sorted(Comparator.comparing(SubjectStatResponse::totalMinutes).reversed())
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 시작일(월요일)로부터 7일간의 공부 시간(초) 리스트를 생성합니다.
+     * 데이터가 없는 날은 0으로 채웁니다.
+     * @return [월, 화, 수, 목, 금, 토, 일] 순서의 초 단위 시간 리스트
+     */
+    private List<Integer> createDailySecondsList(LocalDate startDate, Map<LocalDate, Integer> dataMap) {
+        List<Integer> secondsList = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            LocalDate date = startDate.plusDays(i);
+            Integer seconds = dataMap.getOrDefault(date, 0);
+            secondsList.add(seconds); // 분 -> 초 변환 (DTO 요구사항에 맞춤)
+        }
+        return secondsList;
     }
 }

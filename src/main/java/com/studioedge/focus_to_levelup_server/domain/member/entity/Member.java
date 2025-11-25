@@ -91,6 +91,9 @@ public class Member extends BaseEntity {
     @Column(length = 500)
     private String fcmToken;
 
+    @Column(name = "last_login_date_time")
+    private LocalDateTime lastLoginDateTime;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'ACTIVE'")
@@ -209,5 +212,9 @@ public class Member extends BaseEntity {
 
     public void receiveWeeklyReward() {
         this.isReceivedWeeklyReward = true;
+    }
+
+    public void updateLastLoginDateTime(LocalDateTime lastLoginDateTime) {
+        this.lastLoginDateTime = lastLoginDateTime;
     }
 }

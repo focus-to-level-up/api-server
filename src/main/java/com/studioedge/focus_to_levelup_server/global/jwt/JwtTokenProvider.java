@@ -1,7 +1,9 @@
 package com.studioedge.focus_to_levelup_server.global.jwt;
 
+import com.studioedge.focus_to_levelup_server.domain.auth.exception.WithdrawnMemberException;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
@@ -136,8 +138,11 @@ public class JwtTokenProvider {
      */
     public Member getMember(String token) {
         Long memberId = getMemberIdFromJwt(token);
-        return memberRepository.findById(memberId)
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 회원 ID입니다."));
+        if (member.getStatus().equals(MemberStatus.WITHDRAWN))
+            throw new WithdrawnMemberException();
+        return member;
     }
 
     /**

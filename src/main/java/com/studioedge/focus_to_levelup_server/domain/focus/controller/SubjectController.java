@@ -108,7 +108,8 @@ public class SubjectController {
             
             ### 요청
             - `subjectId`: [경로] 학습한 과목 PK
-            - `focusMinutes`: [Body] [필수] 실제 학습한 시간(분)
+            - `focusSeconds`: [Body] [필수] 실제 학습한 시간(분)
+            - `startTime`: [Body] [필수] 집중 시작 시간
             """
     )
     @ApiResponses({

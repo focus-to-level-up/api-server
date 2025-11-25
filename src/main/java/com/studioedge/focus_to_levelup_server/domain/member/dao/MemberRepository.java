@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,4 +39,9 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "WHERE ms.isRankingActive = true " +
             "AND m.status = 'ACTIVE'")
     List<Member> findAllActiveMembersForRanking();
+
+    // FCM 관련 쿼리 메서드
+    List<Member> findAllByIsReceivedWeeklyRewardIsFalseAndFcmTokenIsNotNull();
+
+    List<Member> findAllByLastLoginDateTimeBetweenAndFcmTokenIsNotNull(LocalDateTime start, LocalDateTime end);
 }
