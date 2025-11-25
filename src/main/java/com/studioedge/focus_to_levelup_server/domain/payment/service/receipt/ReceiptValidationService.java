@@ -40,9 +40,7 @@ public class ReceiptValidationService implements ReceiptValidator {
         return switch (platform) {
             case APPLE -> appleReceiptValidator.validate(receiptData);
             case GOOGLE -> {
-                // Google은 purchaseToken과 productId가 필요
-                // receiptData를 JSON으로 파싱하거나, 별도 파라미터로 받아야 함
-                // 일단 간단하게 구현 (실제로는 DTO로 분리 필요)
+                // 하위 호환성 유지: 파이프 구분자 방식도 지원
                 String[] parts = receiptData.split("\\|");
                 if (parts.length >= 2) {
                     String purchaseToken = parts[0];
@@ -53,5 +51,21 @@ public class ReceiptValidationService implements ReceiptValidator {
                 }
             }
         };
+    }
+
+    /**
+     * Google 영수증 검증 (별도 파라미터)
+     */
+    public ReceiptValidationResult validateGoogle(String purchaseToken, String googleProductId) {
+        // Mock 모드
+        if ("mock".equalsIgnoreCase(paymentMode)) {
+            if (mockReceiptValidator != null) {
+                log.info("[MOCK MODE] Skipping actual receipt validation");
+                return mockReceiptValidator.validate(purchaseToken);
+            }
+        }
+
+        // 실제 검증
+        return googleReceiptValidator.validate(purchaseToken, googleProductId);
     }
 }
