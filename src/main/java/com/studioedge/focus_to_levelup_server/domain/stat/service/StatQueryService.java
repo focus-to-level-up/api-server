@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -30,16 +31,15 @@ public class StatQueryService {
         return monthlyStatService.getMonthlyStats(memberId, year);
     }
 
+    public MonthlyDetailResponse getMonthlyDetail(Long memberId, int year, int month) {
+        return monthlyStatService.getMonthlyDetail(memberId, year, month);
+    }
+
     public TotalStatResponse getTotalStats(Member member, Integer period) {
         return totalStatService.getTotalStats(member, period);
     }
 
-    public List<SubjectStatResponse> getWeeklySubjectStats(Member member, int year, int month) {
-        return weeklyStatService.getWeeklySubjectStats(member, year, month);
-    }
-
-    // [추가] 월간 과목 통계
-    public List<SubjectStatResponse> getMonthlySubjectStats(Member member, int year) {
-        return monthlyStatService.getMonthlySubjectStats(member, year);
+    public List<SubjectStatResponse> getSubjectStatsByPeriod(Member member, LocalDate startDate, LocalDate endDate) {
+        return weeklyStatService.getSubjectStatsByPeriod(member, startDate, endDate);
     }
 }

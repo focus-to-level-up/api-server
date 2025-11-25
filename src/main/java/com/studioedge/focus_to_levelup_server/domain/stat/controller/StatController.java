@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "Stat")
@@ -104,6 +105,29 @@ public class StatController {
         return HttpResponseUtil.ok(statQueryService.getMonthlyStats(member.getId(), year));
     }
 
+    @GetMapping("/monthly/detail")
+    @Operation(summary = "월간 통계 상세 조회 (비교 및 일별)", description = """
+            ### 기능
+            - **(UI: 월간 통계에서 특정 '달' 클릭 시 나오는 상세 화면/팝업)**
+            - **1. 4개월 비교:** 선택한 달(`year`, `month`)을 포함한 최근 4개월간의 총 학습 시간을 비교합니다.
+              - (e.g., 2025년 1월 선택 -> 2024년 10월, 11월, 12월, 2025년 1월 데이터 반환)
+            - **2. 일별 상세:** 선택한 달의 1일부터 말일(또는 오늘)까지의 일별 학습 시간을 반환합니다.
+              - 선택한 달이 '이번 달'이라면 '오늘'까지만 조회합니다.
+            """
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공",
+                    content = @Content(schema = @Schema(implementation = MonthlyDetailResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    public ResponseEntity<CommonResponse<MonthlyDetailResponse>> getMonthlyDetail(
+            @AuthenticationPrincipal Member member,
+            @Parameter(description = "조회할 연도 (YYYY)", example = "2025") @RequestParam(name = "year") int year,
+            @Parameter(description = "조회할 월 (1~12)", example = "11") @RequestParam(name = "month") int month
+    ) {
+        return HttpResponseUtil.ok(statQueryService.getMonthlyDetail(member.getId(), year, month));
+    }
+
     @GetMapping("/total")
     @Operation(summary = "총 누적 통계 조회 (히트맵)", description = """
             ### 기능
@@ -132,57 +156,35 @@ public class StatController {
     /*
      * 주간 과목 통계 조회
      * */
-    @GetMapping("/weekly/subjects")
-    @Operation(summary = "주간 과목 통계 조회 (월별)", description = """
+    @GetMapping("/subjects")
+    @Operation(summary = "특정 기간 과목별 통계 조회 (기간 설정)", description = """
             ### 기능
-            - **(UI: 스크린샷 2025-11-11 오후 3.43.15.jpg - 하단 '과목 별 비율')**
-            - 특정 연도(`year`)와 월(`month`)을 기준으로, 해당 월의 주차별 과목 학습 시간과 비율(%)을 조회합니다.
+            - **(UI: 주간/월간 통계에서 특정 날짜(기간) 클릭 시 하단 '과목 별 비율')**
+            - 입력받은 `startDate` ~ `endDate` 기간 동안의 과목별 학습 시간과 비율(%)을 조회합니다.
+            - **주간 뷰:** 특정 주차를 클릭하면 해당 주의 시작일~종료일을 보냅니다.
+            - **월간 뷰:** 특정 월을 클릭하면 해당 월의 1일~말일을 보냅니다.
             
             ### 개발 유의사항
-            - 이 API는 특정 월에 포함된 모든 주차의 데이터를 **하나로 합산(Aggregate)**하여 반환합니다.
-            - (e.g., 11월 1~4주차의 '국어' 학습 시간을 모두 더해서 '국어' 항목 하나로 응답)
-            - "현재 주" 데이터는 실시간 집계됩니다.
+            - **범용성:** 기간 제한이 없습니다. 1일, 1주, 1달 등 임의의 기간을 조회할 수 있습니다.
+            - **로직:**
+                - **과거 기간:** 집계된 `WeeklySubjectStat` 데이터를 사용하여 조회 (빠름)
+                - **현재/미래 포함 기간:** 실시간 `DailySubject` 데이터를 조회하여 합산 (정확함)
             """
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공",
                     content = @Content(schema = @Schema(implementation = SubjectStatResponse.class))),
-            @ApiResponse(responseCode = "400", description = "유효하지 않은 연도 또는 월"),
-            @ApiResponse(responseCode = "404", description = "유저를 찾을 수 없음")
+            @ApiResponse(responseCode = "400", description = "잘못된 날짜 형식 (YYYY-MM-DD)"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
     })
     public ResponseEntity<CommonResponse<List<SubjectStatResponse>>> getWeeklySubjectStat(
             @AuthenticationPrincipal Member member,
-            @Parameter(description = "조회할 연도 (YYYY)", example = "2025") @RequestParam(name = "year") int year,
-            @Parameter(description = "조회할 월 (1~12)", example = "11") @RequestParam(name = "month") int month
+            @Parameter(description = "조회 시작일 (YYYY-MM-DD)", example = "2025-11-03")
+            @RequestParam(name = "startDate") LocalDate startDate,
+            @Parameter(description = "조회 종료일 (YYYY-MM-DD)", example = "2025-11-09")
+            @RequestParam(name = "endDate") LocalDate endDate
     ) {
-        return HttpResponseUtil.ok(statQueryService.getWeeklySubjectStats(member, year, month));
-    }
-
-    /*
-     * 월간 과목 통계 조회
-     * */
-    @GetMapping("/monthly/subjects")
-    @Operation(summary = "월간 과목 통계 조회 (연간)", description = """
-            ### 기능
-            - **(UI: 스크린샷 2025-11-11 오후 3.46.42.png - 하단 '과목 별 비율')**
-            - 특정 연도(`year`)를 기준으로, 해당 연도의 모든 과목 학습 시간과 비율(%)을 조회합니다.
-            
-            ### 개발 유의사항
-            - 이 API는 1월~12월의 모든 데이터를 **하나로 합산(Aggregate)**하여 반환합니다.
-            - "현재 월" 데이터는 실시간 집계됩니다.
-            """
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "조회 성공",
-                    content = @Content(schema = @Schema(implementation = SubjectStatResponse.class))),
-            @ApiResponse(responseCode = "400", description = "유효하지 않은 연도"),
-            @ApiResponse(responseCode = "404", description = "유저를 찾을 수 없음")
-    })
-    public ResponseEntity<CommonResponse<List<SubjectStatResponse>>> getMonthlySubjectStat(
-            @AuthenticationPrincipal Member member,
-            @Parameter(description = "조회할 연도 (YYYY)", example = "2025") @RequestParam(name = "year") int year
-    ) {
-        return HttpResponseUtil.ok(statQueryService.getMonthlySubjectStats(member, year));
+        return HttpResponseUtil.ok(statQueryService.getSubjectStatsByPeriod(member, startDate, endDate));
     }
 
     /**

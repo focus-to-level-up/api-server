@@ -25,7 +25,9 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-    command: --default-time-zone='+09:00'
+    command:
+      - --default-time-zone=+09:00
+      - -bind-address=0.0.0.0
     volumes:
       - ./src/main/resources/db:/docker-entrypoint-initdb.d
       - mysql-data:/var/lib/mysql
