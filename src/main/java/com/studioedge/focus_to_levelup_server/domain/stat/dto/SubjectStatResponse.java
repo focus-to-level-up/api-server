@@ -12,28 +12,25 @@ public record SubjectStatResponse(
         String subjectName,
         @Schema(description = "과목 색상 헥스코드", example = "#FF5733")
         String color,
-        @Schema(description = "총 학습 시간(분)", example = "120")
-        Integer totalMinutes,
+        @Schema(description = "총 학습 시간(초)", example = "6000")
+        Integer totalSeconds,
         @Schema(description = "전체 시간 대비 비율(%)", example = "35.5")
         Double percentage
 ) {
     /**
      * 집계된 정보로부터 DTO를 생성합니다.
      */
-    public static SubjectStatResponse of(Subject subject, Integer totalMinutes, double totalAllSubjectsMinutes) {
+    public static SubjectStatResponse of(Subject subject, Integer totalSeconds, double totalAllSubjectsSeconds) {
 
-        // 0으로 나누기 방지
-        double percentage = (totalAllSubjectsMinutes == 0) ? 0.0 :
-                (double) totalMinutes / totalAllSubjectsMinutes * 100.0;
-
-        // 소수점 2자리까지 반올림
-        percentage = Math.round(percentage * 100.0) / 100.0;
+        double percentage = (totalAllSubjectsSeconds > 0)
+                ? (totalSeconds / totalAllSubjectsSeconds) * 100
+                : 0.0;
 
         return SubjectStatResponse.builder()
                 .subjectId(subject.getId())
                 .subjectName(subject.getName())
                 .color(subject.getColor())
-                .totalMinutes(totalMinutes)
+                .totalSeconds(totalSeconds)
                 .percentage(percentage)
                 .build();
     }

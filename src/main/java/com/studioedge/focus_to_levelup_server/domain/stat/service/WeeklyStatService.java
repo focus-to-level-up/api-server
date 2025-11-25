@@ -107,13 +107,14 @@ public class WeeklyStatService {
 
         return WeeklyStatListResponse.of(responses, totalFocusMinutes);
     }
+
     @Transactional(readOnly = true)
     public List<SubjectStatResponse> getSubjectStatsByPeriod(Member member, LocalDate startDate, LocalDate endDate) {
 
         LocalDate serviceDate = AppConstants.getServiceDate();
         LocalDate startOfThisWeek = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 
-        Map<Subject, Integer> totalMinutesPerSubject = new HashMap<>();
+        Map<Subject, Integer> totalSecondsPerSubject = new HashMap<>();
 
         // Case 1: 요청 기간이 완전히 "과거(지난주 이전)"인 경우 -> 집계 테이블 사용
         if (endDate.isBefore(startOfThisWeek)) {
@@ -121,7 +122,7 @@ public class WeeklyStatService {
                     .findAllByMemberIdAndDateRangeWithSubject(member.getId(), startDate, endDate);
 
             for (WeeklySubjectStat stat : pastStats) {
-                totalMinutesPerSubject.merge(stat.getSubject(), stat.getTotalMinutes(), Integer::sum);
+                totalSecondsPerSubject.merge(stat.getSubject(), stat.getTotalMinutes() * 60, Integer::sum);
             }
         }
         // Case 2: 요청 기간이 "이번 주"인 경우 -> 실시간 테이블 사용
@@ -131,11 +132,11 @@ public class WeeklyStatService {
 
             for (DailySubject stat : realtimeStats) {
                 int seconds = stat.getFocusSeconds();
-                totalMinutesPerSubject.merge(stat.getSubject(), seconds, Integer::sum);
+                totalSecondsPerSubject.merge(stat.getSubject(), seconds, Integer::sum);
             }
         }
 
-        return convertToSubjectStatResponse(totalMinutesPerSubject);
+        return convertToSubjectStatResponse(totalSecondsPerSubject);
     }
 
     // ----------------------------- PRIVATE METHOD ---------------------------------
@@ -177,18 +178,18 @@ public class WeeklyStatService {
         );
     }
 
-    private List<SubjectStatResponse> convertToSubjectStatResponse(Map<Subject, Integer> totalMinutesPerSubject) {
-        double totalAllSubjectsSeconds = totalMinutesPerSubject.values().stream()
+    private List<SubjectStatResponse> convertToSubjectStatResponse(Map<Subject, Integer> totalSecondsPerSubject) {
+        double totalAllSubjectsSeconds = totalSecondsPerSubject.values().stream()
                 .mapToDouble(Integer::doubleValue)
                 .sum();
 
-        return totalMinutesPerSubject.entrySet().stream()
+        return totalSecondsPerSubject.entrySet().stream()
                 .map(entry -> SubjectStatResponse.of(
                         entry.getKey(),
                         entry.getValue(),
-                        totalAllSubjectsSeconds / 60
+                        totalAllSubjectsSeconds
                 ))
-                .sorted(Comparator.comparing(SubjectStatResponse::totalMinutes).reversed())
+                .sorted(Comparator.comparing(SubjectStatResponse::totalSeconds).reversed())
                 .collect(Collectors.toList());
     }
 
