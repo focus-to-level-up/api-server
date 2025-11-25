@@ -37,7 +37,9 @@ public record GetProfileResponse(
         @Schema(description = "집중 여부", example = "true")
         Boolean focusOn,
         @Schema(description = "구독 상태", example = "PREMIUM")
-        SubscriptionType subscriptionType
+        SubscriptionType subscriptionType,
+        @Schema(description = "프로필 메세지", example = "으아! 할수있다!!")
+        String profileMessage
 ) {
     public static GetProfileResponse of(Member member, MemberInfo memberInfo, String ranking,
                                         SubscriptionType subscriptionType, boolean boosted) {
@@ -56,6 +58,7 @@ public record GetProfileResponse(
                 .highestTier(memberInfo.getHighestTier() == null ? "-" : memberInfo.getHighestTier().toString())
                 .currentLevel(member.getCurrentLevel())
                 .totalLevel(memberInfo.getTotalLevel())
+                .profileMessage(memberInfo.getProfileMessage())
                 .build();
     }
 }
