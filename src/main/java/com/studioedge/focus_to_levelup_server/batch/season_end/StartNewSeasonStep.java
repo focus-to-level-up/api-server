@@ -103,6 +103,7 @@ public class StartNewSeasonStep {
                             .tier(Tier.BRONZE) // 전원 브론즈 시작
                             .startDate(today)
                             .endDate(today.plusWeeks(6)) // 6주
+                            .currentWeek(1)
                             .build();
                     categoryLeagues.add(league);
                     newLeagues.add(league);
@@ -120,7 +121,6 @@ public class StartNewSeasonStep {
                             .league(targetLeague)
                             .member(member)
                             .tier(Tier.BRONZE)
-                            // .score(0) // 점수 0점 초기화
                             .build());
 
                     targetLeague.increaseCurrentMembers();

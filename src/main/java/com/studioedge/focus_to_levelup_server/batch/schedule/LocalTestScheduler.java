@@ -28,7 +28,7 @@ public class LocalTestScheduler {
     // [TEST SETTING] 여기에 실행하고 싶은 Job Bean 이름을 적으세요.
     // 후보: "dailyJob", "weeklyJob", "monthlyJob", "seasonEndJob"
     // =========================================================
-    private final String targetJobName = "weeklyJob";
+    private final String targetJobName = "seasonEndJob";
 
     /**
      * 서버 시작 후(ApplicationReady) 15초 대기 후 '단 1회' 실행합니다.
