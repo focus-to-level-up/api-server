@@ -93,7 +93,7 @@ public class MemberInfo {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer trainingReward = 0; // 훈련 보상 누적량 (다이아)
+    private Integer trainingReward = 0; // 훈련 보상 누적량 (분×시급 단위, 수령 시 60으로 나눠 다이아 지급)
 
     @Column(nullable = false)
     @ColumnDefault("0")
@@ -120,9 +120,16 @@ public class MemberInfo {
         this.trainingReward += reward;
     }
 
-    public void claimTrainingReward() {
-        this.diamond += this.trainingReward;
-        this.trainingReward = 0;
+    /**
+     * 훈련 보상 수령 (분×시급 → 다이아 변환)
+     * @return 수령한 다이아 수량
+     */
+    public int claimTrainingReward() {
+        int diamondReward = this.trainingReward / 60;
+        int remainingMinutes = this.trainingReward % 60;
+        this.diamond += diamondReward;
+        this.trainingReward = remainingMinutes;
+        return diamondReward;
     }
 
     public void decreaseGold(Integer amount) {

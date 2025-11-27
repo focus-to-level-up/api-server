@@ -1,9 +1,12 @@
 package com.studioedge.focus_to_levelup_server.domain.character.controller;
 
 import com.studioedge.focus_to_levelup_server.domain.character.dto.request.SetDefaultCharacterRequest;
+import com.studioedge.focus_to_levelup_server.domain.character.dto.response.ClaimTrainingRewardResponse;
 import com.studioedge.focus_to_levelup_server.domain.character.dto.response.MemberCharacterListResponse;
 import com.studioedge.focus_to_levelup_server.domain.character.dto.response.MemberCharacterResponse;
+import com.studioedge.focus_to_levelup_server.domain.character.dto.response.TrainingRewardResponse;
 import com.studioedge.focus_to_levelup_server.domain.character.service.MemberCharacterService;
+import com.studioedge.focus_to_levelup_server.domain.character.service.TrainingRewardService;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.enums.Rarity;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 public class MemberCharacterController {
 
     private final MemberCharacterService memberCharacterService;
+    private final TrainingRewardService trainingRewardService;
 
     @Operation(summary = "보유 캐릭터 목록 조회", description = "내가 보유한 캐릭터를 조회합니다. 등급별 필터링이 가능합니다.")
     @GetMapping
@@ -53,5 +57,24 @@ public class MemberCharacterController {
     ) {
         MemberCharacterResponse response = memberCharacterService.setDefaultCharacter(member.getId(), request);
         return HttpResponseUtil.updated(response);
+    }
+
+    @Operation(summary = "훈련 보상 조회", description = "현재 적립된 훈련 보상을 조회합니다.")
+    @GetMapping("/training-reward")
+    public ResponseEntity<CommonResponse<TrainingRewardResponse>> getTrainingReward(
+            @AuthenticationPrincipal Member member
+    ) {
+        int accumulatedReward = trainingRewardService.getAccumulatedReward(member.getId());
+        return HttpResponseUtil.ok(TrainingRewardResponse.of(accumulatedReward));
+    }
+
+    @Operation(summary = "훈련 보상 수령", description = "적립된 훈련 보상을 다이아로 수령합니다. 60분×시급 = 1다이아")
+    @PostMapping("/training-reward/claim")
+    public ResponseEntity<CommonResponse<ClaimTrainingRewardResponse>> claimTrainingReward(
+            @AuthenticationPrincipal Member member
+    ) {
+        int claimedDiamond = trainingRewardService.claimTrainingReward(member.getId());
+        int remainingReward = trainingRewardService.getAccumulatedReward(member.getId());
+        return HttpResponseUtil.ok(ClaimTrainingRewardResponse.of(claimedDiamond, remainingReward));
     }
 }
