@@ -9,6 +9,7 @@ import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFo
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.ranking.exception.LeagueNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingExcludeException;
 import com.studioedge.focus_to_levelup_server.domain.stat.exception.StatMonthNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingNotFoundException;
@@ -203,6 +204,8 @@ public class ExceptionMapper {
                 ExceptionSituation.of("랭킹에 포함되어있지 않습니다. 랭킹은 첫 생성날의 다음주부터 참여됩니다.", HttpStatus.NOT_FOUND));
         mapper.put(RankingExcludeException.class,
                 ExceptionSituation.of("사용자는 2회 경고로 인해 랭킹에서 제외되었습니다. 2주간 정지됩니다.", HttpStatus.NOT_FOUND));
+        mapper.put(LeagueNotFoundException.class,
+                ExceptionSituation.of("해당되는 리그를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 
     /**

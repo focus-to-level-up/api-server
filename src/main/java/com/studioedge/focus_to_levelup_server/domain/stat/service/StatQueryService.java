@@ -31,8 +31,8 @@ public class StatQueryService {
         return monthlyStatService.getMonthlyStats(memberId, year);
     }
 
-    public MonthlyDetailResponse getMonthlyDetail(Long memberId, int year, int month) {
-        return monthlyStatService.getMonthlyDetail(memberId, year, month);
+    public MonthlyDetailResponse getMonthlyDetail(Long memberId, int year, int month, boolean initial) {
+        return monthlyStatService.getMonthlyDetail(memberId, year, month, initial);
     }
 
     public TotalStatResponse getTotalStats(Member member, Integer period) {

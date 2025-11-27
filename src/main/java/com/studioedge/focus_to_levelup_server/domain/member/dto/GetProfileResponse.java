@@ -18,8 +18,12 @@ public record GetProfileResponse(
         CategoryMainType categoryMain,
         @Schema(description = "서브 카테고리", example = "HIGH_2")
         CategorySubType categorySub,
+        @Schema(description = "프로필 이미지 pk", example = "2")
+        Long profileImageId,
         @Schema(description = "프로필 이미지 url", example = "https://lvup-image.s3.ap-northeast-2.amazonaws.com/1629780000000.jpg")
         String profileImageUrl,
+        @Schema(description = "프로필 테두리 pk", example = "3")
+        Long profileBorderId,
         @Schema(description = "프로필 테두리 url", example = "https://lvup-image.s3.ap-northeast-2.amazonaws.com/1629780000000.jpg")
         String profileBorderUrl,
         @Schema(description = "소속 이름", example = "서울고등학교")
@@ -48,7 +52,9 @@ public record GetProfileResponse(
                 .nickname(member.getNickname())
                 .categoryMain(memberInfo.getCategoryMain())
                 .categorySub(memberInfo.getCategorySub())
+                .profileImageId(memberInfo.getProfileImage().getId())
                 .profileImageUrl(memberInfo.getProfileImage().getAsset().getAssetUrl())
+                .profileBorderId(memberInfo.getProfileBorder().getId())
                 .profileBorderUrl(memberInfo.getProfileBorder().getAsset().getAssetUrl())
                 .belonging(memberInfo.getBelonging())
                 .boosted(boosted)
