@@ -124,6 +124,10 @@ public class ExceptionMapper {
                 ExceptionSituation.of("보유하지 않은 캐릭터입니다.", HttpStatus.NOT_FOUND));
         mapper.put(CharacterSlotFullException.class,
                 ExceptionSituation.of("훈련장 슬롯이 가득 찼습니다. 캐릭터를 배치할 수 없습니다. (최대 9개)", HttpStatus.BAD_REQUEST));
+        mapper.put(CharacterUnauthorizedException.class,
+                ExceptionSituation.of("소유하고 있는 캐릭터가 아닙니다.", HttpStatus.UNAUTHORIZED));
+        mapper.put(CharacterEvolveException.class,
+                ExceptionSituation.of("현재 캐릭터는 진화 조건을 충족하지 않습니다.", HttpStatus.BAD_REQUEST));
     }
 
     /**
