@@ -87,4 +87,12 @@ public class MemberCharacter extends BaseEntity {
         this.isDefault = true;
         this.defaultEvolution = defaultEvolution;
     }
+
+    public void evolve() {
+        this.evolution++;
+    }
+
+    public void jumpToLevel(int level) {
+        this.currentLevel = level;
+    }
 }

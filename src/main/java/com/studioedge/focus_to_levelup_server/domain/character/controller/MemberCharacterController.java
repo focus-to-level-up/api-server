@@ -5,6 +5,7 @@ import com.studioedge.focus_to_levelup_server.domain.character.dto.response.Clai
 import com.studioedge.focus_to_levelup_server.domain.character.dto.response.MemberCharacterListResponse;
 import com.studioedge.focus_to_levelup_server.domain.character.dto.response.MemberCharacterResponse;
 import com.studioedge.focus_to_levelup_server.domain.character.dto.response.TrainingRewardResponse;
+import com.studioedge.focus_to_levelup_server.domain.character.service.EvolveCharacterService;
 import com.studioedge.focus_to_levelup_server.domain.character.service.MemberCharacterService;
 import com.studioedge.focus_to_levelup_server.domain.character.service.TrainingRewardService;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
@@ -28,6 +29,7 @@ public class MemberCharacterController {
 
     private final MemberCharacterService memberCharacterService;
     private final TrainingRewardService trainingRewardService;
+    private final EvolveCharacterService evolveCharacterService;
 
     @Operation(summary = "보유 캐릭터 목록 조회", description = "내가 보유한 캐릭터를 조회합니다. 등급별 필터링이 가능합니다.")
     @GetMapping
@@ -47,6 +49,19 @@ public class MemberCharacterController {
     ) {
         MemberCharacterResponse response = memberCharacterService.getDefaultCharacter(member.getId());
         return HttpResponseUtil.ok(response);
+    }
+
+    @Operation(summary = "캐릭터 진화", description = "진화시키고자하는 캐릭터를 진화시킵니다.")
+    @PostMapping("/evolution/{memberCharacterId}")
+    public ResponseEntity<CommonResponse<Void>> evolveCharacter(
+            @AuthenticationPrincipal Member member,
+            @Parameter(description = "진화시키고자하는 캐릭터 pk", required = true)
+            @PathVariable Long memberCharacterId,
+            @Parameter(description = "가속하기 여부", required = true)
+            @RequestParam Boolean doFastEvolution
+    ) {
+        evolveCharacterService.evolveCharacter(member.getId(), memberCharacterId, doFastEvolution);
+        return HttpResponseUtil.ok(null);
     }
 
     @Operation(summary = "대표 캐릭터 설정", description = "보유한 캐릭터 중 하나를 대표 캐릭터로 설정합니다.")
