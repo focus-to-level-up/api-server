@@ -123,9 +123,10 @@ public class StatController {
     public ResponseEntity<CommonResponse<MonthlyDetailResponse>> getMonthlyDetail(
             @AuthenticationPrincipal Member member,
             @Parameter(description = "조회할 연도 (YYYY)", example = "2025") @RequestParam(name = "year") int year,
-            @Parameter(description = "조회할 월 (1~12)", example = "11") @RequestParam(name = "month") int month
+            @Parameter(description = "조회할 월 (1~12)", example = "11") @RequestParam(name = "month") int month,
+            @Parameter(description = "선택한 달이 시작점=true, 끝점=false", example = "true") @RequestParam(name = "initial") boolean initial
     ) {
-        return HttpResponseUtil.ok(statQueryService.getMonthlyDetail(member.getId(), year, month));
+        return HttpResponseUtil.ok(statQueryService.getMonthlyDetail(member.getId(), year, month, initial));
     }
 
     @GetMapping("/total")

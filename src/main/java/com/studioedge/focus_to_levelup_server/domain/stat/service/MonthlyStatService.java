@@ -80,7 +80,7 @@ public class MonthlyStatService {
      * [신규] 월간 상세 조회 (4개월 비교 + 일별 데이터)
      */
     @Transactional(readOnly = true)
-    public MonthlyDetailResponse getMonthlyDetail(Long memberId, int year, int month) {
+    public MonthlyDetailResponse getMonthlyDetail(Long memberId, int year, int month, boolean initial) {
 
         LocalDate serviceDate = AppConstants.getServiceDate(); // 오늘 (새벽 4시 기준)
         LocalDate targetDate = LocalDate.of(year, month, 1); // 선택한 달의 1일
@@ -88,9 +88,22 @@ public class MonthlyStatService {
         // --- 1. 4개월 비교 데이터 생성 (선택한 달 포함 과거 4개월) ---
         List<MonthlyDetailResponse.MonthlyComparisonData> comparisonList = new ArrayList<>();
 
+        // 조회할 4개의 달을 시간순(과거 -> 미래)으로 리스트에 담습니다.
+        List<LocalDate> queryMonths = new ArrayList<>();
+        if (initial) {
+            // init=true (클릭 시): 선택한 달부터 미래로 4개월 [Target, +1, +2, +3]
+            for (int i = 0; i < 4; i++) {
+                queryMonths.add(targetDate.plusMonths(i));
+            }
+        } else {
+            // init=false (초기 진입): 선택한 달이 마지막이 되도록 과거 4개월 [Target-3, -2, -1, Target]
+            for (int i = 3; i >= 0; i--) {
+                queryMonths.add(targetDate.minusMonths(i));
+            }
+        }
+
         // i=3 (3달전) -> i=0 (이번달) 순서로 반복 (e.g., 8월, 9월, 10월, 11월)
-        for (int i = 3; i >= 0; i--) {
-            LocalDate queryDate = targetDate.minusMonths(i);
+        for (LocalDate queryDate : queryMonths) {
             int queryYear = queryDate.getYear();
             int queryMonth = queryDate.getMonthValue();
 
