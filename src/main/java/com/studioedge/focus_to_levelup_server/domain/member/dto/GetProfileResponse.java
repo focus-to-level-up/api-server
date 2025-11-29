@@ -43,7 +43,9 @@ public record GetProfileResponse(
         @Schema(description = "구독 상태", example = "PREMIUM")
         SubscriptionType subscriptionType,
         @Schema(description = "프로필 메세지", example = "으아! 할수있다!!")
-        String profileMessage
+        String profileMessage,
+        @Schema(description = "보너스 티켓 개수", example = "3")
+        Integer bonusTicketCount
 ) {
     public static GetProfileResponse of(Member member, MemberInfo memberInfo, String ranking,
                                         SubscriptionType subscriptionType, boolean boosted) {
@@ -65,6 +67,7 @@ public record GetProfileResponse(
                 .currentLevel(member.getCurrentLevel())
                 .totalLevel(memberInfo.getTotalLevel())
                 .profileMessage(memberInfo.getProfileMessage())
+                .bonusTicketCount(memberInfo.getBonusTicketCount())
                 .build();
     }
 }

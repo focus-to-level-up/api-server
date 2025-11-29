@@ -26,13 +26,13 @@ public class WeeklyRewardController {
 
     @Operation(summary = "주간 보상 조회", description = """
             사용자가 이번 주에 받을 수 있는 주간 보상 정보를 조회합니다.
-            - 이미 보상을 수령한 경우 에러를 반환합니다.
-            - 보상 정보가 없는 경우(지난주 활동 없음 등) 에러를 반환합니다.
+            - 월요일 새벽 4시 배치 이후 조회 가능합니다.
+            - 이미 보상을 수령한 경우 alreadyReceived: true 로 응답합니다.
+            - 모든 보너스 값(레벨, 캐릭터, 구독, 티켓)이 서버에서 계산되어 응답됩니다.
             """)
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "조회 성공"),
-            @ApiResponse(responseCode = "404", description = "수령할 보상 데이터가 존재하지 않음 (WeeklyRewardNotFound)"),
-            @ApiResponse(responseCode = "409", description = "이미 이번 주 보상을 수령함 (WeeklyRewardAlreadyReceived)")
+            @ApiResponse(responseCode = "200", description = "조회 성공 (alreadyReceived 필드로 수령 여부 확인)"),
+            @ApiResponse(responseCode = "404", description = "수령할 보상 데이터가 존재하지 않음 (지난주 활동 없음)")
     })
     @GetMapping
     public ResponseEntity<CommonResponse<WeeklyRewardInfoResponse>> getCouponInfo(
