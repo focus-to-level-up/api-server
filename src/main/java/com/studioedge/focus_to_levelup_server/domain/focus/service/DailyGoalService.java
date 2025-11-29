@@ -62,5 +62,7 @@ public class DailyGoalService {
         }
         member.levelUp(request.rewardExp());
         member.getMemberInfo().totalLevelUp(request.rewardExp());
+
+        member.getMemberInfo().totalLevelUp(request.rewardExp());
     }
 }

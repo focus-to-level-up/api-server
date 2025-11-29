@@ -190,6 +190,10 @@ public class MemberInfo {
         }
     }
 
+    public void addTotalLevel(Integer level) {
+        this.totalLevel += level;
+    }
+
     // 보너스 티켓 추가
     public void addBonusTicket(Integer count) {
         this.bonusTicketCount += count;
