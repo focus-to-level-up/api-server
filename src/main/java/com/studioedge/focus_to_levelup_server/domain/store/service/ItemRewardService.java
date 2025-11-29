@@ -71,6 +71,7 @@ public class ItemRewardService {
 
         // 레벨 직접 증가
         member.addLevel(rewardLevel);
+        memberInfo.addTotalLevel(rewardLevel);
 
         // 골드 지급 (rewardLevel 그대로)
         memberInfo.addGold(rewardLevel);
