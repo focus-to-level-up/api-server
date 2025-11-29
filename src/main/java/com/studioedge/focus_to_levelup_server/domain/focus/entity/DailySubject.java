@@ -26,6 +26,7 @@ public class DailySubject extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "daily_subject_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

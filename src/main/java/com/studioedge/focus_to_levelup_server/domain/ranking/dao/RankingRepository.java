@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +19,9 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
     Optional<Ranking> findByMember(Member member);
 
     Optional<Ranking> findByMemberId(Long memberId);
+
+    @Query("SELECT r FROM Ranking r JOIN FETCH r.member JOIN FETCH r.league WHERE r.league.endDate = :endDate")
+    Page<Ranking> findAllByLeagueEndDate(@Param("endDate") LocalDate endDate, Pageable pageable);
 
     @Query(value = "SELECT r FROM Ranking r " +
             "JOIN FETCH r.member m " +

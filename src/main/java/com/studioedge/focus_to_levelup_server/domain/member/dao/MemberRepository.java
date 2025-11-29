@@ -24,8 +24,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByNickname(String nickname);
 
-    Page<Member> findAllByIsReceivedWeeklyRewardIsFalse(Pageable pageable);
-
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Member m SET m.currentLevel = 1, m.currentExp = 0")
     int resetAllMemberLevels();
@@ -37,7 +35,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findActiveMembersWithoutRanking();
 
     // Status가 ACTIVE이고, MemberSetting에서 랭킹이 활성화된 유저들만 조회
-    @Query("SELECT m FROM Member m LEFT JOIN FETCH MemberSetting ms " +
+    @Query("SELECT m FROM Member m LEFT JOIN FETCH m.memberSetting ms " +
             "WHERE ms.isRankingActive = true " +
             "AND m.status = 'ACTIVE'")
     List<Member> findAllActiveMembersForRanking();

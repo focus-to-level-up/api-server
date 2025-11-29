@@ -1,13 +1,13 @@
 # application-dev.yml (개발 서버용 - Docker Compose MySQL)
 spring:
   datasource-data:
-    jdbc-url: jdbc:mysql://mysql:3306/focus_db?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    jdbc-url: jdbc:mysql://mysql:3306/focus_db?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   datasource-meta:
-    jdbc-url: jdbc:mysql://mysql:3306/focus_meta_db?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    jdbc-url: jdbc:mysql://mysql:3306/focus_meta_db?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
     username: ${DB_META_USERNAME}
     password: ${DB_META_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver

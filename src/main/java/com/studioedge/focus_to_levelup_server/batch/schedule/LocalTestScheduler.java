@@ -8,9 +8,10 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.NoSuchJobException;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.context.event.EventListener;
 
 import java.time.LocalDateTime;
 
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Profile("local")
 public class LocalTestScheduler {
+
     private final JobLauncher jobLauncher;
     private final JobRegistry jobRegistry;
 
@@ -26,12 +28,30 @@ public class LocalTestScheduler {
     // [TEST SETTING] 여기에 실행하고 싶은 Job Bean 이름을 적으세요.
     // 후보: "dailyJob", "weeklyJob", "monthlyJob", "seasonEndJob"
     // =========================================================
-    private final String targetJobName = "dailyJob";
+    private final String targetJobName = "seasonEndJob";
 
     /**
-     * 10초마다 설정된 Job을 실행합니다.
+     * 서버 시작 후(ApplicationReady) 15초 대기 후 '단 1회' 실행합니다.
      */
-    @Scheduled(fixedDelay = 10000) // 10초마다 실행 (이전 작업 종료 후 10초 대기)
+    @EventListener(ApplicationReadyEvent.class)
+    public void scheduleTestJob() {
+        // 메인 스레드를 차단하지 않기 위해 별도 스레드에서 대기
+        new Thread(() -> {
+            try {
+                log.info("########## [TEST] 서버 시작 감지. 15초 뒤에 '{}' 배치를 1회 실행합니다. ##########", targetJobName);
+
+                Thread.sleep(15000); // 15초 대기
+
+                runTestJob(); // 배치 실행 로직 호출
+
+            } catch (InterruptedException e) {
+                log.error(">> [TEST ERROR] 대기 중 인터럽트 발생", e);
+                Thread.currentThread().interrupt();
+            }
+        }).start();
+    }
+
+    // 실제 실행 로직 (private으로 변경해도 됨)
     public void runTestJob() {
         try {
             log.info("########## [TEST] Starting Job: {} ##########", targetJobName);

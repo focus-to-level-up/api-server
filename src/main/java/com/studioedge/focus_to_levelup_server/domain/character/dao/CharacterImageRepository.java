@@ -1,6 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.character.dao;
 
 import com.studioedge.focus_to_levelup_server.domain.character.entity.CharacterImage;
+import com.studioedge.focus_to_levelup_server.domain.character.enums.CharacterImageType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,6 +20,9 @@ public interface CharacterImageRepository extends JpaRepository<CharacterImage, 
     /**
      * 특정 캐릭터의 특정 진화 단계 이미지 조회
      */
-    @Query("SELECT ci FROM CharacterImage ci WHERE ci.character.id = :characterId AND ci.evolution = :evolution")
-    Optional<CharacterImage> findByCharacterIdAndEvolution(@Param("characterId") Long characterId, @Param("evolution") Integer evolution);
+    Optional<CharacterImage> findByCharacterIdAndEvolutionAndImageType(
+            Long characterId,
+            Integer evolution,
+            CharacterImageType imageType
+    );
 }
