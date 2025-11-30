@@ -142,6 +142,19 @@ POST /api/v1/pre-registration/claim
    - `/claim` 호출 후 `CustomerInfo` 재조회
    - `rc_promo_premium_subscription_custom` entitlement 활성화 확인
 
+### SDK 메서드 호출 정리
+
+| 상황 | 호출 메서드 | 트리거되는 Webhook |
+|------|-----------|------------------|
+| 앱 시작 | `Purchases.configure()` | - |
+| 로그인 후 | `Purchases.logIn(memberId)` | - |
+| 구독 구매 | `Purchases.purchasePackage()` | `INITIAL_PURCHASE` |
+| 다이아팩 구매 | `Purchases.purchasePackage()` | `NON_RENEWING_PURCHASE` |
+| 상태 확인 | `Purchases.getCustomerInfo()` | - |
+| 로그아웃 | `Purchases.logOut()` | - |
+
+> **자동 처리 (호출 불필요)**: `RENEWAL`, `CANCELLATION`, `EXPIRATION`은 스토어에서 자동 발생
+
 ### 주의사항
 - 서버로 영수증을 직접 전송하지 마세요 (RevenueCat이 처리)
 - `app_user_id`는 반드시 서버 Member ID를 사용하세요
