@@ -46,4 +46,12 @@ public interface MemberCharacterRepository extends JpaRepository<MemberCharacter
      */
     @Query("SELECT COUNT(mc) FROM MemberCharacter mc WHERE mc.member.id = :memberId AND mc.floor = :floor")
     Long countByMemberIdAndFloor(@Param("memberId") Long memberId, @Param("floor") Integer floor);
+
+    @Query("SELECT mc FROM MemberCharacter mc " +
+            "JOIN FETCH mc.member m " +               // Member 정보 필요
+            "JOIN FETCH mc.character c " +            // Character 정보 필요
+            "LEFT JOIN FETCH c.characterAssets ca " + // 캐릭터가 가진 에셋 목록 필요
+            "LEFT JOIN FETCH ca.asset a " +           // 실제 에셋 상세 정보 필요
+            "WHERE mc.id = :memberCharacterId")
+    Optional<MemberCharacter> findByIdWithAssets(@Param("memberCharacterId") Long memberCharacterId);
 }

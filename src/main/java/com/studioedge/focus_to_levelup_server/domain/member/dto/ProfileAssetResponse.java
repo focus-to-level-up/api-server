@@ -8,7 +8,9 @@ import lombok.Builder;
 @Builder
 public record ProfileAssetResponse(
         @Schema(description = "에셋 pk", example = "1")
-        Long id,
+        Long assetId,
+        @Schema(description = "맴버 에셋 pk", example = "3")
+        Long memberAssetId,
         @Schema(description = "에셋 타입", example = "CHARACTER_IMAGE")
         AssetType type,
         @Schema(description = "에셋 이름", example = "기사 프로필 이미지")
@@ -18,7 +20,8 @@ public record ProfileAssetResponse(
 ) {
     public static ProfileAssetResponse of(MemberAsset memberAsset) {
         return ProfileAssetResponse.builder()
-                .id(memberAsset.getAsset().getId())
+                .assetId(memberAsset.getAsset().getId())
+                .memberAssetId(memberAsset.getId())
                 .type(memberAsset.getAsset().getType())
                 .name(memberAsset.getAsset().getName())
                 .assetUrl(memberAsset.getAsset().getAssetUrl())

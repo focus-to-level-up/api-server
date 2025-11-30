@@ -3,6 +3,7 @@ package com.studioedge.focus_to_levelup_server.domain.character.dto.response;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.CharacterImage;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.enums.CharacterImageType;
+import com.studioedge.focus_to_levelup_server.global.common.enums.Rarity;
 import lombok.Builder;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public record MemberCharacterResponse(
         Long memberCharacterId,
         Long characterId,
         String characterName,
+        Rarity rarity,
         Integer currentLevel,  // 친밀도 (캐릭터와 함께한 레벨의 합)
         Integer currentExp,
         Integer evolution,  // 현재 진화 단계 (1/2/3)
@@ -34,12 +36,12 @@ public record MemberCharacterResponse(
     public static MemberCharacterResponse from(MemberCharacter memberCharacter) {
 
         // 1. 현재 캐릭터의 진화 단계와 모든 이미지 리스트를 가져옵니다.
-        int currentEvolution = memberCharacter.getEvolution();
+        int displayEvolution = memberCharacter.getDefaultEvolution();
         List<CharacterImage> allImages = memberCharacter.getCharacter().getCharacterImages();
 
         // 2. (최적화) 현재 진화 단계(1, 2, or 3)에 해당하는 이미지들만 Map으로 그룹화합니다.
         Map<CharacterImageType, String> evolutionImages = allImages.stream()
-                .filter(img -> img.getEvolution().equals(currentEvolution))
+                .filter(img -> img.getEvolution().equals(displayEvolution))
                 .collect(Collectors.toMap(
                         CharacterImage::getImageType,
                         CharacterImage::getImageUrl,
@@ -57,12 +59,13 @@ public record MemberCharacterResponse(
                 .memberCharacterId(memberCharacter.getId())
                 .characterId(memberCharacter.getCharacter().getId())
                 .characterName(memberCharacter.getCharacter().getName())
+                .rarity(memberCharacter.getCharacter().getRarity())
                 .currentLevel(memberCharacter.getCurrentLevel())
                 .currentExp(memberCharacter.getCurrentExp())
                 .evolution(memberCharacter.getEvolution())
                 .floor(memberCharacter.getFloor())
                 .isDefault(memberCharacter.getIsDefault())
-                .defaultEvolution(memberCharacter.getDefaultEvolution())
+                .defaultEvolution(displayEvolution)
                 .characterBackgroundImageUrl(backgroundUrl)
                 .currentImageUrl(evolutionImages.get(CharacterImageType.PICTURE))
                 .attackImageUrl(evolutionImages.get(CharacterImageType.ATTACK))
