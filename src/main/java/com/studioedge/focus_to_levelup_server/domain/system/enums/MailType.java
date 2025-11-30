@@ -1,7 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.system.enums;
 
 public enum MailType {
-    GIFT_SUBSCRIPTION,         // 구독권 선물 (사전예약, 선물, 쿠폰 등)
     GIFT_BONUS_TICKET,         // 10% 다이아 보너스 티켓 선물
     GUILD_WEEKLY,              // 길드 주간 보상
     TIER_PROMOTION,            // 승급 보상
