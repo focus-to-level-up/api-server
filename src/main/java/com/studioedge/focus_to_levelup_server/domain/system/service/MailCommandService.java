@@ -14,16 +14,11 @@ import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
-import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
-import com.studioedge.focus_to_levelup_server.domain.payment.entity.Subscription;
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionSource;
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.AssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dto.response.AssetRewardInfo;
 import com.studioedge.focus_to_levelup_server.domain.system.dto.response.CharacterRewardInfo;
 import com.studioedge.focus_to_levelup_server.domain.system.dto.response.MailAcceptResponse;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.SubscriptionInfo;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.MemberAsset;
@@ -37,7 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.Map;
 
 @Slf4j
@@ -48,7 +42,6 @@ public class MailCommandService {
     private final MailRepository mailRepository;
     private final MemberInfoRepository memberInfoRepository;
     private final MemberRepository memberRepository;
-    private final SubscriptionRepository subscriptionRepository;
     private final CharacterRepository characterRepository;
     private final MemberCharacterRepository memberCharacterRepository;
     private final AssetRepository assetRepository;
@@ -83,7 +76,6 @@ public class MailCommandService {
 
         // 2. MailType에 따른 보상 지급
         return switch (mail.getType()) {
-            case GIFT_SUBSCRIPTION -> handleSubscriptionMail(mail, memberId);
             case GIFT_BONUS_TICKET -> handlePurchaseMail(mail, memberId);
             case CHARACTER_REWARD -> handleCharacterMail(mail, memberId);
             case CHARACTER_SELECTION_TICKET -> handleCharacterSelectionTicketMail(mail, memberId, characterId);
@@ -100,60 +92,6 @@ public class MailCommandService {
     private MailAcceptResponse handleCouponMail(Mail mail, Long memberId) {
         // 현재는 다이아 보상만 처리 (기본 구현)
         return handleDiamondMail(mail, memberId);
-    }
-
-    /**
-     * 구독권 우편 처리
-     */
-    private MailAcceptResponse handleSubscriptionMail(Mail mail, Long memberId) {
-        // description에서 JSON 파싱
-        Map<String, Object> metadata = parseMailDescription(mail.getDescription());
-
-        String subscriptionTypeStr = (String) metadata.get("subscriptionType");
-        Integer durationDays = (Integer) metadata.get("durationDays");
-        Integer giftCount = metadata.containsKey("giftCount") ? (Integer) metadata.get("giftCount") : 0;
-
-        SubscriptionType subscriptionType = SubscriptionType.valueOf(subscriptionTypeStr);
-
-        // MemberInfo 조회 (보너스 티켓 지급용)
-        MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElseThrow(InvalidMemberException::new);
-
-        // 보너스 티켓 지급 (metadata에 bonusTicketCount가 있으면 지급)
-        if (metadata.containsKey("bonusTicketCount")) {
-            Object bonusTicketObj = metadata.get("bonusTicketCount");
-            if (bonusTicketObj instanceof Number) {
-                int bonusTicketCount = ((Number) bonusTicketObj).intValue();
-                if (bonusTicketCount > 0) {
-                    memberInfo.addBonusTicket(bonusTicketCount);
-                    log.info("Rewarded {} bonus tickets to member {} from subscription gift",
-                            bonusTicketCount, memberId);
-                }
-            }
-        }
-
-        // Subscription 엔티티 생성
-        Subscription subscription = Subscription.builder()
-                .member(mail.getReceiver())
-                .type(subscriptionType)
-                .startDate(LocalDate.now())
-                .endDate(LocalDate.now().plusDays(durationDays))
-                .isActive(true)
-                .isAutoRenew(false) // 우편으로 받은 구독권은 자동 갱신 안 됨
-                .source(SubscriptionSource.GIFT)
-                .giftedByMemberId(null) // 운영자 선물
-                .build();
-
-        subscriptionRepository.save(subscription);
-
-        // 우편 수령 처리
-        mail.markAsReceived();
-
-        return MailAcceptResponse.ofSubscription(
-                mail.getId(),
-                mail.getTitle(),
-                SubscriptionInfo.from(subscription)
-        );
     }
 
     /**

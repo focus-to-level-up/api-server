@@ -5,9 +5,10 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum SubscriptionSource {
-    PURCHASE("직접 구매"),
-    FREE_TRIAL("무료 체험");
+public enum WebhookEventStatus {
+    RECEIVED("수신됨"),
+    PROCESSED("처리 완료"),
+    FAILED("처리 실패");
 
     private final String description;
 }

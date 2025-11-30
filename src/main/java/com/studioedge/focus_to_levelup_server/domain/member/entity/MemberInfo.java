@@ -214,4 +214,46 @@ public class MemberInfo {
         }
         this.bonusTicketCount -= count;
     }
+
+    /**
+     * 보너스 티켓 강제 차감 (환불 정책용 - 음수 허용)
+     * @param count 차감할 개수
+     * @return 차감 후 보너스 티켓 수 (음수 가능)
+     */
+    public int forceDecreaseBonusTicket(Integer count) {
+        this.bonusTicketCount -= count;
+        return this.bonusTicketCount;
+    }
+
+    /**
+     * 다이아 강제 차감 (환불 정책용 - 음수 허용)
+     * @param amount 차감할 개수
+     * @return 차감 후 다이아 수 (음수 가능)
+     */
+    public int forceDecreaseDiamond(Integer amount) {
+        this.diamond -= amount;
+        return this.diamond;
+    }
+
+    /**
+     * 다이아 차감 (선물 환불용 - 음수 불허, 최소 0까지만)
+     * @param amount 차감할 개수
+     * @return 실제 차감된 개수
+     */
+    public int decreaseDiamondToZero(Integer amount) {
+        int actualDecrease = Math.min(this.diamond, amount);
+        this.diamond -= actualDecrease;
+        return actualDecrease;
+    }
+
+    /**
+     * 보너스 티켓 차감 (선물 환불용 - 음수 불허, 최소 0까지만)
+     * @param count 차감할 개수
+     * @return 실제 차감된 개수
+     */
+    public int decreaseBonusTicketToZero(Integer count) {
+        int actualDecrease = Math.min(this.bonusTicketCount, count);
+        this.bonusTicketCount -= actualDecrease;
+        return actualDecrease;
+    }
 }

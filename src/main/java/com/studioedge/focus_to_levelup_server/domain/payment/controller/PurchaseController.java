@@ -2,14 +2,9 @@ package com.studioedge.focus_to_levelup_server.domain.payment.controller;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.history.PaymentHistoryListResponse;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.purchase.GiftSubscriptionRequest;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.purchase.GiftSubscriptionResponse;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.purchase.PurchaseRequest;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.purchase.PurchaseResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.refund.RefundRequest;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.refund.RefundResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.service.history.PaymentHistoryService;
-import com.studioedge.focus_to_levelup_server.domain.payment.service.purchase.PurchaseService;
 import com.studioedge.focus_to_levelup_server.domain.payment.service.refund.RefundService;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
 import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
@@ -27,19 +22,8 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/v1/purchases")
 @RequiredArgsConstructor
 public class PurchaseController {
-    private final PurchaseService purchaseService;
     private final RefundService refundService;
     private final PaymentHistoryService paymentHistoryService;
-
-    @Operation(summary = "인앱결제 구매", description = "영수증 검증 후 구독권/다이아 구매 처리")
-    @PostMapping
-    public ResponseEntity<CommonResponse<PurchaseResponse>> purchase(
-            @AuthenticationPrincipal Member member,
-            @RequestBody PurchaseRequest request
-    ) {
-        PurchaseResponse response = purchaseService.purchase(member, request);
-        return HttpResponseUtil.created(response);
-    }
 
     @Operation(summary = "결제 환불", description = "결제 내역을 환불하고 획득한 재화를 회수합니다. (7일 이내, 재화 미사용 시에만 가능)")
     @PostMapping("/{paymentLogId}/refund")
@@ -59,15 +43,5 @@ public class PurchaseController {
     ) {
         PaymentHistoryListResponse response = paymentHistoryService.getPaymentHistory(member.getId());
         return HttpResponseUtil.ok(response);
-    }
-
-    @Operation(summary = "구독권 선물 구매", description = "영수증 검증 후 다른 사용자에게 구독권을 선물합니다 (우편으로 전송)")
-    @PostMapping("/gift-subscription")
-    public ResponseEntity<CommonResponse<GiftSubscriptionResponse>> giftSubscription(
-            @AuthenticationPrincipal Member member,
-            @RequestBody @Valid GiftSubscriptionRequest request
-    ) {
-        GiftSubscriptionResponse response = purchaseService.giftSubscription(member, request);
-        return HttpResponseUtil.created(response);
     }
 }

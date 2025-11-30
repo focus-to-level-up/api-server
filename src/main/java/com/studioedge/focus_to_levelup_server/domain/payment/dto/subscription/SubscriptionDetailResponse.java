@@ -34,10 +34,9 @@ public class SubscriptionDetailResponse {
         private LocalDate startDate;
         private LocalDate endDate;
         private Boolean isActive;
-        private Boolean isAutoRenew;
         private Long activatedGuildId;
         private SubscriptionSource source;
-        private Long giftedByMemberId;
+        private Boolean isFreeTrial;
         private Integer remainingDays;
 
         public static SubscriptionInfo from(Subscription subscription) {
@@ -48,10 +47,9 @@ public class SubscriptionDetailResponse {
                     .startDate(subscription.getStartDate())
                     .endDate(subscription.getEndDate())
                     .isActive(subscription.getIsActive())
-                    .isAutoRenew(subscription.getIsAutoRenew())
                     .activatedGuildId(subscription.getActivatedGuildId())
                     .source(subscription.getSource())
-                    .giftedByMemberId(subscription.getGiftedByMemberId())
+                    .isFreeTrial(subscription.isFreeTrial())
                     .remainingDays(subscription.calculateRemainingDays())
                     .build();
         }

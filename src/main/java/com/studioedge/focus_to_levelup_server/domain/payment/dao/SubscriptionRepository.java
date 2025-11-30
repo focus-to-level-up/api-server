@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,12 +24,6 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
      * 회원의 특정 타입 활성화된 구독권 조회
      */
     Optional<Subscription> findByMemberIdAndTypeAndIsActiveTrue(Long memberId, SubscriptionType type);
-
-    /**
-     * 만료된 구독권 조회 (배치 작업용)
-     */
-    @Query("SELECT s FROM Subscription s WHERE s.isActive = true AND s.endDate < :today")
-    List<Subscription> findExpiredSubscriptions(@Param("today") LocalDate today);
 
     /**
      * 회원의 모든 구독권 삭제 (회원 탈퇴 시)
