@@ -223,6 +223,7 @@ public class AuthService {
                     .socialType(socialType)
                     .socialId(socialId)
                     .fcmToken(fcmToken)
+                    .status(MemberStatus.PENDING)
                     .build();
             memberRepository.save(member);
             log.info("New member created: memberId={}, socialType={}", member.getId(), socialType);

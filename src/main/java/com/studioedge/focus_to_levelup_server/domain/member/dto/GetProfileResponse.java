@@ -34,8 +34,10 @@ public record GetProfileResponse(
         String highestTier,
         @Schema(description = "현재 레벨", example = "40")
         Integer currentLevel,
-        @Schema(description = "현재 레벨", example = "230")
+        @Schema(description = "총 레벨", example = "230")
         Integer totalLevel,
+        @Schema(description = "현재 경험치", example = "200")
+        Integer currentExp,
         @Schema(description = "부스트 여부", example = "true")
         Boolean boosted,
         @Schema(description = "집중 여부", example = "true")
@@ -45,8 +47,12 @@ public record GetProfileResponse(
         @Schema(description = "프로필 메세지", example = "으아! 할수있다!!")
         String profileMessage,
         @Schema(description = "보너스 티켓 개수", example = "3")
-        Integer bonusTicketCount
-) {
+        Integer bonusTicketCount,
+        @Schema(description = "다이아 갯수", example = "400")
+        Integer diamond,
+        @Schema(description = "골드 갯수", example = "1500")
+        Integer gold
+        ) {
     public static GetProfileResponse of(Member member, MemberInfo memberInfo, String ranking,
                                         SubscriptionType subscriptionType, boolean boosted) {
         return GetProfileResponse.builder()
@@ -65,9 +71,12 @@ public record GetProfileResponse(
                 .currentTier(ranking)
                 .highestTier(memberInfo.getHighestTier() == null ? "-" : memberInfo.getHighestTier().toString())
                 .currentLevel(member.getCurrentLevel())
+                .currentExp(member.getCurrentExp())
                 .totalLevel(memberInfo.getTotalLevel())
                 .profileMessage(memberInfo.getProfileMessage())
                 .bonusTicketCount(memberInfo.getBonusTicketCount())
+                .diamond(memberInfo.getDiamond())
+                .gold(memberInfo.getGold())
                 .build();
     }
 }

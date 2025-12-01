@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.batch.season_end;
+package com.studioedge.focus_to_levelup_server.global.batch.step.season_end;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

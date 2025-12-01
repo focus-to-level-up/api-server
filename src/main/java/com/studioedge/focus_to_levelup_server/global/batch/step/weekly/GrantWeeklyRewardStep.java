@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.batch.weekly;
+package com.studioedge.focus_to_levelup_server.global.batch.step.weekly;
 
 import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterImageRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
@@ -74,12 +74,8 @@ public class GrantWeeklyRewardStep {
         return ranking -> {
             Member member = ranking.getMember();
 
-            // 혹시라도 이미 보상을 받은 유저라면 Skip (Reader에서는 필터링 안 했으므로)
-            if (member.getIsReceivedWeeklyReward()) {
-                return null;
-            }
-
             // 2. 유저의 대표 캐릭터 정보 조회
+            // 유저가 지난주 보상을 받지 못했다면, 해당 보상은 덮어씌어진다.
             MemberCharacter memberCharacter = memberCharacterRepository
                     .findByMemberIdAndIsDefaultTrue(member.getId())
                     .orElseThrow(() -> new IllegalStateException("대표 캐릭터 없음: Member ID " + member.getId()));

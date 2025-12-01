@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.batch.daily;
+package com.studioedge.focus_to_levelup_server.global.batch.step.daily;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +17,8 @@ public class DailyJobBatch {
      * 1. 플래너 전체 삭제
      * 2. 만료된 우편 삭제
      * 3. 유저 랭킹 경고 만료 확인 -> 만료시, null
-     * 5. 집중중인 유저 확인 -> 랭킹 경고
-     * 6. 랭킹 제외유저 복귀
+     * 4. 집중중인 유저 확인 -> 랭킹 경고
+     * 5. 랭킹 제외유저 복귀
      * */
     private final JobRepository jobRepository;
 

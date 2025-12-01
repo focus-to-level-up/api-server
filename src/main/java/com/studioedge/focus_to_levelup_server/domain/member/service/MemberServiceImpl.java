@@ -104,7 +104,6 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public GetProfileResponse getMemberProfile(Long memberId) {
-        System.out.println("memberId = " + memberId);
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
                 .orElseThrow(InvalidMemberException::new);
         SubscriptionState state = getSubscriptionState(memberId);

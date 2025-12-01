@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.batch.season_end;
+package com.studioedge.focus_to_levelup_server.global.batch.step.season_end;
 
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
