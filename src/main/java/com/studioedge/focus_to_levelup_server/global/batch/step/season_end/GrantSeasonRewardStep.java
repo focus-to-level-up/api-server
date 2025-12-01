@@ -3,7 +3,6 @@ package com.studioedge.focus_to_levelup_server.global.batch.step.season_end;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
@@ -87,9 +86,6 @@ public class GrantSeasonRewardStep {
                 // 최종 티어에 맞는 메일 생성
                 mails.add(createSeasonEndMail(member, finalTier));
                 mails.add(createProfileBorderMail(member, finalTier));
-                if (finalTier.equals(Tier.MASTER)) {
-                    mails.add(createMasterSubscriptionMail(member));
-                }
             }
 
             return mails;
@@ -169,34 +165,4 @@ public class GrantSeasonRewardStep {
         }
     }
 
-    /**
-     * 3. 마스터 티어 구독권 보상 메일 생성
-     */
-    private Mail createMasterSubscriptionMail(Member member) {
-        try {
-            // 구독권 정보 JSON 생성
-            // 마스터 보상은 'PREMIUM' 등급 30일 지급으로 설정
-            String description = objectMapper.writeValueAsString(new HashMap<String, Object>() {{
-                put("subscriptionType", SubscriptionType.PREMIUM.name());
-                put("durationDays", 30);
-            }});
-
-            return Mail.builder()
-                    .receiver(member)
-                    .senderName("Focus to Level Up")
-                    // 클라이언트가 구독권 로직을 처리하도록 GIFT_SUBSCRIPTION 타입 사용 권장
-                    .type(MailType.GIFT_SUBSCRIPTION)
-                    .title("마스터 달성 보상")
-                    .description(description) // JSON 데이터 저장
-                    .popupTitle("🎁 마스터 티어 특별 보상")
-                    .popupContent("상위 10% 달성을 축하합니다! 프리미엄 구독권 30일을 드립니다.")
-                    .reward(0)
-                    .expiredAt(LocalDate.now().plusDays(7))
-                    .build();
-
-        } catch (JsonProcessingException e) {
-            log.error("Failed to create subscription mail JSON for member {}", member.getId(), e);
-            return null;
-        }
-    }
 }

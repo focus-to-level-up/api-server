@@ -49,6 +49,9 @@ public class PaymentLog extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String receiptData; // 영수증 데이터
 
+    @Column(unique = true)
+    private String revenueCatEventId; // RevenueCat Webhook 이벤트 ID (멱등성 보장)
+
     private LocalDateTime refundedAt; // 환불 일시
 
     private String refundReason; // 환불 사유
@@ -56,7 +59,7 @@ public class PaymentLog extends BaseEntity {
     @Builder
     public PaymentLog(Member member, Product product, String productTransactionId,
                       BigDecimal paidAmount, PurchaseStatus status, PaymentPlatform platform,
-                      String receiptData) {
+                      String receiptData, String revenueCatEventId) {
         this.member = member;
         this.product = product;
         this.productTransactionId = productTransactionId;
@@ -64,6 +67,7 @@ public class PaymentLog extends BaseEntity {
         this.status = status != null ? status : PurchaseStatus.PENDING;
         this.platform = platform;
         this.receiptData = receiptData;
+        this.revenueCatEventId = revenueCatEventId;
     }
 
     // 비즈니스 메서드

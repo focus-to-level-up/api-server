@@ -17,7 +17,7 @@ spring:
         implicit_naming_strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
         physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
         hbm2ddl:
-          auto: create-drop
+          auto: create
         format_sql: true
 
 # JWT 설정
@@ -48,15 +48,20 @@ google:
   client-secret: ${GOOGLE_CLIENT_SECRET}
   redirect-uri: ${GOOGLE_REDIRECT_URI}
 
-# 인앱 결제 설정
-payment:
-  mode: ${PAYMENT_MODE:mock}  # mock, sandbox, production
-  apple:
-    shared-secret: ${APPLE_SHARED_SECRET:}
-    use-sandbox: ${APPLE_USE_SANDBOX:true}
-  google:
-    package-name: ${GOOGLE_PLAY_PACKAGE_NAME:}
-    service-account-json: ${GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:}
+# RevenueCat 설정 (인앱 결제 - 영수증 검증은 RevenueCat이 처리)
+revenuecat:
+  enabled: ${REVENUECAT_ENABLED:true}
+  api-key:
+    apple: ${REVENUECAT_API_KEY_APPLE:}
+    google: ${REVENUECAT_API_KEY_GOOGLE:}
+  secret-key: ${REVENUECAT_API_KEY:}  # REST API용 Secret Key (sk_...)
+  webhook-auth-header: ${REVENUECAT_WEBHOOK_AUTH_HEADER:}  # Optional - 웹훅 인증용
+  base-url: https://api.revenuecat.com/v1
+  project-id: ${REVENUECAT_PROJECT_ID:}
+  entitlement-id:
+    premium: ${REVENUECAT_PREMIUM_ENTITLEMENT_ID:premium_subscription}
+  free-trial:
+    duration: ${REVENUECAT_FREE_TRIAL_DURATION:P14D}  # ISO 8601 기간 형식 (14일)
 
 # Firebase 설정 (사전예약 보상 시스템 - Firestore)
 firebase:

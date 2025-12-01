@@ -45,31 +45,22 @@ public class Subscription extends BaseEntity {
     @ColumnDefault("false")
     private Boolean isActive = false;
 
-    @Column(nullable = false)
-    @ColumnDefault("true")
-    private Boolean isAutoRenew = true;
-
     private Long activatedGuildId;
 
     @Enumerated(EnumType.STRING)
     @ColumnDefault("'PURCHASE'")
     private SubscriptionSource source;
 
-    private Long giftedByMemberId;
-
     @Builder
     public Subscription(Member member, SubscriptionType type, LocalDate startDate,
-                        LocalDate endDate, Boolean isActive, Boolean isAutoRenew,
-                        SubscriptionSource source, Long giftedByMemberId)
+                        LocalDate endDate, Boolean isActive, SubscriptionSource source)
     {
         this.member = member;
         this.type = type;
         this.startDate = startDate;
         this.endDate = endDate;
         this.isActive = isActive != null ? isActive : false;
-        this.isAutoRenew = isAutoRenew != null ? isAutoRenew : true;
         this.source = source != null ? source : SubscriptionSource.PURCHASE;
-        this.giftedByMemberId = giftedByMemberId;
     }
 
     /**
@@ -84,27 +75,6 @@ public class Subscription extends BaseEntity {
      */
     public void deactivate() {
         this.isActive = false;
-    }
-
-    /**
-     * 자동 갱신 활성화
-     */
-    public void enableAutoRenew() {
-        this.isAutoRenew = true;
-    }
-
-    /**
-     * 자동 갱신 비활성화
-     */
-    public void disableAutoRenew() {
-        this.isAutoRenew = false;
-    }
-
-    /**
-     * 자동 갱신 중지 (기존 메서드 호환)
-     */
-    public void stopAutoRenew() {
-        this.isAutoRenew = false;
     }
 
     /**
@@ -149,10 +119,19 @@ public class Subscription extends BaseEntity {
     }
 
     /**
-     * 구독 기간 연장
+     * 구독 기간 연장 (일수 지정)
      */
     public void extendPeriod(int days) {
         this.endDate = this.endDate.plusDays(days);
+    }
+
+    /**
+     * 구독 기간 연장 (새로운 만료일 지정)
+     */
+    public void extendPeriod(LocalDate newEndDate) {
+        if (newEndDate.isAfter(this.endDate)) {
+            this.endDate = newEndDate;
+        }
     }
 
     /**
@@ -170,10 +149,17 @@ public class Subscription extends BaseEntity {
     }
 
     /**
-     * 선물받은 구독권 여부 확인
+     * Free Trial 구독권 여부 확인
      */
-    public boolean isGifted() {
-        return this.source == SubscriptionSource.GIFT || this.source == SubscriptionSource.PREMIUM_GIFT;
+    public boolean isFreeTrial() {
+        return this.source == SubscriptionSource.FREE_TRIAL;
+    }
+
+    /**
+     * Free Trial → 유료 구독 전환
+     */
+    public void convertToPurchase() {
+        this.source = SubscriptionSource.PURCHASE;
     }
 
     /**

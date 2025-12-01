@@ -55,7 +55,6 @@ public record MailInfo(
     private static String determineIconType(MailType type) {
         return switch (type) {
             case GUILD_WEEKLY, TIER_PROMOTION, SEASON_END, EVENT -> "DIAMOND";
-            case GIFT_SUBSCRIPTION -> "SUBSCRIPTION";
             case GIFT_BONUS_TICKET -> "BONUS_TICKET";
             case CHARACTER_SELECTION_TICKET, CHARACTER_REWARD -> "CHARACTER";
             case COUPON -> "EVENT"; // 쿠폰은 다양한 보상 가능 (기본: EVENT 아이콘)

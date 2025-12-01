@@ -165,6 +165,16 @@ public class ExceptionMapper {
                 ExceptionSituation.of("이미 사용된 티켓입니다.", HttpStatus.CONFLICT));
         mapper.put(RecipientAlreadyHasPremiumException.class,
                 ExceptionSituation.of("상대방이 이미 프리미엄 구독권을 보유하고 있습니다.", HttpStatus.BAD_REQUEST));
+
+        // 구독권 타입 불일치 예외
+        mapper.put(SubscriptionTypeMismatchException.class,
+                ExceptionSituation.of("현재 활성화된 구독권과 다른 종류의 구독권은 수령할 수 없습니다.", HttpStatus.BAD_REQUEST));
+
+        // RevenueCat Webhook 관련 예외
+        mapper.put(WebhookAuthenticationException.class,
+                ExceptionSituation.of("Webhook 인증에 실패했습니다.", HttpStatus.UNAUTHORIZED));
+        mapper.put(DuplicateWebhookEventException.class,
+                ExceptionSituation.of("이미 처리된 Webhook 이벤트입니다.", HttpStatus.OK));
     }
 
     /**

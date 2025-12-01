@@ -5,7 +5,6 @@ import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
-import com.studioedge.focus_to_levelup_server.domain.payment.dao.BonusTicketRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.PaymentLogRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.refund.RefundRequest;
@@ -22,6 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,15 +32,18 @@ public class RefundService {
 
     private final PaymentLogRepository paymentLogRepository;
     private final MemberInfoRepository memberInfoRepository;
-    private final BonusTicketRepository bonusTicketRepository;
     private final MemberRepository memberRepository;
     private final SubscriptionRepository subscriptionRepository;
 
+    // 다이아팩 환불 시 고정 회수량
+    private static final int DIAMOND_PACK_REFUND_AMOUNT = 1500;
+
     /**
      * 결제 환불 처리
-     * 1. 환불 가능 여부 검증 (7일 이내, 재화 미사용)
-     * 2. 획득한 다이아/티켓 회수
-     * 3. PaymentLog 상태 업데이트
+     * - 음수 허용 정책 적용
+     * - 보너스 티켓: 항상 전액 회수 (음수 허용)
+     * - 다이아: 첫 달만 회수 (음수 허용)
+     * - 다이아팩: 1500개 고정 회수 (음수 허용)
      */
     public RefundResponse processRefund(Long memberId, Long paymentLogId, RefundRequest request) {
         // 1. PaymentLog 조회 및 권한 검증
@@ -62,59 +67,54 @@ public class RefundService {
         Product product = paymentLog.getProduct();
         ProductType productType = product.getType();
 
+        RefundResult result;
         if (productType == ProductType.DIAMOND_PACK) {
-            // 다이아 팩 환불: 우편 미수령 확인 및 삭제
-            handleDiamondPackRefund(memberId, paymentLog);
-
+            result = handleDiamondPackRefund(memberId, memberInfo);
         } else if (productType == ProductType.BASIC_SUBSCRIPTION || productType == ProductType.PREMIUM_SUBSCRIPTION) {
-            // 구독권 환불 처리
-            handleSubscriptionRefund(memberId, paymentLog);
+            result = handleSubscriptionRefund(memberId, paymentLog, memberInfo);
+        } else {
+            result = new RefundResult(0, memberInfo.getDiamond(), 0, memberInfo.getBonusTicketCount(), false);
         }
 
         // 5. PaymentLog 환불 처리
         paymentLog.refund(request.reason());
 
-        return RefundResponse.from(paymentLog);
+        return RefundResponse.of(
+                paymentLog,
+                result.diamondRevoked(),
+                result.diamondAfter(),
+                result.bonusTicketRevoked(),
+                result.bonusTicketAfter(),
+                result.subscriptionDeactivated()
+        );
     }
 
     /**
      * 다이아 팩 환불 처리
-     * - 구매 시 받은 다이아를 보유하고 있는지 확인
-     * - 다이아가 부족하면 환불 불가
-     * - 다이아 회수
+     * - 1500개 고정 회수 (음수 허용)
      */
-    private void handleDiamondPackRefund(Long memberId, PaymentLog paymentLog) {
-        MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElseThrow(InvalidMemberException::new);
+    private RefundResult handleDiamondPackRefund(Long memberId, MemberInfo memberInfo) {
+        int diamondAfter = memberInfo.forceDecreaseDiamond(DIAMOND_PACK_REFUND_AMOUNT);
+        log.info("Refunded {} diamonds from member {}, balance after: {}",
+                DIAMOND_PACK_REFUND_AMOUNT, memberId, diamondAfter);
 
-        Product product = paymentLog.getProduct();
-        Integer diamondReward = product.getDiamondReward() != null ? product.getDiamondReward() : 0;
-
-        // 다이아 보유 확인
-        if (memberInfo.getDiamond() < diamondReward) {
-            log.warn("Diamond refund failed: member {} has {} diamonds but needs {} for refund",
-                    memberId, memberInfo.getDiamond(), diamondReward);
-            throw new RefundNotAllowedException();
-        }
-
-        // 다이아 회수
-        memberInfo.decreaseDiamond(diamondReward);
-        log.info("Refunded {} diamonds from member {}", diamondReward, memberId);
+        return new RefundResult(
+                DIAMOND_PACK_REFUND_AMOUNT,
+                diamondAfter,
+                0,
+                memberInfo.getBonusTicketCount(),
+                false
+        );
     }
 
     /**
      * 구독권 환불 처리
-     * - 구매 시 받은 재화(다이아, 보너스 티켓)를 보유하고 있는지 확인
-     * - 첫 구독: 다이아 + 보너스 티켓 확인
-     * - 재구독: 보너스 티켓만 확인
-     * - 재화가 부족하면 환불 불가
-     * - 재화 회수 및 구독권 비활성화
+     * - 첫 달: 다이아 회수 (프리미엄 2000, 기본 1000) + 보너스 티켓 회수
+     * - 1달 이후: 보너스 티켓만 회수
+     * - 음수 허용
      */
-    private void handleSubscriptionRefund(Long memberId, PaymentLog paymentLog) {
+    private RefundResult handleSubscriptionRefund(Long memberId, PaymentLog paymentLog, MemberInfo memberInfo) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(InvalidMemberException::new);
-
-        MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
                 .orElseThrow(InvalidMemberException::new);
 
         Product product = paymentLog.getProduct();
@@ -125,46 +125,65 @@ public class RefundService {
         int bonusTicketCount = subscriptionType.getBonusTicketCount();
         Integer diamondReward = product.getDiamondReward() != null ? product.getDiamondReward() : 0;
 
-        // 첫 구독 여부 확인 (플래그가 true이고 다이아 보상이 있으면 첫 구독으로 판단)
-        boolean isFirstSubscription = member.getIsSubscriptionRewarded() && diamondReward > 0;
+        // 첫 달 여부 확인: 구매일로부터 30일 이내
+        boolean isFirstMonth = isWithinFirstMonth(paymentLog);
 
-        // 재화 보유 확인
-        if (isFirstSubscription) {
-            // 첫 구독: 다이아 + 보너스 티켓 확인
-            if (memberInfo.getDiamond() < diamondReward) {
-                log.warn("First subscription refund failed: member {} has {} diamonds but needs {}",
-                        memberId, memberInfo.getDiamond(), diamondReward);
-                throw new RefundNotAllowedException();
-            }
-        }
+        int diamondRevoked = 0;
+        int diamondAfter = memberInfo.getDiamond();
 
-        // 보너스 티켓 보유 확인
-        if (memberInfo.getBonusTicketCount() < bonusTicketCount) {
-            log.warn("Subscription refund failed: member {} has {} bonus tickets but needs {}",
-                    memberId, memberInfo.getBonusTicketCount(), bonusTicketCount);
-            throw new RefundNotAllowedException();
-        }
-
-        // 재화 회수
-        if (isFirstSubscription) {
-            // 다이아 회수
-            memberInfo.decreaseDiamond(diamondReward);
-            log.info("Refunded {} diamonds from member {}", diamondReward, memberId);
+        // 첫 달인 경우 다이아 회수
+        if (isFirstMonth && diamondReward > 0) {
+            diamondAfter = memberInfo.forceDecreaseDiamond(diamondReward);
+            diamondRevoked = diamondReward;
+            log.info("First month refund: revoked {} diamonds from member {}, balance after: {}",
+                    diamondRevoked, memberId, diamondAfter);
 
             // 첫 구독 플래그 초기화
             member.updateSubscriptionReward(false);
             log.info("Reset subscription reward flag for member {} due to refund", memberId);
         }
 
-        // 보너스 티켓 회수
-        memberInfo.decreaseBonusTicket(bonusTicketCount);
-        log.info("Decreased {} bonus tickets from member {}", bonusTicketCount, memberId);
+        // 보너스 티켓 항상 회수 (음수 허용)
+        int bonusTicketAfter = memberInfo.forceDecreaseBonusTicket(bonusTicketCount);
+        log.info("Revoked {} bonus tickets from member {}, balance after: {}",
+                bonusTicketCount, memberId, bonusTicketAfter);
 
         // 구독권 비활성화
-        subscriptionRepository.findByMemberIdAndIsActiveTrue(memberId)
-                .ifPresent(subscription -> {
-                    subscription.deactivate();
-                    log.info("Deactivated subscription {} for member {}", subscription.getId(), memberId);
-                });
+        boolean subscriptionDeactivated = false;
+        var subscriptionOpt = subscriptionRepository.findByMemberIdAndIsActiveTrue(memberId);
+        if (subscriptionOpt.isPresent()) {
+            subscriptionOpt.get().deactivate();
+            subscriptionDeactivated = true;
+            log.info("Deactivated subscription {} for member {}", subscriptionOpt.get().getId(), memberId);
+        }
+
+        return new RefundResult(
+                diamondRevoked,
+                diamondAfter,
+                bonusTicketCount,
+                bonusTicketAfter,
+                subscriptionDeactivated
+        );
     }
+
+    /**
+     * 구매일로부터 30일 이내인지 확인
+     */
+    private boolean isWithinFirstMonth(PaymentLog paymentLog) {
+        LocalDate purchaseDate = paymentLog.getCreatedAt().toLocalDate();
+        LocalDate now = LocalDate.now();
+        long daysBetween = ChronoUnit.DAYS.between(purchaseDate, now);
+        return daysBetween <= 30;
+    }
+
+    /**
+     * 환불 결과 내부 DTO
+     */
+    private record RefundResult(
+            int diamondRevoked,
+            int diamondAfter,
+            int bonusTicketRevoked,
+            int bonusTicketAfter,
+            boolean subscriptionDeactivated
+    ) {}
 }

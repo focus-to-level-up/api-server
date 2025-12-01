@@ -7,7 +7,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoReposi
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
+import com.studioedge.focus_to_levelup_server.domain.payment.service.revenuecat.RevenueCatApiService;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.PhoneNumberVerificationRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dto.response.PreRegistrationCheckResponse;
@@ -44,11 +44,11 @@ public class PreRegistrationService {
     private final CharacterCommandService characterCommandService;
     private final MailRepository mailRepository;
     private final PhoneNumberVerificationRepository phoneNumberVerificationRepository;
+    private final RevenueCatApiService revenueCatApiService;
     private final FirebaseService firebaseService;
     private final ObjectMapper objectMapper;
 
     private static final int PRE_REGISTRATION_DIAMOND = 3000;
-    private static final int PRE_REGISTRATION_SUBSCRIPTION_DAYS = 14; // 2주 체험권
 
     /**
      * 전화번호로 사전예약 확인 및 저장
@@ -137,10 +137,8 @@ public class PreRegistrationService {
         mailRepository.save(diamondMail);
         mailIds.add(diamondMail.getId());
 
-        // 3. 프리미엄 구독권 지급 (우편함)
-        Mail subscriptionMail = createSubscriptionMail(member, PRE_REGISTRATION_SUBSCRIPTION_DAYS);
-        mailRepository.save(subscriptionMail);
-        mailIds.add(subscriptionMail.getId());
+        // 3. 프리미엄 구독권 14일 지급 (RevenueCat Promotional Entitlement)
+        revenueCatApiService.grantPreRegistrationPremium(memberId);
 
         // 4. 캐릭터 선택권 지급 (우편함) - RARE 등급 선택권
         Mail characterSelectionMail = createCharacterSelectionTicketMail(member, Rarity.RARE);
@@ -150,8 +148,8 @@ public class PreRegistrationService {
         // 5. 보상 수령 완료 플래그 설정
         member.markPreRegistrationRewarded();
 
-        log.info("Pre-registration reward claimed for member {}: {} diamonds, {} days subscription, character selection ticket",
-                memberId, PRE_REGISTRATION_DIAMOND, PRE_REGISTRATION_SUBSCRIPTION_DAYS);
+        log.info("Pre-registration reward claimed for member {}: {} diamonds, 14 days premium subscription (RevenueCat), character selection ticket",
+                memberId, PRE_REGISTRATION_DIAMOND);
 
         return PreRegistrationRewardResponse.of(mailIds);
     }
@@ -171,33 +169,6 @@ public class PreRegistrationService {
                 .reward(diamondAmount)
                 .expiredAt(LocalDate.now().plusDays(28))
                 .build();
-    }
-
-    /**
-     * 구독권 우편 생성
-     */
-    private Mail createSubscriptionMail(Member member, int durationDays) {
-        try {
-            String description = objectMapper.writeValueAsString(new java.util.HashMap<String, Object>() {{
-                put("subscriptionType", SubscriptionType.PREMIUM.name());
-                put("durationDays", durationDays);
-            }});
-
-            return Mail.builder()
-                    .receiver(member)
-                    .senderName("Focus to Level Up")
-                    .type(MailType.GIFT_SUBSCRIPTION)
-                    .title("사전예약 보상을 수령하세요")
-                    .description(description)
-                    .popupTitle("사전예약 프리미엄 구독권 수령")
-                    .popupContent("사전예약 보상으로 받으신 프리미엄 구독권 2주 체험권을 수령하세요")
-                    .reward(0)
-                    .expiredAt(LocalDate.now().plusDays(28))
-                    .build();
-        } catch (Exception e) {
-            log.error("Failed to create subscription mail JSON", e);
-            throw new IllegalStateException("구독권 우편 생성에 실패했습니다.");
-        }
     }
 
     /**
