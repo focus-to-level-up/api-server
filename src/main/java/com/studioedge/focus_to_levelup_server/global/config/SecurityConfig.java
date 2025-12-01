@@ -68,6 +68,7 @@ public class SecurityConfig {
         return web -> {
             web.ignoring().requestMatchers(PathRequest.toStaticResources().atCommonLocations());
             web.ignoring().requestMatchers("/swagger-ui/**", "/swagger-resources/**", "/swagger-ui.html", "/webjars/**", "/v3/api-docs/**");
+            web.ignoring().requestMatchers("/api/v1/webhook/**");
         };
     }
 
