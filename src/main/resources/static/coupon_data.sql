@@ -1,3 +1,5 @@
+USE focus_db;
+
 -- 쿠폰 마스터 데이터
 -- RewardType enum: GOLD(0), DIAMOND(1), ETC(2)
 -- SubscriptionType enum: NONE, NORMAL, PREMIUM (문자열로 저장)

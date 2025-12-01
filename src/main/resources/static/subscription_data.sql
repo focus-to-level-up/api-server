@@ -10,6 +10,7 @@
 -- 'DIAMOND_PACK': 다이아 구매
 --
 -- -----------------------------------------------------
+USE focus_db;
 
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;

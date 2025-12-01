@@ -9,6 +9,7 @@
 -- CharacterImageType Enum: IDLE, ATTACK, WEAPON, BACKGROUND, PICTURE, HEAD
 --
 -- -----------------------------------------------------
+USE focus_db;
 
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;

@@ -53,27 +53,61 @@ INSERT INTO members (
       (4, 'KAKAO', 'u4', 'User4_Newbie', 'ACTIVE', 1, 0, NULL, 0, NOW(), NOW()),
       (5, 'KAKAO', 'u5', 'User5_Reset', 'ACTIVE', 10, 999, 'BRONZE', 0, NOW(), NOW());
 
+-- -----------------------------------------------------
+-- [Step 3] MemberAssets (핵심 수정)
+-- 각 유저마다 '기본 프로필 이미지(Asset ID=1)'와 '기본 테두리(Asset ID=4)' 소유권 생성
+-- Asset ID는 data_assets.sql 기준: 1=양동동1이미지, 4=양동동테두리 라고 가정
+-- -----------------------------------------------------
+
+-- User 1의 에셋 (ID: 10, 11)
+INSERT INTO member_assets (member_asset_id, member_id, asset_id, created_at, updated_at)
+VALUES (10, 1, 1, NOW(), NOW()), (11, 1, 4, NOW(), NOW());
+
+-- User 2의 에셋 (ID: 20, 21)
+INSERT INTO member_assets (member_asset_id, member_id, asset_id, created_at, updated_at)
+VALUES (20, 2, 1, NOW(), NOW()), (21, 2, 4, NOW(), NOW());
+
+-- User 3의 에셋 (ID: 30, 31)
+INSERT INTO member_assets (member_asset_id, member_id, asset_id, created_at, updated_at)
+VALUES (30, 3, 1, NOW(), NOW()), (31, 3, 4, NOW(), NOW());
+
+-- User 4의 에셋 (ID: 40, 41)
+INSERT INTO member_assets (member_asset_id, member_id, asset_id, created_at, updated_at)
+VALUES (40, 4, 1, NOW(), NOW()), (41, 4, 4, NOW(), NOW());
+
+-- User 5의 에셋 (ID: 50, 51)
+INSERT INTO member_assets (member_asset_id, member_id, asset_id, created_at, updated_at)
+VALUES (50, 5, 1, NOW(), NOW()), (51, 5, 4, NOW(), NOW());
 
 -- -----------------------------------------------------
 -- [Step 4] MemberInfos & Settings
 -- -----------------------------------------------------
-INSERT INTO member_infos (member_info_id, member_id, age, category_main, total_exp)
-VALUES
-    (1, 1, 25, 'ADULT', 10000), -- 1등
-    (2, 2, 25, 'ADULT', 5000),  -- 중간
-    (3, 3, 25, 'ADULT', 0),     -- 꼴등
-    (4, 4, 25, 'ADULT', 0),     -- 신규
-    (5, 5, 25, 'ADULT', 2000);
+-- -----------------------------------------------------
+-- [Step 4] MemberInfos (수정됨)
+-- profile_image_id, profile_border_id를 위에서 만든 MemberAsset ID로 연결
+-- -----------------------------------------------------
+INSERT INTO member_infos (
+    member_info_id, member_id, age, gender, category_main, category_sub,
+    total_level, total_exp, highest_tier,
+    profile_image_id, profile_border_id, -- MemberAsset ID 참조
+    gold, diamond, belonging
+) VALUES
+      (1, 1, 25, 'MALE', 'ADULT', 'UNIVERSITY_STUDENT', 5, 0, 'BRONZE', 10, 11, 1000, 500, '서울대'),
+      (2, 2, 24, 'FEMALE', 'ADULT', 'JOB_SEEKER', 3, 0, 'BRONZE', 20, 21, 500, 100, '취준'),
+      (3, 3, 26, 'MALE', 'ADULT', 'OFFICE_WORKER', 4, 0, 'SILVER', 30, 31, 0, 0, '삼성전자'),
+      (4, 4, 20, 'FEMALE', 'ADULT', 'UNIVERSITY_STUDENT', 1, 0, 'BRONZE', 40, 41, 0, 0, '연세대'),
+      (5, 5, 29, 'MALE', 'ADULT', 'PUBLIC_SERVANT', 10, 500, 'BRONZE', 50, 51, 2000, 1000, '시청');
 
--- MemberSettings (배치 동작 안정성을 위해 추가)
-INSERT INTO member_settings (member_id, alarm_on, is_ranking_active)
+-- -----------------------------------------------------
+-- [Step 5] MemberSettings
+-- -----------------------------------------------------
+INSERT INTO member_settings (member_setting_id, member_id, alarm_on, is_ranking_active)
 VALUES
-    (1, 1, 1),
-    (2, 1, 1),
-    (3, 1, 1),
-    (4, 1, 1),
-    (5, 1, 1);
-
+    (1, 1, 1, 1),
+    (2, 2, 1, 1),
+    (3, 3, 1, 1),
+    (4, 4, 1, 1),
+    (5, 5, 1, 1);
 
 -- -----------------------------------------------------
 -- [Step 5] MemberCharacters (CRITICAL FIX)

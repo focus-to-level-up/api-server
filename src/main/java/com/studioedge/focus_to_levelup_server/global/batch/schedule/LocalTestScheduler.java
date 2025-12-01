@@ -40,7 +40,7 @@ public class LocalTestScheduler {
             try {
                 log.info("########## [TEST] 서버 시작 감지. 15초 뒤에 '{}' 배치를 1회 실행합니다. ##########", targetJobName);
 
-                Thread.sleep(15000); // 15초 대기
+                Thread.sleep(1500000000); // 15초 대기
 
                 runTestJob(); // 배치 실행 로직 호출
 

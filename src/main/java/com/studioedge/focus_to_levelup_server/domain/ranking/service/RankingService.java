@@ -43,6 +43,7 @@ public class RankingService {
         } else {
             targetLeague = findBestBronzeLeagueForSpectator(member);
         }
+        System.out.println("targetLeague = " + targetLeague.getName());
 
         Page<Ranking> rankings = rankingRepository.findRankingsBySeasonAndLeagueWithDetails(
                 targetLeague.getSeason(), targetLeague, pageable);
