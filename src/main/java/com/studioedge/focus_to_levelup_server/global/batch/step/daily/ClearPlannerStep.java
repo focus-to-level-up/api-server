@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.batch.daily;
+package com.studioedge.focus_to_levelup_server.global.batch.step.daily;
 
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.PlannerRepository;
 import lombok.RequiredArgsConstructor;

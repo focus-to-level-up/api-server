@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.batch.schedule;
+package com.studioedge.focus_to_levelup_server.global.batch.schedule;
 
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.SeasonRepository;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Season;

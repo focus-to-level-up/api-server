@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.batch.weekly;
+package com.studioedge.focus_to_levelup_server.global.batch.step.weekly;
 
 import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterImageRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
@@ -12,6 +12,7 @@ import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailySubject;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
 import com.studioedge.focus_to_levelup_server.domain.stat.dao.WeeklyStatRepository;
 import com.studioedge.focus_to_levelup_server.domain.stat.dao.WeeklySubjectStatRepository;
 import com.studioedge.focus_to_levelup_server.domain.stat.entity.WeeklyStat;
@@ -65,6 +66,9 @@ public class UpdateWeeklyStatStep {
                 .reader(updateWeeklyStatReader())
                 .processor(updateWeeklyStatProcessor())
                 .writer(updateWeeklyStatWriter())
+                .faultTolerant()
+                .skip(Exception.class)
+                .skipLimit(100)
                 .build();
     }
 
@@ -74,8 +78,9 @@ public class UpdateWeeklyStatStep {
         return new RepositoryItemReaderBuilder<Member>()
                 .name("updateWeeklyStatReader")
                 .pageSize(100)
-                .methodName("findAll")
+                .methodName("findAllByStatus")
                 .repository(memberRepository)
+                .arguments(MemberStatus.ACTIVE)
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
     }

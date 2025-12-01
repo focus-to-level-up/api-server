@@ -103,7 +103,7 @@ public class Member extends BaseEntity {
     public Member(SocialType socialType, String socialId, String nickname, String fcmToken,
                   String appleRefreshToken, String kakaoRefreshToken, String naverRefreshToken,
                   String googleRefreshToken, MemberInfo memberInfo, MemberSetting memberSetting,
-                  Tier highestTier) {
+                  Tier highestTier, MemberStatus status) {
         this.socialType = socialType;
         this.socialId = socialId;
         this.nickname = nickname;
@@ -115,6 +115,7 @@ public class Member extends BaseEntity {
         this.memberInfo = memberInfo;
         this.memberSetting = memberSetting;
         this.highestTier = highestTier;
+        this.status = status;
     }
 
     // 비즈니스 로직
@@ -151,6 +152,7 @@ public class Member extends BaseEntity {
         this.nicknameUpdatedAt = LocalDateTime.now();
         this.memberInfo = memberInfo;
         this.memberSetting = memberSetting;
+        this.status = MemberStatus.ACTIVE;
     }
 
     public void updateNickname(String nickname) {

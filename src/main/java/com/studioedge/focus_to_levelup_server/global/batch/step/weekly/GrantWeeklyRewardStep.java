@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.batch.weekly;
+package com.studioedge.focus_to_levelup_server.global.batch.step.weekly;
 
 import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterImageRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;

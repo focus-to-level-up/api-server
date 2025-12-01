@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.batch.monthly;
+package com.studioedge.focus_to_levelup_server.global.batch.step.monthly;
 
 
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;

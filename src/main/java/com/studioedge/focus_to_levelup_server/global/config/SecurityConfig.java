@@ -29,6 +29,7 @@ public class SecurityConfig {
             // test endpoint
             "/test/**",
             "/api/test/**",
+            "/api/v1/batch/**",
 
             // auth endpoints (회원가입, 로그인, 토큰 갱신은 인증 불필요)
             "/api/v1/auth/login/**",

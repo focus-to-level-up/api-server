@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.batch.season_end;
+package com.studioedge.focus_to_levelup_server.global.batch.step.season_end;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +14,10 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class SeasonEndJobBatch {
     /**
-     * 1. 시즌 보상 지급
-     * 2. 새 시즌 생성 및 전원 브론즈 재배치 (레벨 0은 weekly에서)
+     * 1. 주간 보상 지급
+     * 2. 길드 주간 보상 지급
+     * 3. 시즌 보상 지급
+     * 4. 새 시즌 생성 및 전원 브론즈 배치
      * */
 
     private final JobRepository jobRepository;
@@ -28,8 +30,8 @@ public class SeasonEndJobBatch {
         return new JobBuilder("seasonEndJob", jobRepository)
                 .start(updateWeeklyStat)
                 .next(grantGuildWeeklyReward)
-                .next(grantSeasonReward)    // 2. 시즌 보상 지급
-                .next(startNewSeason)       // 3. 새 시즌 생성 및 전원 브론즈 재배치
+                .next(grantSeasonReward)
+                .next(startNewSeason)
                 .build();
     }
 }

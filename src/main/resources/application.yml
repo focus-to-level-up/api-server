@@ -17,7 +17,7 @@ spring:
         implicit_naming_strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
         physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
         hbm2ddl:
-          auto: create
+          auto: create-drop
         format_sql: true
 
 # JWT 설정

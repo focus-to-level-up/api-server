@@ -1,6 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.member.dao;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     boolean existsByNickname(String nickname);
 
     Page<Member> findAllByIsFocusingIsTrue(Pageable pageable);
+
+    Page<Member> findAllByStatus(MemberStatus status, Pageable pageable);
 
     Optional<Member> findByNickname(String nickname);
 
