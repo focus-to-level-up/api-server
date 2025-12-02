@@ -23,17 +23,20 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
     @Query("SELECT r FROM Ranking r JOIN FETCH r.member JOIN FETCH r.league WHERE r.league.endDate = :endDate")
     Page<Ranking> findAllByLeagueEndDate(@Param("endDate") LocalDate endDate, Pageable pageable);
 
-    @Query(value = "SELECT r FROM Ranking r " +
+    @Query(value = "SELECT r, dg FROM Ranking r " +
             "JOIN FETCH r.member m " +
             "JOIN FETCH r.league l " +
             "LEFT JOIN FETCH m.memberInfo mi " +
             "LEFT JOIN FETCH mi.profileImage mpi " +
             "LEFT JOIN FETCH mpi.asset " +
+            "LEFT JOIN DailyGoal dg ON dg.member = m AND dg.dailyGoalDate = :date " +
             "WHERE l.season = :season AND l = :league " +
-            "ORDER BY m.currentLevel DESC, m.currentExp DESC")
-    Page<Ranking> findRankingsBySeasonAndLeagueWithDetails(
+            "ORDER BY m.currentLevel DESC, m.currentExp DESC",
+            countQuery = "SELECT count(r) FROM Ranking r WHERE r.league = :league")
+    Page<Object[]> findRankingsWithDailyGoal(
             @Param("season") Season season,
             @Param("league") League league,
+            @Param("date") LocalDate date,
             Pageable pageable
     );
 

@@ -67,6 +67,7 @@ public class MemberInfo {
     @ColumnDefault("0")
     private Integer totalExp = 0;
 
+    @Enumerated(EnumType.STRING)
     private Tier highestTier;
 
     @Column(nullable = false)

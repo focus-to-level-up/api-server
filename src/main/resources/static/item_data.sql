@@ -10,6 +10,7 @@
 -- 'ONCE_AFTER_BUYING': 주간 달성 미션 (1회)
 --
 -- -----------------------------------------------------
+USE focus_db;
 
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;

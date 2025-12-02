@@ -7,6 +7,7 @@
 -- BackgroundImageType Enum: FOCUS
 --
 -- -----------------------------------------------------
+USE focus_db;
 
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;

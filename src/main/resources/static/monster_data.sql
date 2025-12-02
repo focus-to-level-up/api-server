@@ -8,6 +8,7 @@
 -- MonsterImageType Enum: MOVE, DIE
 --
 -- -----------------------------------------------------
+USE focus_db;
 
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
