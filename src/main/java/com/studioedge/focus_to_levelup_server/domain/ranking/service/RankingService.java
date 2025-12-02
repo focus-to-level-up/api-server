@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.ranking.service;
 
+import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
+
 
 @Service
 @RequiredArgsConstructor
@@ -43,21 +46,21 @@ public class RankingService {
         } else {
             targetLeague = findBestBronzeLeagueForSpectator(member);
         }
-        System.out.println("targetLeague = " + targetLeague.getName());
-
-        Page<Ranking> rankings = rankingRepository.findRankingsBySeasonAndLeagueWithDetails(
-                targetLeague.getSeason(), targetLeague, pageable);
+        Page<Object[]> rankings = rankingRepository.findRankingsWithDailyGoal(
+                targetLeague.getSeason(), targetLeague, getServiceDate(), pageable);
         List<RankingResponse> responses = rankings.stream()
-                .map(r -> RankingResponse.of(r, member.getId()))
+                .map(r -> {
+                    Ranking ranking = (Ranking) r[0];
+                    DailyGoal dailyGoal = (DailyGoal) r[1];
+                    return RankingResponse.of(ranking, dailyGoal, member.getId());
+                })
                 .collect(Collectors.toList());
+
         return new PageImpl<>(responses, pageable, rankings.getTotalElements());
     }
 
     private League findBestBronzeLeagueForSpectator(Member member) {
-        // 2. 유저 카테고리 확인
         CategoryMainType category = member.getMemberInfo().getCategoryMain();
-
-        // 3. 해당 카테고리 브론즈 리그 중 인원이 가장 적은 곳 1개 조회
         return leagueRepository.findSmallestBronzeLeagueForCategory(category)
                 .orElseThrow(LeagueNotFoundException::new);
     }

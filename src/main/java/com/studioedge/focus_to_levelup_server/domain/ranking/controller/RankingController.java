@@ -14,10 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Ranking")
 @RestController
@@ -25,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class RankingController {
     private final RankingService rankingService;
-    @PostMapping("/v1/rankings")
+    @GetMapping("/v1/rankings")
     @Operation(summary = "랭킹 조회(유저가 속한 리그의)", description = """
             ### 기능
             - 현재 로그인한 유저가 속한 시즌(Season)과 리그(League)의 랭킹 목록을 페이징하여 조회합니다.
