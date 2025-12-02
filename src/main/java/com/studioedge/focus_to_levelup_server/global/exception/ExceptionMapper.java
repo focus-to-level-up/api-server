@@ -289,6 +289,8 @@ public class ExceptionMapper {
                 ExceptionSituation.of("최대 길드 가입 수를 초과했습니다. (최대 10개)", HttpStatus.BAD_REQUEST));
         mapper.put(MaxBoostLimitExceededException.class,
                 ExceptionSituation.of("부스트 한도를 초과했습니다. (유저: 2개, 길드: 10명)", HttpStatus.BAD_REQUEST));
+        mapper.put(AlreadyBoostedException.class,
+                ExceptionSituation.of("이미 해당 길드에 부스트 중입니다.", HttpStatus.CONFLICT));
         mapper.put(CannotDeleteGuildWithMembersException.class,
                 ExceptionSituation.of("길드원이 있는 길드는 삭제할 수 없습니다.", HttpStatus.BAD_REQUEST));
         mapper.put(LeaderCannotLeaveException.class,
