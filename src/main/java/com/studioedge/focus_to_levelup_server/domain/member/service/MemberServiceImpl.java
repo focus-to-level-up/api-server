@@ -258,7 +258,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     private SubscriptionState getSubscriptionState(Long memberId) {
-        return subscriptionRepository.findByMemberId(memberId)
+        return subscriptionRepository.findByMemberIdAndIsActiveTrue(memberId)
                 .map(sub -> {
                     boolean isPremium = (sub.getType() == SubscriptionType.PREMIUM);
                     return new SubscriptionState(sub.getType(), isPremium);

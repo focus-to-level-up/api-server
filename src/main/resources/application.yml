@@ -6,6 +6,11 @@ spring:
   profiles:
     active: ${SPRING_PROFILE:local}
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
   jpa:
     show-sql: true
     open-in-view: false
@@ -17,7 +22,7 @@ spring:
         implicit_naming_strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
         physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
         hbm2ddl:
-          auto: create
+          auto: update
         format_sql: true
 
 # JWT 설정

@@ -8,6 +8,7 @@ import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
 import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.AlreadyJoinedGuildException;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.CannotDeleteGuildWithMembersException;
+import com.studioedge.focus_to_levelup_server.domain.guild.exception.FocusRequestCooldownException;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.GuildFullException;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.InvalidGuildPasswordException;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.LeaderCannotLeaveException;
@@ -20,10 +21,12 @@ import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository
 import com.studioedge.focus_to_levelup_server.global.fcm.FcmService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,7 +44,11 @@ public class GuildCommandService {
     private final MemberRepository memberRepository;
     private final GuildQueryService guildQueryService;
     private final FcmService fcmService;
+    private final StringRedisTemplate redisTemplate;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    private static final String FOCUS_REQUEST_KEY_PREFIX = "focus-request:";
+    private static final Duration FOCUS_REQUEST_COOLDOWN = Duration.ofHours(1);
 
     /**
      * 길드 생성
@@ -223,8 +230,15 @@ public class GuildCommandService {
     /**
      * 길드원 집중 요청 (FCM 푸시 알림)
      * 특정 길드원에게 알림 전송
+     * - 같은 대상자에게 1시간 내 재요청 불가
      */
     public void sendFocusRequest(Long guildId, Long requesterId, Long targetMemberId) {
+        // 쿨다운 체크
+        String cooldownKey = buildFocusRequestKey(guildId, requesterId, targetMemberId);
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(cooldownKey))) {
+            throw new FocusRequestCooldownException();
+        }
+
         // 요청자 검증
         GuildMember requester = guildMemberRepository.findByGuildIdAndMemberId(guildId, requesterId)
                 .orElseThrow(NotGuildMemberException::new);
@@ -249,9 +263,17 @@ public class GuildCommandService {
                     "집중요청알림",
                     requesterMember.getNickname() + "님이 집중을 요청했어요!"
             );
+
+            // 성공 시 쿨다운 설정
+            redisTemplate.opsForValue().set(cooldownKey, "1", FOCUS_REQUEST_COOLDOWN);
+
             log.info(">> Focus request sent from member {} to member {} in guild {}", requesterId, targetMemberId, guildId);
         } catch (Exception e) {
             log.error(">> Failed to send focus request FCM from {} to {}", requesterId, targetMemberId, e);
         }
+    }
+
+    private String buildFocusRequestKey(Long guildId, Long requesterId, Long targetMemberId) {
+        return FOCUS_REQUEST_KEY_PREFIX + guildId + ":" + requesterId + ":" + targetMemberId;
     }
 }

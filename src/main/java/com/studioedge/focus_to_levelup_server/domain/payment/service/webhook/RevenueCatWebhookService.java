@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -118,6 +119,8 @@ public class RevenueCatWebhookService {
 
     /**
      * 구독 갱신 처리
+     * - 동일 Apple ID로 다른 앱 유저가 구독 시 RENEWAL로 들어올 수 있음
+     * - 활성 구독이 없으면 신규 구독으로 처리
      */
     private void handleRenewal(EventPayload event) {
         Long memberId = parseMemberId(event.getAppUserId());
@@ -125,9 +128,17 @@ public class RevenueCatWebhookService {
         MemberInfo memberInfo = findMemberInfo(memberId);
 
         // 기존 활성 구독권 조회
-        Subscription subscription = subscriptionRepository
-                .findByMemberIdAndIsActiveTrue(memberId)
-                .orElseThrow(() -> new EntityNotFoundException("활성 구독권을 찾을 수 없습니다: memberId=" + memberId));
+        Optional<Subscription> existingSubscription = subscriptionRepository
+                .findByMemberIdAndIsActiveTrue(memberId);
+
+        // 활성 구독이 없으면 신규 구독으로 처리 (다른 앱 유저가 같은 Apple ID로 구독하는 케이스)
+        if (existingSubscription.isEmpty()) {
+            log.info("No active subscription found for member {}, treating RENEWAL as new subscription", memberId);
+            handleInitialPurchase(event);
+            return;
+        }
+
+        Subscription subscription = existingSubscription.get();
 
         // 만료일 연장
         LocalDate newEndDate = epochMsToLocalDate(event.getExpirationAtMs());
