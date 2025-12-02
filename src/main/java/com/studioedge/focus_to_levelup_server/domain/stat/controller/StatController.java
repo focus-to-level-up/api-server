@@ -50,9 +50,12 @@ public class StatController {
             @Parameter(description = "조회할 연도 (YYYY)", example = "2025")
             @RequestParam(name = "year") int year,
             @Parameter(description = "조회할 월 (1~12)", example = "11")
-            @RequestParam(name = "month") int month
+            @RequestParam(name = "month") int month,
+            @Parameter(description = "유저 아이디", example = "15")
+            @RequestParam(name = "memberId", required = false) Long memberId
     ) {
-        return HttpResponseUtil.ok(statQueryService.getDailyStats(member.getId(), year, month));
+        Long id = (memberId == null) ? member.getId() : memberId;
+        return HttpResponseUtil.ok(statQueryService.getDailyStats(id, year, month));
     }
 
     @GetMapping("/weekly")
