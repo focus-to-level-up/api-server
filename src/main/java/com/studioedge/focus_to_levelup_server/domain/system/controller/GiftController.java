@@ -33,8 +33,9 @@ public class GiftController {
     ) {
         GiftResponse response = giftService.giftBonusTicket(
                 sender.getId(),
-                request.receiverNickname(),
-                request.ticketCount()
+                request.receiverMemberId(),
+                request.ticketCount(),
+                request.message()
         );
         return HttpResponseUtil.ok(response);
     }

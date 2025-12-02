@@ -28,37 +28,49 @@ public class GiftService {
      * 보너스 티켓 선물
      */
     @Transactional
-    public GiftResponse giftBonusTicket(Long senderId, String receiverNickname, Integer ticketCount) {
-        // 1. 받는 사람 조회
-        Member receiver = memberRepository.findByNickname(receiverNickname)
+    public GiftResponse giftBonusTicket(Long senderId, Long receiverMemberId, Integer ticketCount, String message) {
+        // 1. 보내는 사람 조회 (닉네임 가져오기 위해)
+        Member sender = memberRepository.findById(senderId)
+                .orElseThrow(() -> new IllegalStateException("발신자를 찾을 수 없습니다."));
+
+        // 2. 받는 사람 조회
+        Member receiver = memberRepository.findById(receiverMemberId)
                 .orElseThrow(ReceiverNotFoundException::new);
 
-        // 2. 우편 생성
-        Mail mail = createBonusTicketGiftMail(receiver, ticketCount);
+        // 3. 우편 생성
+        Mail mail = createBonusTicketGiftMail(sender, receiver, ticketCount, message);
         mailRepository.save(mail);
 
         log.info("Member {} gifted {} bonus tickets to {}", senderId, ticketCount, receiver.getId());
 
-        return GiftResponse.ofBonusTicket(receiverNickname, ticketCount, mail.getId());
+        return GiftResponse.ofBonusTicket(receiver.getNickname(), ticketCount, mail.getId());
     }
 
     /**
      * 보너스 티켓 선물 우편 생성
      */
-    private Mail createBonusTicketGiftMail(Member receiver, Integer ticketCount) {
+    private Mail createBonusTicketGiftMail(Member sender, Member receiver, Integer ticketCount, String message) {
         try {
-            String description = objectMapper.writeValueAsString(new java.util.HashMap<String, Object>() {{
-                put("bonusTicketCount", ticketCount);
-            }});
+            java.util.Map<String, Object> descriptionMap = new java.util.HashMap<>();
+            descriptionMap.put("bonusTicketCount", ticketCount);
+            if (message != null && !message.isBlank()) {
+                descriptionMap.put("message", message);
+            }
+            String description = objectMapper.writeValueAsString(descriptionMap);
+
+            String popupContent = sender.getNickname() + "님이 10% 다이아 보너스 티켓 " + ticketCount + "개를 선물하셨습니다!";
+            if (message != null && !message.isBlank()) {
+                popupContent += "\n\n\"" + message + "\"";
+            }
 
             return Mail.builder()
                     .receiver(receiver)
-                    .senderName("선물") // TODO: 발신자 닉네임으로 변경 가능
+                    .senderName(sender.getNickname())
                     .type(MailType.GIFT_BONUS_TICKET)
-                    .title("선물을 받았어요!")
+                    .title(sender.getNickname() + "님의 선물")
                     .description(description)
                     .popupTitle("🎁 보너스 티켓 선물 도착!")
-                    .popupContent("10% 다이아 보너스 티켓 " + ticketCount + "개를 선물받으셨습니다!")
+                    .popupContent(popupContent)
                     .reward(0)
                     .expiredAt(LocalDate.now().plusDays(14)) // 선물은 14일 후 만료
                     .build();
