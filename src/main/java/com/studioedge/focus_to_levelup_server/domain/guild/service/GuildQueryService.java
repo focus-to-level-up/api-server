@@ -33,17 +33,23 @@ public class GuildQueryService {
 
     /**
      * 길드 목록 조회 (페이징)
+     * @param excludeFull true이면 정원이 찬 길드(currentMembers == maxMembers) 제외
      */
-    public GuildListResponse getAllGuilds(Pageable pageable) {
-        Page<Guild> guildPage = guildRepository.findAll(pageable);
+    public GuildListResponse getAllGuilds(Pageable pageable, boolean excludeFull) {
+        Page<Guild> guildPage = excludeFull
+                ? guildRepository.findAllAvailable(pageable)
+                : guildRepository.findAll(pageable);
         return GuildListResponse.of(guildPage);
     }
 
     /**
      * 카테고리별 길드 목록 조회 (페이징)
+     * @param excludeFull true이면 정원이 찬 길드(currentMembers == maxMembers) 제외
      */
-    public GuildListResponse getGuildsByCategory(GuildCategory category, Pageable pageable) {
-        Page<Guild> guildPage = guildRepository.findAllByCategory(category, pageable);
+    public GuildListResponse getGuildsByCategory(GuildCategory category, Pageable pageable, boolean excludeFull) {
+        Page<Guild> guildPage = excludeFull
+                ? guildRepository.findAllByCategoryAvailable(category, pageable)
+                : guildRepository.findAllByCategory(category, pageable);
         return GuildListResponse.of(guildPage);
     }
 

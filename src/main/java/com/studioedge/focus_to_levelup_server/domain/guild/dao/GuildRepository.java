@@ -38,6 +38,14 @@ public interface GuildRepository extends JpaRepository<Guild, Long> {
     // 전체 길드 조회 (페이징)
     Page<Guild> findAll(Pageable pageable);
 
+    // 전체 길드 조회 - 정원 미달 길드만 (페이징)
+    @Query("SELECT g FROM Guild g WHERE g.currentMembers < g.maxMembers")
+    Page<Guild> findAllAvailable(Pageable pageable);
+
     // 카테고리별 조회 (페이징)
     Page<Guild> findAllByCategory(GuildCategory category, Pageable pageable);
+
+    // 카테고리별 조회 - 정원 미달 길드만 (페이징)
+    @Query("SELECT g FROM Guild g WHERE g.category = :category AND g.currentMembers < g.maxMembers")
+    Page<Guild> findAllByCategoryAvailable(@Param("category") GuildCategory category, Pageable pageable);
 }
