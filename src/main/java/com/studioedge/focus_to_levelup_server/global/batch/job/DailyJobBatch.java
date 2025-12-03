@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.global.batch.step.daily;
+package com.studioedge.focus_to_levelup_server.global.batch.job;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
