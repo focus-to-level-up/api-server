@@ -304,44 +304,81 @@ public class ItemAchievementService {
     }
 
     /**
-     * 5. 약점 극복: 가장 약한 요일 >= 평균
+     * 5. 약점 극복: 지난 주 가장 약한 요일(들)에 이번 주 평균 이상 집중하면 달성
+     * - 지난 주 데이터로 최소 집중 시간인 요일들 찾기
+     * - 이번 주 해당 요일들 중 하나라도 이번 주 평균 이상이면 달성
      */
     private boolean checkWeakestDayImprovement(Long memberId) {
         LocalDate serviceDate = getServiceDate();
         LocalDate weekStart = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate weekEnd = serviceDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
-        // 이번 주 집중 기록 조회
-        List<DailySubject> weeklySubjects = dailySubjectRepository.findAllByMemberIdAndDateRangeWithSubject(
-                memberId, weekStart, weekEnd
+        // 지난 주 범위
+        LocalDate lastWeekStart = weekStart.minusWeeks(1);
+        LocalDate lastWeekEnd = weekEnd.minusWeeks(1);
+
+        // 지난 주 집중 기록 조회
+        List<DailySubject> lastWeekSubjects = dailySubjectRepository.findAllByMemberIdAndDateRangeWithSubject(
+                memberId, lastWeekStart, lastWeekEnd
         );
 
-        // 날짜별 집중 시간 집계
-        Map<LocalDate, Integer> dailyFocusMap = weeklySubjects.stream()
+        // 지난 주 날짜별 집중 시간 집계
+        Map<LocalDate, Integer> lastWeekDailyMap = lastWeekSubjects.stream()
                 .collect(Collectors.groupingBy(
                         DailySubject::getDate,
                         Collectors.summingInt(DailySubject::getFocusSeconds)
                 ));
 
-        // 7일 모두 기록이 있어야 함
-        if (dailyFocusMap.size() < 7) {
+        // 지난 주 7일 모두 기록이 있어야 함
+        if (lastWeekDailyMap.size() < 7) {
             return false;
         }
 
-        // 평균 계산
-        double averageSeconds = dailyFocusMap.values().stream()
-                .mapToInt(Integer::intValue)
-                .average()
-                .orElse(0.0);
-
-        // 최소값 (가장 약한 요일)
-        int minSeconds = dailyFocusMap.values().stream()
+        // 지난 주 최소값 (가장 약한 요일)
+        int lastWeekMinSeconds = lastWeekDailyMap.values().stream()
                 .mapToInt(Integer::intValue)
                 .min()
                 .orElse(0);
 
-        // 최소값이 평균 이상이면 달성
-        return minSeconds >= averageSeconds;
+        // 지난 주 최솟값을 가진 요일들 (DayOfWeek) 조회
+        List<DayOfWeek> weakestDaysOfWeek = lastWeekDailyMap.entrySet().stream()
+                .filter(e -> e.getValue() == lastWeekMinSeconds)
+                .map(e -> e.getKey().getDayOfWeek())
+                .toList();
+
+        if (weakestDaysOfWeek.isEmpty()) {
+            return false;
+        }
+
+        // 이번 주 집중 기록 조회
+        List<DailySubject> thisWeekSubjects = dailySubjectRepository.findAllByMemberIdAndDateRangeWithSubject(
+                memberId, weekStart, weekEnd
+        );
+
+        // 이번 주 날짜별 집중 시간 집계
+        Map<LocalDate, Integer> thisWeekDailyMap = thisWeekSubjects.stream()
+                .collect(Collectors.groupingBy(
+                        DailySubject::getDate,
+                        Collectors.summingInt(DailySubject::getFocusSeconds)
+                ));
+
+        // 이번 주 평균 계산
+        double thisWeekAverageSeconds = thisWeekDailyMap.values().stream()
+                .mapToInt(Integer::intValue)
+                .average()
+                .orElse(0.0);
+
+        // 달성 조건: 약한 요일들 중 하나라도 이번 주 평균 이상이면 달성
+        for (DayOfWeek weakestDayOfWeek : weakestDaysOfWeek) {
+            LocalDate thisWeekTargetDay = weekStart.with(TemporalAdjusters.nextOrSame(weakestDayOfWeek));
+            int thisWeekTargetDaySeconds = thisWeekDailyMap.getOrDefault(thisWeekTargetDay, 0);
+
+            if (thisWeekTargetDaySeconds >= thisWeekAverageSeconds) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
