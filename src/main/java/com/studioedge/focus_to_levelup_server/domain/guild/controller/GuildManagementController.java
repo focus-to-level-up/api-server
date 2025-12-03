@@ -6,6 +6,7 @@ import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildPasswordChan
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildResponse;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildRoleUpdateRequest;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildUpdateRequest;
+import com.studioedge.focus_to_levelup_server.domain.guild.dto.TransferLeaderAndLeaveRequest;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
 import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildCommandService;
 import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildMemberCommandService;
@@ -227,5 +228,42 @@ public class GuildManagementController {
         GuildMember updatedMember = guildMemberCommandService.updateMemberRole(guildId, memberId, request, member.getId());
         GuildMemberResponse response = GuildMemberResponse.of(updatedMember, null);
         return HttpResponseUtil.updated(response);
+    }
+
+    @PostMapping("/{guildId}/transfer-and-leave")
+    @Operation(summary = "리더 위임 후 탈퇴 (LEADER 전용)", description = """
+            ### 기능
+            - 리더 권한을 다른 멤버에게 위임하고 동시에 길드를 탈퇴합니다.
+            - 하나의 트랜잭션으로 처리되어 원자성이 보장됩니다.
+            - LEADER 권한이 필요합니다.
+
+            ### 요청 필드
+            - `newLeaderMemberId`: [필수] 새 리더가 될 회원 ID
+
+            ### 처리 절차
+            1. 새 리더에게 LEADER 역할 부여
+            2. 현재 리더 탈퇴 처리
+            3. 길드 인원 감소
+
+            ### 참고사항
+            - 이 API는 위임과 탈퇴를 원자적으로 처리합니다.
+            - 중간에 실패하면 전체 롤백됩니다.
+            """)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "리더 위임 및 탈퇴 성공"),
+            @ApiResponse(responseCode = "400", description = "자기 자신에게 위임할 수 없습니다."),
+            @ApiResponse(responseCode = "403", description = "LEADER 권한이 없습니다."),
+            @ApiResponse(responseCode = "404", description = "길드 또는 길드원을 찾을 수 없습니다.")
+    })
+    public ResponseEntity<CommonResponse<Void>> transferLeaderAndLeave(
+            @Parameter(description = "길드 ID") @PathVariable Long guildId,
+            @Valid @RequestBody TransferLeaderAndLeaveRequest request,
+            @AuthenticationPrincipal Member member
+    ) {
+        // LEADER 권한 검증
+        guildPermissionService.validateLeaderPermission(guildId, member.getId());
+
+        guildCommandService.transferLeaderAndLeave(guildId, request.newLeaderMemberId(), member.getId());
+        return HttpResponseUtil.ok(null);
     }
 }

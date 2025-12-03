@@ -234,6 +234,42 @@ public class GuildCommandService {
     }
 
     /**
+     * 리더 위임 후 탈퇴 (하나의 트랜잭션으로 처리)
+     * - 리더가 다른 멤버에게 리더 권한을 위임하고 동시에 탈퇴
+     * - 원자적 처리로 중간 실패 시 롤백
+     */
+    public void transferLeaderAndLeave(Long guildId, Long newLeaderMemberId, Long currentLeaderMemberId) {
+        Guild guild = guildQueryService.findGuildById(guildId);
+
+        // 현재 리더 검증
+        GuildMember currentLeader = guildMemberRepository.findByGuildIdAndMemberId(guildId, currentLeaderMemberId)
+                .orElseThrow(NotGuildMemberException::new);
+
+        if (currentLeader.getRole() != GuildRole.LEADER) {
+            throw new IllegalArgumentException("리더만 권한을 위임할 수 있습니다.");
+        }
+
+        // 새 리더 검증
+        GuildMember newLeader = guildMemberRepository.findByGuildIdAndMemberId(guildId, newLeaderMemberId)
+                .orElseThrow(NotGuildMemberException::new);
+
+        if (currentLeaderMemberId.equals(newLeaderMemberId)) {
+            throw new IllegalArgumentException("자기 자신에게 위임할 수 없습니다.");
+        }
+
+        // 1. 새 리더에게 LEADER 역할 부여
+        newLeader.updateRole(GuildRole.LEADER);
+
+        // 2. 현재 리더 삭제 (탈퇴)
+        guildMemberRepository.delete(currentLeader);
+
+        // 3. 길드 인원 감소
+        guild.decrementMemberCount();
+
+        log.info("Guild {} leader transferred from {} to {} and left", guildId, currentLeaderMemberId, newLeaderMemberId);
+    }
+
+    /**
      * 길드 삭제 (LEADER만 가능, 모든 길드원 탈퇴 후)
      */
     public void deleteGuild(Long guildId, Long memberId) {
