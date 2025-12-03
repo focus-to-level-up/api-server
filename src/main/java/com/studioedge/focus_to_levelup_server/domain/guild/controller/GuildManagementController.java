@@ -1,11 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.guild.controller;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildCreateRequest;
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildMemberResponse;
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildResponse;
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildRoleUpdateRequest;
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildUpdateRequest;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
+import com.studioedge.focus_to_levelup_server.domain.guild.dto.*;
 import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildCommandService;
 import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildMemberCommandService;
 import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildPermissionService;
@@ -188,9 +183,7 @@ public class GuildManagementController {
     ) {
         // LEADER 권한 검증
         guildPermissionService.validateLeaderPermission(guildId, member.getId());
-
-        GuildMember updatedMember = guildMemberCommandService.updateMemberRole(guildId, memberId, request, member.getId());
-        GuildMemberResponse response = GuildMemberResponse.of(updatedMember, null);
+        GuildMemberResponse response = guildMemberCommandService.updateGuildMemberRole(guildId, memberId, request, member.getId());
         return HttpResponseUtil.updated(response);
     }
 }
