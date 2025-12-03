@@ -96,22 +96,26 @@ public class GuildCommandService {
 
     /**
      * 길드 정보 수정 (LEADER만 가능)
+     * - 비밀번호 변경은 별도 API 사용 (changePassword)
+     * - 비공개 전환 시에만 password 필드 사용
      */
     public GuildResponse updateGuild(Long guildId, GuildUpdateRequest request, Long memberId) {
         Guild guild = guildQueryService.findGuildById(guildId);
 
-        // 비밀번호 업데이트 (비공개로 변경하거나 기존 비밀번호 변경)
-        if (request.password() != null && !request.password().isBlank()) {
-            guild.updatePassword(passwordEncoder.encode(request.password()));
-        }
-
         // 공개 여부 변경 시 처리
         if (request.isPublic() != null) {
-            guild.updateIsPublic(request.isPublic());
-            // 공개로 변경하면 비밀번호 제거
-            if (request.isPublic()) {
+            // 공개 → 비공개 전환 시 비밀번호 설정
+            if (!request.isPublic() && guild.getIsPublic()) {
+                if (request.password() == null || request.password().isBlank()) {
+                    throw new IllegalArgumentException("비공개 전환 시 비밀번호는 필수입니다.");
+                }
+                guild.updatePassword(passwordEncoder.encode(request.password()));
+            }
+            // 비공개 → 공개 전환 시 비밀번호 제거
+            if (request.isPublic() && !guild.getIsPublic()) {
                 guild.updatePassword(null);
             }
+            guild.updateIsPublic(request.isPublic());
         }
 
         // 기타 필드 업데이트
@@ -127,6 +131,29 @@ public class GuildCommandService {
 
         Optional<GuildMember> guildMember = guildMemberRepository.findByGuildIdAndMemberId(guildId, memberId);
         return GuildResponse.of(guild, guildMember);
+    }
+
+    /**
+     * 길드 비밀번호 변경 (LEADER만 가능)
+     * - 비공개 길드만 비밀번호 변경 가능
+     * - 현재 비밀번호 검증 필수
+     */
+    public void changePassword(Long guildId, String currentPassword, String newPassword) {
+        Guild guild = guildQueryService.findGuildById(guildId);
+
+        // 공개 길드는 비밀번호 변경 불가
+        if (guild.getIsPublic()) {
+            throw new IllegalArgumentException("공개 길드는 비밀번호를 설정할 수 없습니다.");
+        }
+
+        // 현재 비밀번호 검증
+        if (!passwordEncoder.matches(currentPassword, guild.getPassword())) {
+            throw new InvalidGuildPasswordException();
+        }
+
+        // 새 비밀번호 설정
+        guild.updatePassword(passwordEncoder.encode(newPassword));
+        log.info("Guild {} password changed", guildId);
     }
 
     /**
