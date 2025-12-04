@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.guild.service;
 
+import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildMemberResponse;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildRoleUpdateRequest;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
@@ -45,7 +46,7 @@ public class GuildMemberCommandService {
      * - LEADER → SUB_LEADER/MEMBER 위임
      * - SUB_LEADER ↔ MEMBER 변경
      */
-    public GuildMember updateMemberRole(Long guildId, Long targetMemberId, GuildRoleUpdateRequest request, Long requesterId) {
+    public GuildMemberResponse updateGuildMemberRole(Long guildId, Long targetMemberId, GuildRoleUpdateRequest request, Long requesterId) {
         GuildMember targetGuildMember = guildMemberQueryService.findGuildMember(guildId, targetMemberId);
         GuildMember requesterGuildMember = guildMemberQueryService.findGuildMember(guildId, requesterId);
 
@@ -60,6 +61,6 @@ public class GuildMemberCommandService {
             targetGuildMember.updateRole(request.role());
         }
 
-        return targetGuildMember;
+        return GuildMemberResponse.of(targetGuildMember, null);
     }
 }

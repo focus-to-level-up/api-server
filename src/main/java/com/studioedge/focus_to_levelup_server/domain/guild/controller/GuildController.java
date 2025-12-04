@@ -52,6 +52,7 @@ public class GuildController {
             - `order`: 정렬 순서 (default: desc)
               - asc: 오름차순
               - desc: 내림차순
+            - `excludeFull`: 정원이 찬 길드 제외 여부 (default: false)
             """)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "길드 목록 조회 성공")
@@ -60,12 +61,13 @@ public class GuildController {
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size,
             @Parameter(description = "정렬 기준") @RequestParam(defaultValue = "currentMembers") String sortBy,
-            @Parameter(description = "정렬 순서 (asc/desc)") @RequestParam(defaultValue = "desc") String order
+            @Parameter(description = "정렬 순서 (asc/desc)") @RequestParam(defaultValue = "desc") String order,
+            @Parameter(description = "정원이 찬 길드 제외 여부") @RequestParam(defaultValue = "false") boolean excludeFull
     ) {
         Sort.Direction direction = order.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        GuildListResponse response = guildQueryService.getAllGuilds(pageable);
+        GuildListResponse response = guildQueryService.getAllGuilds(pageable, excludeFull);
         return HttpResponseUtil.ok(response);
     }
 
@@ -106,7 +108,7 @@ public class GuildController {
             response = guildQueryService.searchGuilds(keyword, pageable);
         } else if (category != null) {
             // 카테고리만 있는 경우
-            GuildListResponse listResponse = guildQueryService.getGuildsByCategory(category, pageable);
+            GuildListResponse listResponse = guildQueryService.getGuildsByCategory(category, pageable, false);
             response = new GuildSearchResponse(
                     listResponse.guilds(),
                     listResponse.totalPages(),
@@ -117,7 +119,7 @@ public class GuildController {
             );
         } else {
             // 둘 다 없으면 전체 조회
-            GuildListResponse listResponse = guildQueryService.getAllGuilds(pageable);
+            GuildListResponse listResponse = guildQueryService.getAllGuilds(pageable, false);
             response = new GuildSearchResponse(
                     listResponse.guilds(),
                     listResponse.totalPages(),

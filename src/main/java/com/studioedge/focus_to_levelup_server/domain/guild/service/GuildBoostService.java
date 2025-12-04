@@ -6,6 +6,7 @@ import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildListResponse
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildBoost;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
+import com.studioedge.focus_to_levelup_server.domain.guild.exception.AlreadyBoostedException;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.MaxBoostLimitExceededException;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.NotGuildMemberException;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
@@ -58,19 +59,24 @@ public class GuildBoostService {
                 .filter(sub -> sub.getType() == SubscriptionType.PREMIUM)
                 .orElseThrow(PremiumSubscriptionRequiredException::new);
 
-        // 2. 유저 부스트 개수 확인
+        // 2. 이미 해당 길드에 부스트 중인지 확인
+        if (guildBoostRepository.findByGuildIdAndMemberIdAndIsActiveTrue(guildId, memberId).isPresent()) {
+            throw new AlreadyBoostedException();
+        }
+
+        // 3. 유저 부스트 개수 확인
         Long memberBoostCount = guildBoostRepository.countByMemberIdAndIsActiveTrue(memberId);
         if (memberBoostCount >= MAX_BOOST_PER_MEMBER) {
             throw new MaxBoostLimitExceededException();
         }
 
-        // 3. 길드 부스트 개수 확인
+        // 4. 길드 부스트 개수 확인
         Long guildBoostCount = guildBoostRepository.countByGuildIdAndIsActiveTrue(guildId);
         if (guildBoostCount >= MAX_BOOST_PER_GUILD) {
             throw new MaxBoostLimitExceededException();
         }
 
-        // 4. 길드원 확인
+        // 5. 길드원 확인
         Guild guild = guildQueryService.findGuildById(guildId);
         GuildMember guildMember = guildMemberRepository.findByGuildIdAndMemberId(guildId, memberId)
                 .orElseThrow(NotGuildMemberException::new);
@@ -78,7 +84,7 @@ public class GuildBoostService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
-        // 5. GuildBoost 생성
+        // 6. GuildBoost 생성
         GuildBoost guildBoost = GuildBoost.builder()
                 .guild(guild)
                 .member(member)
@@ -89,10 +95,10 @@ public class GuildBoostService {
 
         guildBoostRepository.save(guildBoost);
 
-        // 6. GuildMember.isBoosted = true
+        // 7. GuildMember.isBoosted = true
         guildMember.activateBoost();
 
-        // 7. Subscription.activatedGuildId 업데이트
+        // 8. Subscription.activatedGuildId 업데이트
         subscription.updateActivatedGuildId(guildId);
     }
 

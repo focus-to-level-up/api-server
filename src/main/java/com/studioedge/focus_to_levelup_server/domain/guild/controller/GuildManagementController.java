@@ -2,10 +2,11 @@ package com.studioedge.focus_to_levelup_server.domain.guild.controller;
 
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildCreateRequest;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildMemberResponse;
+import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildPasswordChangeRequest;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildResponse;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildRoleUpdateRequest;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildUpdateRequest;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
+import com.studioedge.focus_to_levelup_server.domain.guild.dto.TransferLeaderAndLeaveRequest;
 import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildCommandService;
 import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildMemberCommandService;
 import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildPermissionService;
@@ -79,12 +80,13 @@ public class GuildManagementController {
             - `name`: 길드명
             - `description`: 길드 소개
             - `isPublic`: 공개/비공개 여부
-            - `password`: 비밀번호 (비공개로 변경 시 필수)
+            - `password`: 비밀번호 (공개→비공개 전환 시 필수)
             - `targetFocusTime`: 목표 집중 시간
 
             ### 참고사항
             - 공개로 변경 시 비밀번호는 자동으로 제거됩니다.
             - 비공개로 변경 시 비밀번호를 함께 제공해야 합니다.
+            - **기존 비밀번호 변경은 별도 API** (`PATCH /guilds/{guildId}/password`) **를 사용하세요.**
             """)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "길드 수정 성공"),
@@ -101,6 +103,39 @@ public class GuildManagementController {
 
         GuildResponse response = guildCommandService.updateGuild(guildId, request, member.getId());
         return HttpResponseUtil.updated(response);
+    }
+
+    @PatchMapping("/{guildId}/password")
+    @Operation(summary = "길드 비밀번호 변경 (LEADER 전용)", description = """
+            ### 기능
+            - 비공개 길드의 비밀번호를 변경합니다.
+            - LEADER 권한이 필요합니다.
+            - 현재 비밀번호 검증이 필수입니다.
+
+            ### 요청 필드
+            - `currentPassword`: [필수] 현재 비밀번호
+            - `newPassword`: [필수] 새 비밀번호
+
+            ### 참고사항
+            - 공개 길드는 비밀번호 변경이 불가능합니다.
+            - 공개→비공개 전환 시 비밀번호 설정은 `PUT /guilds/{guildId}` API를 사용하세요.
+            """)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
+            @ApiResponse(responseCode = "400", description = "현재 비밀번호가 일치하지 않습니다."),
+            @ApiResponse(responseCode = "403", description = "LEADER 권한이 없습니다."),
+            @ApiResponse(responseCode = "404", description = "길드를 찾을 수 없습니다.")
+    })
+    public ResponseEntity<CommonResponse<Void>> changePassword(
+            @Parameter(description = "길드 ID") @PathVariable Long guildId,
+            @Valid @RequestBody GuildPasswordChangeRequest request,
+            @AuthenticationPrincipal Member member
+    ) {
+        // LEADER 권한 검증
+        guildPermissionService.validateLeaderPermission(guildId, member.getId());
+
+        guildCommandService.changePassword(guildId, request.currentPassword(), request.newPassword());
+        return HttpResponseUtil.ok(null);
     }
 
     @DeleteMapping("/{guildId}")
@@ -188,9 +223,44 @@ public class GuildManagementController {
     ) {
         // LEADER 권한 검증
         guildPermissionService.validateLeaderPermission(guildId, member.getId());
-
-        GuildMember updatedMember = guildMemberCommandService.updateMemberRole(guildId, memberId, request, member.getId());
-        GuildMemberResponse response = GuildMemberResponse.of(updatedMember, null);
+        GuildMemberResponse response = guildMemberCommandService.updateGuildMemberRole(guildId, memberId, request, member.getId());
         return HttpResponseUtil.updated(response);
+    }
+
+    @PostMapping("/{guildId}/transfer-and-leave")
+    @Operation(summary = "리더 위임 후 탈퇴 (LEADER 전용)", description = """
+            ### 기능
+            - 리더 권한을 다른 멤버에게 위임하고 동시에 길드를 탈퇴합니다.
+            - 하나의 트랜잭션으로 처리되어 원자성이 보장됩니다.
+            - LEADER 권한이 필요합니다.
+
+            ### 요청 필드
+            - `newLeaderMemberId`: [필수] 새 리더가 될 회원 ID
+
+            ### 처리 절차
+            1. 새 리더에게 LEADER 역할 부여
+            2. 현재 리더 탈퇴 처리
+            3. 길드 인원 감소
+
+            ### 참고사항
+            - 이 API는 위임과 탈퇴를 원자적으로 처리합니다.
+            - 중간에 실패하면 전체 롤백됩니다.
+            """)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "리더 위임 및 탈퇴 성공"),
+            @ApiResponse(responseCode = "400", description = "자기 자신에게 위임할 수 없습니다."),
+            @ApiResponse(responseCode = "403", description = "LEADER 권한이 없습니다."),
+            @ApiResponse(responseCode = "404", description = "길드 또는 길드원을 찾을 수 없습니다.")
+    })
+    public ResponseEntity<CommonResponse<Void>> transferLeaderAndLeave(
+            @Parameter(description = "길드 ID") @PathVariable Long guildId,
+            @Valid @RequestBody TransferLeaderAndLeaveRequest request,
+            @AuthenticationPrincipal Member member
+    ) {
+        // LEADER 권한 검증
+        guildPermissionService.validateLeaderPermission(guildId, member.getId());
+
+        guildCommandService.transferLeaderAndLeave(guildId, request.newLeaderMemberId(), member.getId());
+        return HttpResponseUtil.ok(null);
     }
 }

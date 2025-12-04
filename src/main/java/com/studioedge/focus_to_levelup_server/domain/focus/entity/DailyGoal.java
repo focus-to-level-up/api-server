@@ -12,6 +12,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Table(
@@ -58,6 +59,12 @@ public class DailyGoal extends BaseEntity {
     @ColumnDefault("0")
     private Long usingAllowedAppSeconds = 0L;
 
+    @Column
+    private LocalTime earliestStartTime;
+
+    @Column
+    private LocalTime latestEndTime;
+
     @Builder
     public DailyGoal(Member member, Integer targetMinutes, LocalDate serviceDate) {
         this.member = member;
@@ -87,5 +94,17 @@ public class DailyGoal extends BaseEntity {
 
     public void addCurrentSeconds(Integer seconds) {
         this.currentSeconds += seconds;
+    }
+
+    public void updateEarliestStartTime(LocalTime startTime) {
+        if (this.earliestStartTime == null || startTime.isBefore(this.earliestStartTime)) {
+            this.earliestStartTime = startTime;
+        }
+    }
+
+    public void updateLatestEndTime(LocalTime endTime) {
+        if (this.latestEndTime == null || endTime.isAfter(this.latestEndTime)) {
+            this.latestEndTime = endTime;
+        }
     }
 }

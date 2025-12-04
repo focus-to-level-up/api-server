@@ -16,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "WeeklyReward", description = "쿠폰 API")
+@Tag(name = "WeeklyReward", description = "주간 보상 API")
 @RestController
 @RequestMapping("/api/v1/weekly-reward")
 @RequiredArgsConstructor
@@ -35,7 +35,7 @@ public class WeeklyRewardController {
             @ApiResponse(responseCode = "404", description = "수령할 보상 데이터가 존재하지 않음 (지난주 활동 없음)")
     })
     @GetMapping
-    public ResponseEntity<CommonResponse<WeeklyRewardInfoResponse>> getCouponInfo(
+    public ResponseEntity<CommonResponse<WeeklyRewardInfoResponse>> getWeeklyReward(
             @AuthenticationPrincipal Member member
     ) {
         return HttpResponseUtil.ok(weeklyRewardService.getWeeklyRewardInfo(member));
@@ -51,7 +51,7 @@ public class WeeklyRewardController {
             @ApiResponse(responseCode = "404", description = "존재하지 않는 유저 혹은 보상 ID")
     })
     @PostMapping
-    public ResponseEntity<CommonResponse<Void>> redeemCoupon(
+    public ResponseEntity<CommonResponse<Void>> redeemWeeklyReward(
             @AuthenticationPrincipal Member member,
             @Valid @RequestBody ReceiveWeeklyRewardRequest request
     ) {

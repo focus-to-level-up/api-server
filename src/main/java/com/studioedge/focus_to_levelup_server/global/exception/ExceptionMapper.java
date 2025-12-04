@@ -289,10 +289,14 @@ public class ExceptionMapper {
                 ExceptionSituation.of("최대 길드 가입 수를 초과했습니다. (최대 10개)", HttpStatus.BAD_REQUEST));
         mapper.put(MaxBoostLimitExceededException.class,
                 ExceptionSituation.of("부스트 한도를 초과했습니다. (유저: 2개, 길드: 10명)", HttpStatus.BAD_REQUEST));
+        mapper.put(AlreadyBoostedException.class,
+                ExceptionSituation.of("이미 해당 길드에 부스트 중입니다.", HttpStatus.CONFLICT));
         mapper.put(CannotDeleteGuildWithMembersException.class,
                 ExceptionSituation.of("길드원이 있는 길드는 삭제할 수 없습니다.", HttpStatus.BAD_REQUEST));
         mapper.put(LeaderCannotLeaveException.class,
                 ExceptionSituation.of("길드장은 먼저 권한을 위임해야 탈퇴할 수 있습니다.", HttpStatus.FORBIDDEN));
+        mapper.put(FocusRequestCooldownException.class,
+                ExceptionSituation.of("같은 길드원에게 1시간 내 재요청할 수 없습니다.", HttpStatus.TOO_MANY_REQUESTS));
     }
 
     /**
@@ -303,6 +307,10 @@ public class ExceptionMapper {
                 ExceptionSituation.of("배경을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         mapper.put(WeeklyRewardAlreadyReceivedException.class,
                 ExceptionSituation.of("주간 보상을 이미 수령하였거나 받을 수 있는 주간보상이 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(WeeklyRewardNotFoundException.class,
+                ExceptionSituation.of("받을 수 있는 주간보상이 존재하지 않습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(InsufficientBonusTicketException.class,
+                ExceptionSituation.of("보유한 보너스 티켓이 부족합니다.", HttpStatus.BAD_REQUEST));
     }
 
     /**
