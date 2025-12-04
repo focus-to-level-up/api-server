@@ -20,30 +20,18 @@ public class CharacterCommandService {
 
     /**
      * 캐릭터를 배치할 위치를 자동으로 결정
-     * 위치 1~9 (1층: 1,2,3 / 2층: 4,5,6 / 3층: 7,8,9)
-     * 우선순위: 2층(4→5→6) → 3층(7→8→9) → 1층(1→2→3)
+     * 위치 1~7
+     * 우선순위: 3 → 4 → 1 → 7 → 5 → 2 → 6
      *
      * @param memberId 유저 ID
-     * @return 배치할 위치 (1~9)
+     * @return 배치할 위치 (1~7)
      * @throws CharacterSlotFullException 모든 슬롯이 가득 찬 경우
      */
     public Integer assignFloor(Long memberId) {
-        // 2층 확인 (4, 5, 6)
-        for (int position = 4; position <= 6; position++) {
-            if (memberCharacterRepository.countByMemberIdAndFloor(memberId, position) == 0) {
-                return position;
-            }
-        }
+        // 배치 우선순위: 3 → 4 → 1 → 7 → 5 → 2 → 6
+        int[] positionPriority = {3, 4, 1, 7, 5, 2, 6};
 
-        // 3층 확인 (7, 8, 9)
-        for (int position = 7; position <= 9; position++) {
-            if (memberCharacterRepository.countByMemberIdAndFloor(memberId, position) == 0) {
-                return position;
-            }
-        }
-
-        // 1층 확인 (1, 2, 3)
-        for (int position = 1; position <= 3; position++) {
+        for (int position : positionPriority) {
             if (memberCharacterRepository.countByMemberIdAndFloor(memberId, position) == 0) {
                 return position;
             }
