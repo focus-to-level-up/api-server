@@ -89,7 +89,7 @@ public class ItemAchievementService {
                     case "시작 시간 사수" -> checkMorningStart(memberItem, sessionStartTime, serviceDate);
                     case "마지막 생존자" -> checkLateNightEnd(memberItem, sessionEndTime, serviceDate);
                     case "휴식은 사치" -> checkLimitedRest(memberItem, memberId, serviceDate, dailyGoal);
-                    case "약점 극복" -> checkWeakestDayImprovement(memberId);
+                    case "약점 극복" -> checkWeakestDayImprovement(memberItem, memberId, serviceDate);
                     case "저지 불가" -> checkSevenDaysStreak(memberItem, memberId, serviceDate);
                     case "과거 나와 대결" -> checkBeatLastWeek(memberItem, memberId, serviceDate);
                     case "누적 집중의 대가" -> checkWeeklyAccumulation(memberItem, memberId, serviceDate);
@@ -330,8 +330,7 @@ public class ItemAchievementService {
      * - 지난 주 데이터로 최소 집중 시간인 요일들 찾기
      * - 이번 주 해당 요일들 중 하나라도 이번 주 평균 이상이면 달성
      */
-    private boolean checkWeakestDayImprovement(Long memberId) {
-        LocalDate serviceDate = getServiceDate();
+    private boolean checkWeakestDayImprovement(MemberItem memberItem, Long memberId, LocalDate serviceDate) {
         LocalDate weekStart = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate weekEnd = serviceDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
@@ -351,8 +350,19 @@ public class ItemAchievementService {
                         Collectors.summingInt(DailySubject::getFocusSeconds)
                 ));
 
+        // progressData 업데이트 (지난 주 데이터 부족해도 업데이트)
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("lastWeekRecordedDays", lastWeekDailyMap.size());
+        progressData.put("requiredDays", 7);
+
         // 지난 주 7일 모두 기록이 있어야 함
         if (lastWeekDailyMap.size() < 7) {
+            progressData.put("status", "지난 주 기록 부족");
+            try {
+                memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+            } catch (Exception e) {
+                log.error("Error updating progressData for 약점 극복", e);
+            }
             return false;
         }
 
@@ -390,17 +400,40 @@ public class ItemAchievementService {
                 .average()
                 .orElse(0.0);
 
+        // 약한 요일 정보 추가
+        String weakestDaysStr = weakestDaysOfWeek.stream()
+                .map(DAY_OF_WEEK_KR::get)
+                .collect(Collectors.joining(", "));
+        progressData.put("weakestDays", weakestDaysStr);
+        progressData.put("lastWeekMinMinutes", lastWeekMinSeconds / 60);
+        progressData.put("thisWeekAverageMinutes", (int) (thisWeekAverageSeconds / 60));
+
         // 달성 조건: 약한 요일들 중 하나라도 이번 주 평균 이상이면 달성
+        boolean isAchieved = false;
         for (DayOfWeek weakestDayOfWeek : weakestDaysOfWeek) {
             LocalDate thisWeekTargetDay = weekStart.with(TemporalAdjusters.nextOrSame(weakestDayOfWeek));
             int thisWeekTargetDaySeconds = thisWeekDailyMap.getOrDefault(thisWeekTargetDay, 0);
 
+            progressData.put("thisWeek" + DAY_OF_WEEK_KR.get(weakestDayOfWeek).substring(0, 1) + "Minutes",
+                    thisWeekTargetDaySeconds / 60);
+
             if (thisWeekTargetDaySeconds >= thisWeekAverageSeconds) {
-                return true;
+                isAchieved = true;
+                progressData.put("achievedDay", DAY_OF_WEEK_KR.get(weakestDayOfWeek));
             }
         }
 
-        return false;
+        if (isAchieved) {
+            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
+        }
+
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 약점 극복", e);
+        }
+
+        return isAchieved;
     }
 
     /**
