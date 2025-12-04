@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -87,11 +88,11 @@ public class ItemAchievementService {
                     case "집중력 폭발" -> checkConsecutiveFocus(memberItem, dailyGoal, serviceDate);
                     case "시작 시간 사수" -> checkMorningStart(memberItem, sessionStartTime, serviceDate);
                     case "마지막 생존자" -> checkLateNightEnd(memberItem, sessionEndTime, serviceDate);
-                    case "휴식은 사치" -> checkLimitedRest(memberItem, memberId, serviceDate);
+                    case "휴식은 사치" -> checkLimitedRest(memberItem, memberId, serviceDate, dailyGoal);
                     case "약점 극복" -> checkWeakestDayImprovement(memberId);
-                    case "저지 불가" -> checkSevenDaysStreak(memberId);
-                    case "과거 나와 대결" -> checkBeatLastWeek(memberId);
-                    case "누적 집중의 대가" -> checkWeeklyAccumulation(memberItem, memberId);
+                    case "저지 불가" -> checkSevenDaysStreak(memberItem, memberId, serviceDate);
+                    case "과거 나와 대결" -> checkBeatLastWeek(memberItem, memberId, serviceDate);
+                    case "누적 집중의 대가" -> checkWeeklyAccumulation(memberItem, memberId, serviceDate);
                     default -> {
                         log.warn("Unknown item name: {}", itemName);
                         yield false;
@@ -266,8 +267,18 @@ public class ItemAchievementService {
 
     /**
      * 4. 휴식은 사치: 하루 쉬는 시간 < parameter (4/5/6시간)
+     * 쉬는 시간 = (오늘 마지막 종료 시각 - 오늘 첫 시작 시각) - 총 집중 시간
      */
-    private boolean checkLimitedRest(MemberItem memberItem, Long memberId, LocalDate serviceDate) {
+    private boolean checkLimitedRest(MemberItem memberItem, Long memberId, LocalDate serviceDate, DailyGoal dailyGoal) {
+        // DailyGoal에서 시작/종료 시각 조회
+        LocalTime earliestStartTime = dailyGoal.getEarliestStartTime();
+        LocalTime latestEndTime = dailyGoal.getLatestEndTime();
+
+        // 시작/종료 시각 정보가 없으면 계산 불가
+        if (earliestStartTime == null || latestEndTime == null) {
+            return false;
+        }
+
         // 서비스 날짜 기준 총 집중 시간 조회
         List<DailySubject> todaySubjects = dailySubjectRepository.findAllByMemberIdAndDateRangeWithSubject(
                 memberId, serviceDate, serviceDate
@@ -277,30 +288,41 @@ public class ItemAchievementService {
                 .mapToInt(DailySubject::getFocusSeconds)
                 .sum();
 
-        // 쉬는 시간 = 24시간 - 총 집중 시간
-        double totalFocusHours = totalFocusSeconds / 3600.0;
-        double restHours = 24.0 - totalFocusHours;
-        int restMinutes = (int) ((24.0 * 60) - (totalFocusSeconds / 60.0));
-        int requiredRestHours = memberItem.getSelection();
-
-        if (restHours < requiredRestHours) {
-            // progressData 업데이트
-            Map<String, Object> progressData = new HashMap<>();
-            progressData.put("todayRestHours", Math.round(restHours * 10) / 10.0);
-            progressData.put("todayRestMinutes", restMinutes);
-            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
-            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
-
-            try {
-                memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
-            } catch (Exception e) {
-                log.error("Error updating progressData for 휴식은 사치", e);
-            }
-
-            return true;
+        // 활동 시간대 계산 (종료 - 시작)
+        long activitySeconds;
+        if (latestEndTime.isBefore(earliestStartTime)) {
+            // 자정을 넘긴 경우 (예: 시작 22:00, 종료 02:00)
+            activitySeconds = (24 * 3600) - earliestStartTime.toSecondOfDay() + latestEndTime.toSecondOfDay();
+        } else {
+            activitySeconds = latestEndTime.toSecondOfDay() - earliestStartTime.toSecondOfDay();
         }
 
-        return false;
+        // 쉬는 시간 = 활동 시간대 - 총 집중 시간 (음수면 0으로 처리)
+        long restSeconds = Math.max(0, activitySeconds - totalFocusSeconds);
+        double restHours = restSeconds / 3600.0;
+        int restMinutes = (int) (restSeconds / 60);
+        int requiredRestHours = memberItem.getSelection();
+
+        // progressData 업데이트
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("todayRestHours", Math.round(restHours * 10) / 10.0);
+        progressData.put("todayRestMinutes", restMinutes);
+        progressData.put("requiredRestHours", requiredRestHours);
+
+        boolean isAchieved = restHours < requiredRestHours;
+
+        if (isAchieved) {
+            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
+            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
+        }
+
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 휴식은 사치", e);
+        }
+
+        return isAchieved;
     }
 
     /**
@@ -384,8 +406,7 @@ public class ItemAchievementService {
     /**
      * 6. 저지 불가: 7일 모두 30분 이상
      */
-    private boolean checkSevenDaysStreak(Long memberId) {
-        LocalDate serviceDate = getServiceDate();
+    private boolean checkSevenDaysStreak(MemberItem memberItem, Long memberId, LocalDate serviceDate) {
         LocalDate weekStart = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate weekEnd = serviceDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
@@ -401,21 +422,50 @@ public class ItemAchievementService {
                         Collectors.summingInt(DailySubject::getFocusSeconds)
                 ));
 
-        // 7일 모두 1800초(30분) 이상이어야 함
-        if (dailyFocusMap.size() < 7) {
-            return false;
+        // 30분 이상 집중한 요일 찾기
+        List<DayOfWeek> achievedDays = dailyFocusMap.entrySet().stream()
+                .filter(e -> e.getValue() >= 1800)
+                .map(e -> e.getKey().getDayOfWeek())
+                .sorted()
+                .toList();
+
+        // progressData 업데이트
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("achievedDaysCount", achievedDays.size());
+
+        // 요일 표시 형식: 2일 이하면 "월요일, 화요일" / 3일 이상이면 "월,화,수"
+        if (achievedDays.size() <= 2) {
+            String daysStr = achievedDays.stream()
+                    .map(DAY_OF_WEEK_KR::get)
+                    .collect(Collectors.joining(", "));
+            progressData.put("achievedDays", daysStr);
+        } else {
+            String daysStr = achievedDays.stream()
+                    .map(day -> DAY_OF_WEEK_KR.get(day).substring(0, 1))
+                    .collect(Collectors.joining(","));
+            progressData.put("achievedDays", daysStr);
         }
 
-        return dailyFocusMap.values().stream()
-                .allMatch(seconds -> seconds >= 1800);
+        boolean isAchieved = achievedDays.size() == 7;
+
+        if (isAchieved) {
+            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
+            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
+        }
+
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 저지 불가", e);
+        }
+
+        return isAchieved;
     }
 
     /**
      * 7. 과거 나와 대결: 이번 주 > 지난 주
      */
-    private boolean checkBeatLastWeek(Long memberId) {
-        LocalDate serviceDate = getServiceDate();
-
+    private boolean checkBeatLastWeek(MemberItem memberItem, Long memberId, LocalDate serviceDate) {
         // 이번 주 범위
         LocalDate thisWeekStart = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate thisWeekEnd = serviceDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
@@ -440,15 +490,32 @@ public class ItemAchievementService {
                 .mapToInt(DailySubject::getFocusSeconds)
                 .sum();
 
+        // progressData 업데이트
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("lastWeekMinutes", lastWeekSeconds / 60);
+        progressData.put("thisWeekMinutes", thisWeekSeconds / 60);
+
         // 지난 주 기록이 있어야 하고, 이번 주가 더 많아야 함
-        return lastWeekSeconds > 0 && thisWeekSeconds > lastWeekSeconds;
+        boolean isAchieved = lastWeekSeconds > 0 && thisWeekSeconds > lastWeekSeconds;
+
+        if (isAchieved) {
+            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
+            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
+        }
+
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 과거 나와 대결", e);
+        }
+
+        return isAchieved;
     }
 
     /**
      * 8. 누적 집중의 대가: 주간 누적 >= parameter (25/30/35/40/45/50/55/60시간)
      */
-    private boolean checkWeeklyAccumulation(MemberItem memberItem, Long memberId) {
-        LocalDate serviceDate = getServiceDate();
+    private boolean checkWeeklyAccumulation(MemberItem memberItem, Long memberId, LocalDate serviceDate) {
         LocalDate weekStart = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate weekEnd = serviceDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
@@ -465,21 +532,24 @@ public class ItemAchievementService {
         int totalMinutes = totalSeconds / 60;
         int requiredHours = memberItem.getSelection();
 
-        if (totalHours >= requiredHours) {
-            // progressData 업데이트
-            Map<String, Object> progressData = new HashMap<>();
-            progressData.put("thisWeekMinutes", totalMinutes);
-            progressData.put("targetHours", requiredHours);
+        // progressData 업데이트 (항상)
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("thisWeekMinutes", totalMinutes);
+        progressData.put("targetHours", requiredHours);
 
-            try {
-                memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
-            } catch (Exception e) {
-                log.error("Error updating progressData for 누적 집중의 대가", e);
-            }
+        boolean isAchieved = totalHours >= requiredHours;
 
-            return true;
+        if (isAchieved) {
+            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
+            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
         }
 
-        return false;
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 누적 집중의 대가", e);
+        }
+
+        return isAchieved;
     }
 }

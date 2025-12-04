@@ -44,6 +44,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -150,6 +151,10 @@ public class FocusService {
         if (request.focusSeconds() > dailyGoal.getMaxConsecutiveSeconds()) {
             dailyGoal.renewMaxConsecutiveSeconds(request.focusSeconds());
         }
+
+        // 오늘 가장 빠른 시작 시각, 가장 늦은 종료 시각 업데이트
+        dailyGoal.updateEarliestStartTime(request.startTime().toLocalTime());
+        dailyGoal.updateLatestEndTime(LocalTime.now());
 
         // 아이템 달성 조건 체크 (DailySubject 저장 이후)
         itemAchievementService.checkAchievements(m.getId(), request, dailyGoal);
