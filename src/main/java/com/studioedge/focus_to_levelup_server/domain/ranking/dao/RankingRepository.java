@@ -31,13 +31,11 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
             "LEFT JOIN FETCH mpi.asset " +
             "LEFT JOIN DailyGoal dg ON dg.member = m AND dg.dailyGoalDate = :date " +
             "WHERE l.season = :season AND l = :league " +
-            "ORDER BY m.currentLevel DESC, m.currentExp DESC",
-            countQuery = "SELECT count(r) FROM Ranking r WHERE r.league = :league")
-    Page<Object[]> findRankingsWithDailyGoal(
+            "ORDER BY m.currentLevel DESC, m.currentExp DESC")
+    List<Object[]> findRankingsWithDailyGoal(
             @Param("season") Season season,
             @Param("league") League league,
-            @Param("date") LocalDate date,
-            Pageable pageable
+            @Param("date") LocalDate date
     );
 
     @Query("SELECT r FROM Ranking r " +

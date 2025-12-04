@@ -18,6 +18,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
+import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.AssetRepository;
@@ -55,6 +56,7 @@ public class MemberServiceImpl implements MemberService {
     private final MemberCharacterRepository memberCharacterRepository;
     private final CharacterRepository characterRepository;
     private final RankingRepository rankingRepository;
+    private final LeagueRepository leagueRepository;
 
     @Override
     @Transactional

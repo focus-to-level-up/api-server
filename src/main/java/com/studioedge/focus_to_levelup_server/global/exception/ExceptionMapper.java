@@ -307,6 +307,8 @@ public class ExceptionMapper {
                 ExceptionSituation.of("배경을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         mapper.put(WeeklyRewardAlreadyReceivedException.class,
                 ExceptionSituation.of("주간 보상을 이미 수령하였거나 받을 수 있는 주간보상이 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(WeeklyRewardNotFoundException.class,
+                ExceptionSituation.of("받을 수 있는 주간보상이 존재하지 않습니다.", HttpStatus.NOT_FOUND));
         mapper.put(InsufficientBonusTicketException.class,
                 ExceptionSituation.of("보유한 보너스 티켓이 부족합니다.", HttpStatus.BAD_REQUEST));
     }

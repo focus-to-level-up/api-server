@@ -52,7 +52,7 @@ public record GetProfileResponse(
         Integer diamond,
         @Schema(description = "골드 갯수", example = "1500")
         Integer gold
-        ) {
+) {
     public static GetProfileResponse of(Member member, MemberInfo memberInfo, String ranking,
                                         SubscriptionType subscriptionType, boolean boosted) {
         return GetProfileResponse.builder()
