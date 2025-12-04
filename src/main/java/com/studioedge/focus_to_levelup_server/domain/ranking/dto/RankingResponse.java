@@ -4,6 +4,7 @@ import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
+import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -15,6 +16,9 @@ public record RankingResponse (
         Long leagueId,
         @Schema(description = "리그 이름", example = "성인 3 브론즈 리그")
         String leagueName,
+
+        @Schema(description = "리그 티어", example = "브론즈")
+        Tier tier,
         @Schema(description = "랭킹 정보 리스트")
         List<RankingDetailResponse> rankings
 ) {
@@ -22,6 +26,7 @@ public record RankingResponse (
         return RankingResponse.builder()
                 .leagueId(league.getId() + 100)
                 .leagueName(league.getName())
+                .tier(league.getTier())
                 .rankings(responses)
                 .build();
     }
