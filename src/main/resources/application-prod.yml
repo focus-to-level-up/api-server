@@ -1,8 +1,11 @@
 # application-prod.yml (프로덕션용 - AWS RDS)
 spring:
   jpa:
-    hibernate:
-      ddl-auto: create
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: create
+        physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
     defer-datasource-initialization: true
 
   datasource-data:
