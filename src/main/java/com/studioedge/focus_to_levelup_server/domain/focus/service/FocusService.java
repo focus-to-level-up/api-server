@@ -148,8 +148,8 @@ public class FocusService {
         }
 
         // 하루 최대 집중시간 확인하기
-        if (request.focusSeconds() > dailyGoal.getMaxConsecutiveSeconds()) {
-            dailyGoal.renewMaxConsecutiveSeconds(request.focusSeconds());
+        if (request.maxConsecutiveSeconds() > dailyGoal.getMaxConsecutiveSeconds()) {
+            dailyGoal.renewMaxConsecutiveSeconds(request.maxConsecutiveSeconds());
         }
 
         // 오늘 가장 빠른 시작 시각, 가장 늦은 종료 시각 업데이트
