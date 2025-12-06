@@ -126,17 +126,30 @@ jobs:
             docker compose -f /opt/focus-to-level-up/docker-compose.yml pull app
             docker compose -f /opt/focus-to-level-up/docker-compose.yml up -d
 
-            # Wait for MySQL to be ready
-            echo "Waiting for MySQL to be ready..."
-            sleep 10
-
             # Extract DB credentials from .env file
             DB_ROOT_PASSWORD=$(grep '^DB_ROOT_PASSWORD=' /opt/focus-to-level-up/.env | cut -d '=' -f2)
             DB_USERNAME=$(grep '^DB_USERNAME=' /opt/focus-to-level-up/.env | cut -d '=' -f2)
+            DB_PASSWORD=$(grep '^DB_PASSWORD=' /opt/focus-to-level-up/.env | cut -d '=' -f2)
 
-            # Create focus_meta_db if not exists
-            docker exec focus-mysql mysql -uroot -p${DB_ROOT_PASSWORD} -e "CREATE DATABASE IF NOT EXISTS focus_meta_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || true
-            docker exec focus-mysql mysql -uroot -p${DB_ROOT_PASSWORD} -e "GRANT ALL PRIVILEGES ON focus_meta_db.* TO '${DB_USERNAME}'@'%';" || true
-            docker exec focus-mysql mysql -uroot -p${DB_ROOT_PASSWORD} -e "FLUSH PRIVILEGES;" || true
+            if [ "${{ inputs.environment }}" = "prod" ]; then
+              # Prod: RDS에 focus_meta_db 생성 (master 유저로 접속하므로 GRANT 불필요)
+              echo "Initializing RDS database..."
+
+              which mysql || (sudo apt-get update && sudo apt-get install -y mysql-client)
+
+              DB_URL=$(grep '^DB_URL=' /opt/focus-to-level-up/.env | cut -d '=' -f2)
+              DB_HOST=$(echo $DB_URL | sed -n 's|.*://\([^:/]*\).*|\1|p')
+
+              mysql -h ${DB_HOST} -u ${DB_USERNAME} -p${DB_PASSWORD} -e "CREATE DATABASE IF NOT EXISTS focus_meta_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || true
+
+            else
+              # Dev: Docker MySQL 컨테이너 사용 (root로 접속하여 권한 부여)
+              echo "Waiting for MySQL container to be ready..."
+              sleep 10
+
+              docker exec focus-mysql mysql -uroot -p${DB_ROOT_PASSWORD} -e "CREATE DATABASE IF NOT EXISTS focus_meta_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || true
+              docker exec focus-mysql mysql -uroot -p${DB_ROOT_PASSWORD} -e "GRANT ALL PRIVILEGES ON focus_meta_db.* TO '${DB_USERNAME}'@'%';" || true
+              docker exec focus-mysql mysql -uroot -p${DB_ROOT_PASSWORD} -e "FLUSH PRIVILEGES;" || true
+            fi
 
             docker image prune -f
