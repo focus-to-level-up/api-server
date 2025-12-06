@@ -1,6 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.system.entity;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
 import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -60,9 +61,35 @@ public class Mail extends BaseEntity {
     @Column(name = "payment_log_id")
     private Long paymentLogId; // 구매 관련 우편의 경우 결제 로그 ID 저장
 
+    // === 보상 상세 정보 (nullable) ===
+
+    /** 다이아 개수 (DIAMOND 관련 보상) */
+    private Integer diamondAmount;
+
+    /** 골드 개수 */
+    private Integer goldAmount;
+
+    /** 캐릭터 ID */
+    private Long characterId;
+
+    /** 캐릭터 이미지 URL */
+    private String characterImageUrl;
+
+    /** 프로필 테두리 티어 */
+    @Enumerated(EnumType.STRING)
+    private Tier profileBorderTier;
+
+    /** 프로필 테두리 이미지 URL */
+    private String profileBorderImageUrl;
+
+    /** 보너스 티켓 개수 */
+    private Integer bonusTicketCount;
+
     @Builder
     public Mail(Member receiver, String senderName, MailType type, String title,
-                String description, String popupTitle, String popupContent, Integer reward, LocalDate expiredAt, Long paymentLogId)
+                String description, String popupTitle, String popupContent, Integer reward, LocalDate expiredAt, Long paymentLogId,
+                Integer diamondAmount, Integer goldAmount,
+                Long characterId, String characterImageUrl, Tier profileBorderTier, String profileBorderImageUrl, Integer bonusTicketCount)
     {
         this.receiver = receiver;
         this.senderName = senderName != null ? senderName : "운영자";
@@ -74,6 +101,14 @@ public class Mail extends BaseEntity {
         this.reward = reward != null ? reward : 0;
         this.expiredAt = expiredAt;
         this.paymentLogId = paymentLogId;
+        // 보상 상세 정보
+        this.diamondAmount = diamondAmount;
+        this.goldAmount = goldAmount;
+        this.characterId = characterId;
+        this.characterImageUrl = characterImageUrl;
+        this.profileBorderTier = profileBorderTier;
+        this.profileBorderImageUrl = profileBorderImageUrl;
+        this.bonusTicketCount = bonusTicketCount;
     }
 
     // 비즈니스 메서드
