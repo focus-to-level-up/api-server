@@ -145,6 +145,7 @@ public class FocusService {
         List<GuildMember> guildMembers = guildMemberRepository.findAllByMemberIdWithGuild(m.getId());
         for (GuildMember gm : guildMembers) {
             gm.addWeeklyFocusTime(request.focusSeconds());
+            gm.getGuild().updateAverageFocusTime(request.focusSeconds());
         }
 
         // 하루 최대 집중시간 확인하기

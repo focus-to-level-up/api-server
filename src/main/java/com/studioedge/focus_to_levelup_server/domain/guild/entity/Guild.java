@@ -51,11 +51,15 @@ public class Guild extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer averageFocusTime = 0; // 평균 집중 시간 (초 단위)
+    private Integer averageFocusTime = 0; // 평균 집중 시간 (평균값은 응답보낼때 나눠줘야함)
 
     @Column(nullable = false)
     @ColumnDefault("0")
     private Integer lastWeekDiamondReward = 0; // 지난주 다이아 보상
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer lastWeekAverageFocusTime = 0; // 지난주 평균 집중 시간 (초단위)
 
     @OneToMany(mappedBy = "guild", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GuildMember> members = new ArrayList<>();
@@ -96,7 +100,8 @@ public class Guild extends BaseEntity {
         this.averageFocusTime = averageFocusTime;
     }
 
-    public void updateLastWeekDiamondReward(Integer reward) {
+    public void updateLastWeekInfo(Integer avgFocusSeconds, Integer reward) {
+        this.lastWeekAverageFocusTime = avgFocusSeconds;
         this.lastWeekDiamondReward = reward;
     }
 

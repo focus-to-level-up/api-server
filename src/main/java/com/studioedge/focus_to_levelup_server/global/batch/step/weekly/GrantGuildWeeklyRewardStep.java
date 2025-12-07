@@ -128,8 +128,7 @@ public class GrantGuildWeeklyRewardStep {
                         .build();
                 historyToSave.add(history);
 
-                guild.updateAverageFocusTime(avgSeconds);
-                guild.updateLastWeekDiamondReward(totalReward);
+                guild.updateLastWeekInfo(avgSeconds, totalReward);
                 guildsToUpdate.add(guild);
             }
 

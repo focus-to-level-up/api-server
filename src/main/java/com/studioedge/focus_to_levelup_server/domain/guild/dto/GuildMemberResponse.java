@@ -13,6 +13,7 @@ public record GuildMemberResponse(
         GuildRole role,
         Integer weeklyFocusTime,
         Boolean isBoosted,
+        Boolean isFocusing,
         Integer ranking // 길드 내 랭킹
 ) {
     public static GuildMemberResponse of(GuildMember guildMember, Integer ranking) {
@@ -28,6 +29,7 @@ public record GuildMemberResponse(
                 guildMember.getRole(),
                 guildMember.getWeeklyFocusTime(),
                 guildMember.getIsBoosted(),
+                guildMember.getMember().getIsFocusing(),
                 ranking
         );
     }
