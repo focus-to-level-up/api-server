@@ -107,8 +107,9 @@ public class GrantGuildWeeklyRewardStep {
                 int boostCount = (int) members.stream().filter(GuildMember::getIsBoosted).count();
 
                 // 4. 보상 다이아 계산
-                int baseReward = calculateBaseReward(avgHours);
-                int totalReward = Math.min(baseReward + boostCount * BOOST_BONUS, MAX_REWARD);
+                int focusTimeReward = calculateBaseReward(avgHours);
+                int boostReward = boostCount * BOOST_BONUS;
+                int totalReward = Math.min(focusTimeReward + boostReward, MAX_REWARD);
 
                 if (totalReward == 0) {
                     continue;
@@ -122,13 +123,13 @@ public class GrantGuildWeeklyRewardStep {
                 // 5. 히스토리 및 길드 정보 갱신
                 GuildWeeklyReward history = GuildWeeklyReward.builder()
                         .guild(guild)
-                        .avgStudyTime(avgSeconds)
+                        .avgFocusTime(avgSeconds)
                         .boostMemberCount(boostCount)
                         .totalReward(totalReward)
                         .build();
                 historyToSave.add(history);
 
-                guild.updateLastWeekInfo(avgSeconds, totalReward);
+                guild.updateLastWeekInfo(avgSeconds, focusTimeReward, boostCount * BOOST_BONUS);
                 guildsToUpdate.add(guild);
             }
 

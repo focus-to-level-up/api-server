@@ -27,7 +27,7 @@ public class GuildWeeklyReward extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer avgStudyTime = 0;
+    private Integer avgFocusTime = 0;
 
     @Column(nullable = false)
     @ColumnDefault("0")
@@ -38,10 +38,10 @@ public class GuildWeeklyReward extends BaseEntity {
     private Integer totalReward = 0;
 
     @Builder
-    public GuildWeeklyReward(Guild guild, Integer avgStudyTime, Integer boostMemberCount,
+    public GuildWeeklyReward(Guild guild, Integer avgFocusTime, Integer boostMemberCount,
                              Integer totalReward) {
         this.guild = guild;
-        this.avgStudyTime = avgStudyTime;
+        this.avgFocusTime = avgFocusTime;
         this.boostMemberCount = boostMemberCount;
         this.totalReward = totalReward;
     }

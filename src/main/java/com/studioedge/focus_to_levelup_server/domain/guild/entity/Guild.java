@@ -55,7 +55,11 @@ public class Guild extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer lastWeekDiamondReward = 0; // 지난주 다이아 보상
+    private Integer lastWeekFocusTimeReward = 0;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer lastWeekBoostReward = 0;
 
     @Column(nullable = false)
     @ColumnDefault("0")
@@ -78,7 +82,6 @@ public class Guild extends BaseEntity {
         this.maxMembers = maxMembers != null ? maxMembers : 20;
         this.currentMembers = currentMembers != null ? currentMembers : 1;
         this.averageFocusTime = averageFocusTime != null ? averageFocusTime : 0;
-        this.lastWeekDiamondReward = lastWeekDiamondReward != null ? lastWeekDiamondReward : 0;
     }
 
     // 비즈니스 메서드
@@ -100,9 +103,10 @@ public class Guild extends BaseEntity {
         this.averageFocusTime = averageFocusTime;
     }
 
-    public void updateLastWeekInfo(Integer avgFocusSeconds, Integer reward) {
+    public void updateLastWeekInfo(Integer avgFocusSeconds, Integer focusTimeReward, Integer boostReward) {
         this.lastWeekAverageFocusTime = avgFocusSeconds;
-        this.lastWeekDiamondReward = reward;
+        this.lastWeekFocusTimeReward = focusTimeReward;
+        this.lastWeekBoostReward = boostReward;
     }
 
     public void updateName(String name) {
