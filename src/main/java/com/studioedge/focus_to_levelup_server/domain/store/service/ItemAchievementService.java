@@ -60,19 +60,58 @@ public class ItemAchievementService {
         LocalDateTime sessionEndTime = LocalDateTime.now();
         LocalDate serviceDate = getServiceDate();
 
-        // 미완료 아이템 조회
-        List<MemberItem> incompleteMemberItems = memberItemRepository.findAllByMemberIdAndNotCompleted(memberId);
+        // 모든 아이템 조회 (progressData 업데이트용)
+        List<MemberItem> allMemberItems = memberItemRepository.findAllByMemberIdWithItem(memberId);
+        log.info("Found {} total member items", allMemberItems.size());
+
+        // 미완료 아이템 조회 (달성 체크용)
+        List<MemberItem> incompleteMemberItems = allMemberItems.stream()
+                .filter(mi -> !mi.getIsCompleted())
+                .toList();
         log.info("Found {} incomplete member items", incompleteMemberItems.size());
 
         // 오늘 이미 달성된 아이템 ID 목록 조회
-        List<MemberItem> allMemberItems = memberItemRepository.findAllByMemberIdWithItem(memberId);
         Set<Long> achievedItemIdsToday = allMemberItems.stream()
                 .filter(mi -> mi.getIsCompleted() && mi.getCompletedDate() != null && mi.getCompletedDate().equals(serviceDate))
                 .map(mi -> mi.getItem().getId())
                 .collect(Collectors.toSet());
 
+        // itemId별로 MemberItem 그룹화 (2회 달성 아이템 처리용)
+        Map<Long, List<MemberItem>> memberItemsByItemId = allMemberItems.stream()
+                .collect(Collectors.groupingBy(mi -> mi.getItem().getId()));
+
+        // 1단계: 모든 미완료 아이템의 progressData를 먼저 업데이트 (오늘의 값으로)
+        for (MemberItem memberItem : incompleteMemberItems) {
+            String itemName = memberItem.getItem().getName();
+            try {
+                switch (itemName) {
+                    case "집중력 폭발" -> updateConsecutiveFocusProgress(memberItem, dailyGoal);
+                    case "시작 시간 사수" -> updateMorningStartProgress(memberItem, sessionStartTime, serviceDate);
+                    case "마지막 생존자" -> updateLateNightEndProgress(memberItem, sessionEndTime, serviceDate);
+                    case "휴식은 사치" -> updateLimitedRestProgress(memberItem, memberId, serviceDate, dailyGoal);
+                    case "약점 극복" -> updateWeakestDayProgress(memberItem, memberId, serviceDate);
+                    case "저지 불가" -> updateSevenDaysStreakProgress(memberItem, memberId, serviceDate);
+                    case "과거 나와 대결" -> updateBeatLastWeekProgress(memberItem, memberId, serviceDate);
+                    case "누적 집중의 대가" -> updateWeeklyAccumulationProgress(memberItem, memberId, serviceDate);
+                }
+                log.debug("Updated progressData for incomplete item: memberItemId={}, itemName={}", memberItem.getId(), itemName);
+            } catch (Exception e) {
+                log.error("Error updating progressData for item: {}", itemName, e);
+            }
+        }
+
+        // 이미 처리한 itemId 추적 (같은 itemId는 한 번만 체크)
+        Set<Long> processedItemIds = new HashSet<>();
+
+        // 2단계: 달성 체크 (오늘 아직 달성하지 않은 아이템만)
         for (MemberItem memberItem : incompleteMemberItems) {
             Long itemId = memberItem.getItem().getId();
+
+            // 이미 처리한 itemId는 스킵
+            if (processedItemIds.contains(itemId)) {
+                continue;
+            }
+            processedItemIds.add(itemId);
 
             // 오늘 이미 달성한 아이템 ID는 스킵 (같은 아이템은 하루에 1개만 달성)
             if (achievedItemIdsToday.contains(itemId)) {
@@ -101,12 +140,62 @@ public class ItemAchievementService {
 
                 if (isAchieved) {
                     memberItem.complete(serviceDate);
-                    achievedItemIdsToday.add(itemId); // 달성한 아이템 ID 기록
+                    achievedItemIdsToday.add(itemId);
                     log.info("Item achieved: memberId={}, itemName={}, serviceDate={}", memberId, itemName, serviceDate);
                 }
             } catch (Exception e) {
                 log.error("Error checking achievement for item: {}", itemName, e);
             }
+        }
+
+        // 3단계: 모두 달성된 itemId의 achievedDay 통일 처리
+        unifyAchievedDaysForCompletedItems(memberItemsByItemId);
+    }
+
+    /**
+     * 모두 달성된 itemId의 achievedDay를 통일 (예: "수요일, 목요일")
+     */
+    private void unifyAchievedDaysForCompletedItems(Map<Long, List<MemberItem>> memberItemsByItemId) {
+        for (Map.Entry<Long, List<MemberItem>> entry : memberItemsByItemId.entrySet()) {
+            List<MemberItem> items = entry.getValue();
+
+            // 모든 아이템이 달성되었는지 확인
+            boolean allCompleted = items.stream().allMatch(MemberItem::getIsCompleted);
+            if (!allCompleted || items.size() < 2) {
+                continue;
+            }
+
+            // 달성된 요일들 수집 (중복 제거, 순서 유지)
+            List<String> achievedDays = new ArrayList<>();
+            for (MemberItem item : items) {
+                if (item.getCompletedDate() != null) {
+                    String dayKr = DAY_OF_WEEK_KR.get(item.getCompletedDate().getDayOfWeek());
+                    if (!achievedDays.contains(dayKr)) {
+                        achievedDays.add(dayKr);
+                    }
+                }
+            }
+
+            if (achievedDays.isEmpty()) {
+                continue;
+            }
+
+            String unifiedAchievedDay = String.join(", ", achievedDays);
+
+            // 모든 아이템의 progressData에 통일된 achievedDay 설정
+            for (MemberItem item : items) {
+                try {
+                    String progressDataStr = item.getProgressData();
+                    if (progressDataStr != null && !progressDataStr.isEmpty()) {
+                        Map<String, Object> progressData = objectMapper.readValue(progressDataStr, Map.class);
+                        progressData.put("achievedDay", unifiedAchievedDay);
+                        item.updateProgressData(objectMapper.writeValueAsString(progressData));
+                    }
+                } catch (Exception e) {
+                    log.error("Error unifying achievedDay for item: {}", item.getId(), e);
+                }
+            }
+            log.info("Unified achievedDay for itemId={}: {}", entry.getKey(), unifiedAchievedDay);
         }
     }
 
@@ -584,5 +673,324 @@ public class ItemAchievementService {
         }
 
         return isAchieved;
+    }
+
+    // ========== progressData만 업데이트하는 헬퍼 메서드들 (달성 처리 없이) ==========
+
+    /**
+     * 집중력 폭발 - progressData만 업데이트
+     */
+    private void updateConsecutiveFocusProgress(MemberItem memberItem, DailyGoal dailyGoal) {
+        int requiredMinutes = memberItem.getSelection();
+        int maxConsecutiveMinutes = dailyGoal.getMaxConsecutiveSeconds() / 60;
+
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("maxConsecutiveMinutes", maxConsecutiveMinutes);
+        progressData.put("requiredMinutes", requiredMinutes);
+
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 집중력 폭발 (sibling)", e);
+        }
+    }
+
+    /**
+     * 시작 시간 사수 - progressData만 업데이트
+     */
+    private void updateMorningStartProgress(MemberItem memberItem, LocalDateTime sessionStartTime, LocalDate serviceDate) {
+        int requiredHour = memberItem.getSelection();
+
+        String existingProgressData = memberItem.getProgressData();
+        LocalDateTime earliestStartTime = sessionStartTime;
+
+        if (existingProgressData != null && !existingProgressData.isEmpty()) {
+            try {
+                Map<String, Object> existingData = objectMapper.readValue(existingProgressData, Map.class);
+                String recordedDate = (String) existingData.get("recordedDate");
+                String earliestTimeStr = (String) existingData.get("earliestStartTime");
+
+                if (serviceDate.format(DATE_FORMATTER).equals(recordedDate) && earliestTimeStr != null) {
+                    LocalDateTime existingEarliestTime = LocalDateTime.parse(
+                            serviceDate.format(DATE_FORMATTER) + "T" + earliestTimeStr
+                    );
+                    if (!sessionStartTime.isBefore(existingEarliestTime)) {
+                        earliestStartTime = existingEarliestTime;
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to parse existing progressData for 시작 시간 사수 (sibling)", e);
+            }
+        }
+
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("recordedDate", serviceDate.format(DATE_FORMATTER));
+        progressData.put("earliestStartTime", earliestStartTime.format(TIME_FORMATTER));
+        progressData.put("currentStartTime", sessionStartTime.format(TIME_FORMATTER));
+        progressData.put("requiredHour", requiredHour);
+
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 시작 시간 사수 (sibling)", e);
+        }
+    }
+
+    /**
+     * 마지막 생존자 - progressData만 업데이트
+     */
+    private void updateLateNightEndProgress(MemberItem memberItem, LocalDateTime sessionEndTime, LocalDate serviceDate) {
+        int requiredHour = memberItem.getSelection();
+
+        String existingProgressData = memberItem.getProgressData();
+        LocalDateTime latestEndTime = sessionEndTime;
+
+        if (existingProgressData != null && !existingProgressData.isEmpty()) {
+            try {
+                Map<String, Object> existingData = objectMapper.readValue(existingProgressData, Map.class);
+                String recordedDate = (String) existingData.get("recordedDate");
+                String latestTimeStr = (String) existingData.get("latestEndTime");
+
+                if (serviceDate.format(DATE_FORMATTER).equals(recordedDate) && latestTimeStr != null) {
+                    LocalDateTime existingLatestTime = LocalDateTime.parse(
+                            serviceDate.format(DATE_FORMATTER) + "T" + latestTimeStr
+                    );
+                    if (!sessionEndTime.isAfter(existingLatestTime)) {
+                        latestEndTime = existingLatestTime;
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to parse existing progressData for 마지막 생존자 (sibling)", e);
+            }
+        }
+
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("recordedDate", serviceDate.format(DATE_FORMATTER));
+        progressData.put("latestEndTime", latestEndTime.format(TIME_FORMATTER));
+        progressData.put("currentEndTime", sessionEndTime.format(TIME_FORMATTER));
+        progressData.put("requiredHour", requiredHour);
+
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 마지막 생존자 (sibling)", e);
+        }
+    }
+
+    /**
+     * 휴식은 사치 - progressData만 업데이트
+     */
+    private void updateLimitedRestProgress(MemberItem memberItem, Long memberId, LocalDate serviceDate, DailyGoal dailyGoal) {
+        LocalTime earliestStartTime = dailyGoal.getEarliestStartTime();
+        LocalTime latestEndTime = dailyGoal.getLatestEndTime();
+
+        if (earliestStartTime == null || latestEndTime == null) {
+            return;
+        }
+
+        List<DailySubject> todaySubjects = dailySubjectRepository.findAllByMemberIdAndDateRangeWithSubject(
+                memberId, serviceDate, serviceDate
+        );
+
+        int totalFocusSeconds = todaySubjects.stream()
+                .mapToInt(DailySubject::getFocusSeconds)
+                .sum();
+
+        long activitySeconds;
+        if (latestEndTime.isBefore(earliestStartTime)) {
+            activitySeconds = (24 * 3600) - earliestStartTime.toSecondOfDay() + latestEndTime.toSecondOfDay();
+        } else {
+            activitySeconds = latestEndTime.toSecondOfDay() - earliestStartTime.toSecondOfDay();
+        }
+
+        long restSeconds = Math.max(0, activitySeconds - totalFocusSeconds);
+        double restHours = restSeconds / 3600.0;
+        int restMinutes = (int) (restSeconds / 60);
+        int requiredRestHours = memberItem.getSelection();
+
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("todayRestHours", Math.round(restHours * 10) / 10.0);
+        progressData.put("todayRestMinutes", restMinutes);
+        progressData.put("requiredRestHours", requiredRestHours);
+
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 휴식은 사치 (sibling)", e);
+        }
+    }
+
+    /**
+     * 약점 극복 - progressData만 업데이트
+     */
+    private void updateWeakestDayProgress(MemberItem memberItem, Long memberId, LocalDate serviceDate) {
+        LocalDate weekStart = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate weekEnd = serviceDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        LocalDate lastWeekStart = weekStart.minusWeeks(1);
+        LocalDate lastWeekEnd = weekEnd.minusWeeks(1);
+
+        List<DailySubject> lastWeekSubjects = dailySubjectRepository.findAllByMemberIdAndDateRangeWithSubject(
+                memberId, lastWeekStart, lastWeekEnd
+        );
+
+        Map<LocalDate, Integer> lastWeekDailyMap = lastWeekSubjects.stream()
+                .collect(Collectors.groupingBy(
+                        DailySubject::getDate,
+                        Collectors.summingInt(DailySubject::getFocusSeconds)
+                ));
+
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("lastWeekRecordedDays", lastWeekDailyMap.size());
+        progressData.put("requiredDays", 7);
+
+        if (lastWeekDailyMap.size() < 7) {
+            progressData.put("status", "지난 주 기록 부족");
+        } else {
+            int lastWeekMinSeconds = lastWeekDailyMap.values().stream()
+                    .mapToInt(Integer::intValue)
+                    .min()
+                    .orElse(0);
+
+            List<DayOfWeek> weakestDaysOfWeek = lastWeekDailyMap.entrySet().stream()
+                    .filter(e -> e.getValue() == lastWeekMinSeconds)
+                    .map(e -> e.getKey().getDayOfWeek())
+                    .toList();
+
+            List<DailySubject> thisWeekSubjects = dailySubjectRepository.findAllByMemberIdAndDateRangeWithSubject(
+                    memberId, weekStart, weekEnd
+            );
+
+            Map<LocalDate, Integer> thisWeekDailyMap = thisWeekSubjects.stream()
+                    .collect(Collectors.groupingBy(
+                            DailySubject::getDate,
+                            Collectors.summingInt(DailySubject::getFocusSeconds)
+                    ));
+
+            double thisWeekAverageSeconds = thisWeekDailyMap.values().stream()
+                    .mapToInt(Integer::intValue)
+                    .average()
+                    .orElse(0.0);
+
+            String weakestDaysStr = weakestDaysOfWeek.stream()
+                    .map(DAY_OF_WEEK_KR::get)
+                    .collect(Collectors.joining(", "));
+            progressData.put("weakestDays", weakestDaysStr);
+            progressData.put("lastWeekMinMinutes", lastWeekMinSeconds / 60);
+            progressData.put("thisWeekAverageMinutes", (int) (thisWeekAverageSeconds / 60));
+        }
+
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 약점 극복 (sibling)", e);
+        }
+    }
+
+    /**
+     * 저지 불가 - progressData만 업데이트
+     */
+    private void updateSevenDaysStreakProgress(MemberItem memberItem, Long memberId, LocalDate serviceDate) {
+        LocalDate weekStart = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate weekEnd = serviceDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+        List<DailySubject> weeklySubjects = dailySubjectRepository.findAllByMemberIdAndDateRangeWithSubject(
+                memberId, weekStart, weekEnd
+        );
+
+        Map<LocalDate, Integer> dailyFocusMap = weeklySubjects.stream()
+                .collect(Collectors.groupingBy(
+                        DailySubject::getDate,
+                        Collectors.summingInt(DailySubject::getFocusSeconds)
+                ));
+
+        List<DayOfWeek> achievedDays = dailyFocusMap.entrySet().stream()
+                .filter(e -> e.getValue() >= 1800)
+                .map(e -> e.getKey().getDayOfWeek())
+                .sorted()
+                .toList();
+
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("achievedDaysCount", achievedDays.size());
+
+        if (achievedDays.size() <= 2) {
+            String daysStr = achievedDays.stream()
+                    .map(DAY_OF_WEEK_KR::get)
+                    .collect(Collectors.joining(", "));
+            progressData.put("achievedDays", daysStr);
+        } else {
+            String daysStr = achievedDays.stream()
+                    .map(day -> DAY_OF_WEEK_KR.get(day).substring(0, 1))
+                    .collect(Collectors.joining(","));
+            progressData.put("achievedDays", daysStr);
+        }
+
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 저지 불가 (sibling)", e);
+        }
+    }
+
+    /**
+     * 과거 나와 대결 - progressData만 업데이트
+     */
+    private void updateBeatLastWeekProgress(MemberItem memberItem, Long memberId, LocalDate serviceDate) {
+        LocalDate thisWeekStart = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate thisWeekEnd = serviceDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        LocalDate lastWeekStart = thisWeekStart.minusWeeks(1);
+        LocalDate lastWeekEnd = thisWeekEnd.minusWeeks(1);
+
+        List<DailySubject> thisWeekSubjects = dailySubjectRepository.findAllByMemberIdAndDateRangeWithSubject(
+                memberId, thisWeekStart, thisWeekEnd
+        );
+        int thisWeekSeconds = thisWeekSubjects.stream()
+                .mapToInt(DailySubject::getFocusSeconds)
+                .sum();
+
+        List<DailySubject> lastWeekSubjects = dailySubjectRepository.findAllByMemberIdAndDateRangeWithSubject(
+                memberId, lastWeekStart, lastWeekEnd
+        );
+        int lastWeekSeconds = lastWeekSubjects.stream()
+                .mapToInt(DailySubject::getFocusSeconds)
+                .sum();
+
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("lastWeekMinutes", lastWeekSeconds / 60);
+        progressData.put("thisWeekMinutes", thisWeekSeconds / 60);
+
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 과거 나와 대결 (sibling)", e);
+        }
+    }
+
+    /**
+     * 누적 집중의 대가 - progressData만 업데이트
+     */
+    private void updateWeeklyAccumulationProgress(MemberItem memberItem, Long memberId, LocalDate serviceDate) {
+        LocalDate weekStart = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate weekEnd = serviceDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+        List<DailySubject> weeklySubjects = dailySubjectRepository.findAllByMemberIdAndDateRangeWithSubject(
+                memberId, weekStart, weekEnd
+        );
+
+        int totalSeconds = weeklySubjects.stream()
+                .mapToInt(DailySubject::getFocusSeconds)
+                .sum();
+
+        int totalMinutes = totalSeconds / 60;
+        int requiredHours = memberItem.getSelection();
+
+        Map<String, Object> progressData = new HashMap<>();
+        progressData.put("thisWeekMinutes", totalMinutes);
+        progressData.put("targetHours", requiredHours);
+
+        try {
+            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+        } catch (Exception e) {
+            log.error("Error updating progressData for 누적 집중의 대가 (sibling)", e);
+        }
     }
 }
