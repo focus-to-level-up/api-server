@@ -43,6 +43,7 @@ public class MemberController {
                 - `N_SU`, `UNIVERSITY_STUDENT`, `GRADUATE_STUDENT`, `EXAM_TAKER`
                 - `PUBLIC_SERVANT`, `JOB_SEEKER`, `OFFICE_WORKER`
             - `schoolName`: [선택] 학교 이름 (단, categoryMain이 학생일 경우 필수)
+            - `schoolAddress`: [선택] 학교 주소
             - `nickName`: [필수] 닉네임 (2-16자, 한/영/숫자, 특수문자/공백 불가)
             """
     )

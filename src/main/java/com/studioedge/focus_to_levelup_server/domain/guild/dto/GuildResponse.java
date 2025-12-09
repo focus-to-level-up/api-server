@@ -2,6 +2,7 @@ package com.studioedge.focus_to_levelup_server.domain.guild.dto;
 
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
+import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildWeeklyReward;
 import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildCategory;
 import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
 
@@ -21,6 +22,30 @@ public record GuildResponse(
         Boolean isJoinable, // 가입 가능 여부
         MemberGuildStatus memberStatus // 현재 유저의 가입 상태
 ) {
+    public static GuildResponse of(Guild guild, Optional<GuildMember> guildMember,
+                                   GuildWeeklyReward guildWeeklyReward) {
+        MemberGuildStatus memberStatus = guildMember
+                .map(gm -> new MemberGuildStatus(true, gm.getRole()))
+                .orElse(new MemberGuildStatus(false, null));
+        Integer lastWeekDiamondReward = guildWeeklyReward == null ? 0 :
+                guildWeeklyReward.getTotalReward();
+
+        return new GuildResponse(
+                guild.getId(),
+                guild.getName(),
+                guild.getDescription(),
+                guild.getTargetFocusTime(),
+                guild.getAverageFocusTime(),
+                guild.getCurrentMembers(),
+                guild.getMaxMembers(),
+                guild.getCategory(),
+                guild.getIsPublic(),
+                lastWeekDiamondReward,
+                !guild.isFull(),
+                memberStatus
+        );
+    }
+
     public static GuildResponse of(Guild guild, Optional<GuildMember> guildMember) {
         MemberGuildStatus memberStatus = guildMember
                 .map(gm -> new MemberGuildStatus(true, gm.getRole()))
@@ -36,7 +61,7 @@ public record GuildResponse(
                 guild.getMaxMembers(),
                 guild.getCategory(),
                 guild.getIsPublic(),
-                guild.getLastWeekDiamondReward(),
+                0,
                 !guild.isFull(),
                 memberStatus
         );

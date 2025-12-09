@@ -136,7 +136,7 @@ public class FocusService {
         // 만약 dailySubject가 생성되어있지 않다면 저장해야함.
         dailySubjectRepository.save(dailySubject);
         if (AppConstants.SCHOOL_CATEGORIES.contains(memberInfo.getCategoryMain())) {
-            schoolRepository.findByName(memberInfo.getBelonging())
+            schoolRepository.findByName(memberInfo.getSchool())
                     .orElseThrow(SchoolNotFoundException::new)
                     .plusTotalLevel(focusExp);
         }
