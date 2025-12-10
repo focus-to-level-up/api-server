@@ -19,8 +19,6 @@ public interface DailyGoalRepository extends JpaRepository<DailyGoal, Long> {
     Optional<DailyGoal> findByMemberIdAndDailyGoalDate(@Param("memberId") Long memberId,
                                                        @Param("dailyGoalDate") LocalDate dailyGoalDate);
 
-    List<DailyGoal> findAllByMemberIdInAndDailyGoalDate(List<Long> memberIds, LocalDate dailyGoalDate);
-
     @Query("SELECT dg FROM DailyGoal dg WHERE dg.member.id = :memberId AND dg.dailyGoalDate BETWEEN :startDate AND :endDate")
     List<DailyGoal> findAllByMemberIdAndDailyGoalDateBetween(
             @Param("memberId") Long memberId,

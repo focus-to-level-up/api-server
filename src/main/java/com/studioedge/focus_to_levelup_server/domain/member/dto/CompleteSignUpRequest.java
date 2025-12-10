@@ -13,7 +13,7 @@ import jakarta.validation.constraints.*;
 import java.util.List;
 
 public record CompleteSignUpRequest(
-        @Schema(description = "나이", example = "18")
+        @Schema(description = "나이", example = "24")
         @NotNull(message = "나이는 필수 항목입니다.")
         @Min(value = 8, message = "8세 이상만 가입할 수 있습니다.")
         @Max(value = 100, message = "100세 이하로 입력해주세요.")
@@ -34,9 +34,7 @@ public record CompleteSignUpRequest(
         @Size(max = 50, message = "학교 이름은 50자를 초과할 수 없습니다.")
         @Schema(description = "학교 이름", example = "서울고등학교")
         String schoolName,
-        @Size(max = 100, message = "학교 주소는 100자를 초과할 수 없습니다.")
-        @Schema(description = "학교 주소", example = "서울특별시 서초구 효령로 197")
-        String schoolAddress,
+
         @NotBlank(message = "닉네임은 필수 항목입니다.")
         @Size(min = 2, max = 16, message = "닉네임은 2자 이상, 16자 이하로 입력해야합니다.")
         @Pattern(regexp = "^[a-zA-Z0-9가-힣]*$", message = "닉네임은 한글, 영어, 숫자만 사용 가능합니다. (특수문자, 공백 불가)")
@@ -69,8 +67,7 @@ public record CompleteSignUpRequest(
                     .categorySub(request.categorySub())
                     .profileImage(imageAsset)
                     .profileBorder(borderAsset)
-                    .school(request.schoolName() == null ? "없음" : request.schoolName())
-                    .schoolAddress(request.schoolAddress())
+                    .belonging(request.schoolName() == null ? "없음" : request.schoolName())
                     .build();
     }
 }

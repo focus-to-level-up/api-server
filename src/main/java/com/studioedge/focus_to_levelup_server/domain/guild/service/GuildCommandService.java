@@ -1,18 +1,23 @@
 package com.studioedge.focus_to_levelup_server.domain.guild.service;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildWeeklyRewardRepository;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildCreateRequest;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildResponse;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildUpdateRequest;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildWeeklyReward;
 import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
-import com.studioedge.focus_to_levelup_server.domain.guild.exception.*;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.guild.exception.AlreadyJoinedGuildException;
+import com.studioedge.focus_to_levelup_server.domain.guild.exception.CannotDeleteGuildWithMembersException;
+import com.studioedge.focus_to_levelup_server.domain.guild.exception.FocusRequestCooldownException;
+import com.studioedge.focus_to_levelup_server.domain.guild.exception.GuildFullException;
+import com.studioedge.focus_to_levelup_server.domain.guild.exception.InvalidGuildPasswordException;
+import com.studioedge.focus_to_levelup_server.domain.guild.exception.LeaderCannotLeaveException;
+import com.studioedge.focus_to_levelup_server.domain.guild.exception.MaxGuildMembershipExceededException;
+import com.studioedge.focus_to_levelup_server.domain.guild.exception.NotGuildMemberException;
+import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.global.fcm.FcmService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -35,7 +41,6 @@ public class GuildCommandService {
 
     private final GuildRepository guildRepository;
     private final GuildMemberRepository guildMemberRepository;
-    private final GuildWeeklyRewardRepository guildWeeklyRewardRepository;
     private final MemberRepository memberRepository;
     private final GuildQueryService guildQueryService;
     private final FcmService fcmService;
@@ -70,6 +75,7 @@ public class GuildCommandService {
                 .maxMembers(20)
                 .currentMembers(1)
                 .averageFocusTime(0)
+                .lastWeekDiamondReward(0)
                 .build();
 
         Guild savedGuild = guildRepository.save(guild);
@@ -124,10 +130,7 @@ public class GuildCommandService {
         }
 
         Optional<GuildMember> guildMember = guildMemberRepository.findByGuildIdAndMemberId(guildId, memberId);
-        GuildWeeklyReward guildWeeklyReward = guildWeeklyRewardRepository
-                .findFirstByGuildIdOrderByCreatedAtDesc(guildId)
-                .orElse(null);
-        return GuildResponse.of(guild, guildMember, guildWeeklyReward);
+        return GuildResponse.of(guild, guildMember);
     }
 
     /**
@@ -199,11 +202,8 @@ public class GuildCommandService {
 
         // 길드 인원 증가
         guild.incrementMemberCount();
-        GuildWeeklyReward guildWeeklyReward = guildWeeklyRewardRepository
-                .findFirstByGuildIdOrderByCreatedAtDesc(guildId)
-                .orElse(null);
 
-        return GuildResponse.of(guild, Optional.of(guildMember), guildWeeklyReward);
+        return GuildResponse.of(guild, Optional.of(guildMember));
     }
 
     /**

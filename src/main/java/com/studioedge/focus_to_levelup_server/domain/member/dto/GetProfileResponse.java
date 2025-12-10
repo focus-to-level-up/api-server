@@ -64,7 +64,7 @@ public record GetProfileResponse(
                 .profileImageUrl(memberInfo.getProfileImage().getAsset().getAssetUrl())
                 .profileBorderId(memberInfo.getProfileBorder().getId())
                 .profileBorderUrl(memberInfo.getProfileBorder().getAsset().getAssetUrl())
-                .belonging(memberInfo.getSchool())
+                .belonging(memberInfo.getBelonging())
                 .boosted(boosted)
                 .focusOn(member.getIsFocusing())
                 .subscriptionType(subscriptionType)

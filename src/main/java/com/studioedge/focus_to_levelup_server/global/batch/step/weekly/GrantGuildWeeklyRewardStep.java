@@ -26,7 +26,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -80,7 +83,7 @@ public class GrantGuildWeeklyRewardStep {
             Map<Long, List<GuildMember>> membersByGuild = guildMemberRepository.findAllByGuildIdIn(guildIds)
                     .stream().collect(Collectors.groupingBy(gm -> gm.getGuild().getId()));
 
-            Map<Long, Mail> memberBestRewardMap = new HashMap<>();
+            List<Mail> mailsToSend = new ArrayList<>();
             List<GuildWeeklyReward> historyToSave = new ArrayList<>();
             List<Guild> guildsToUpdate = new ArrayList<>();
 
@@ -104,9 +107,8 @@ public class GrantGuildWeeklyRewardStep {
                 int boostCount = (int) members.stream().filter(GuildMember::getIsBoosted).count();
 
                 // 4. 보상 다이아 계산
-                int focusTimeReward = calculateBaseReward(avgHours);
-                int boostReward = boostCount * BOOST_BONUS;
-                int totalReward = Math.min(focusTimeReward + boostReward, MAX_REWARD);
+                int baseReward = calculateBaseReward(avgHours);
+                int totalReward = Math.min(baseReward + boostCount * BOOST_BONUS, MAX_REWARD);
 
                 if (totalReward == 0) {
                     continue;
@@ -114,42 +116,34 @@ public class GrantGuildWeeklyRewardStep {
 
                 // 4. Mail 객체 생성 (모든 멤버에게 발송)
                 for (GuildMember gm : members) {
-                    Long memberId = gm.getMember().getId();
-                    Mail newMail = createDiamondMail(gm.getMember(), guild.getName(), totalReward);
-                    if (memberBestRewardMap.containsKey(memberId)) {
-                        Mail existMail = memberBestRewardMap.get(memberId);
-                        if (newMail.getReward() > existMail.getReward()) {
-                            memberBestRewardMap.put(memberId, newMail);
-                        }
-                    } else {
-                        memberBestRewardMap.put(memberId, newMail);
-                    }
+                    mailsToSend.add(createDiamondMail(gm.getMember(), guild.getName(), totalReward));
                 }
 
                 // 5. 히스토리 및 길드 정보 갱신
                 GuildWeeklyReward history = GuildWeeklyReward.builder()
                         .guild(guild)
-                        .avgFocusTime(avgSeconds)
-                        .boostReward(boostCount * BOOST_BONUS)
-                        .focusTimeReward(focusTimeReward)
+                        .avgStudyTime(avgSeconds)
+                        .boostMemberCount(boostCount)
                         .totalReward(totalReward)
                         .build();
                 historyToSave.add(history);
 
-                guild.updateWeeklyInfo(totalReward);
+                guild.updateAverageFocusTime(avgSeconds);
+                guild.updateLastWeekDiamondReward(totalReward);
                 guildsToUpdate.add(guild);
             }
 
             // 6. 일괄 저장
-            if (!memberBestRewardMap.isEmpty()) {
-                mailRepository.saveAll(memberBestRewardMap.values());
+            if (!mailsToSend.isEmpty()) {
+                mailRepository.saveAll(mailsToSend);
             }
             if (!historyToSave.isEmpty()) {
                 guildWeeklyRewardRepository.saveAll(historyToSave);
             }
+            guildRepository.saveAll(guildsToUpdate);
 
             log.info(">> Granted rewards for {} guilds. Mails: {}, Histories: {}",
-                    historyToSave.size(), memberBestRewardMap.size(), historyToSave.size());
+                    historyToSave.size(), mailsToSend.size(), historyToSave.size());
         };
     }
 

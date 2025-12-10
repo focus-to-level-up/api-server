@@ -15,11 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(
-        name = "leagues",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"season_id", "name"})
-        })
+@Table(name = "leagues")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class League extends BaseEntity {
