@@ -72,11 +72,7 @@ public class MemberInfo {
 
     @Column(nullable = false)
     @ColumnDefault("'없음'")
-    private String school;
-
-    @Column(nullable = false)
-    @ColumnDefault("'없음'")
-    private String schoolAddress;
+    private String belonging;
 
     private String profileMessage;
 
@@ -106,16 +102,15 @@ public class MemberInfo {
 
     @Builder
     public MemberInfo(Member member, Integer age, Gender gender, CategoryMainType categoryMain,
-                      CategorySubType categorySub, String school, String profileMessage,
-                      String schoolAddress, MemberAsset profileImage, MemberAsset profileBorder)
+                      CategorySubType categorySub, String belonging, String profileMessage,
+                      MemberAsset profileImage, MemberAsset profileBorder)
     {
         this.member = member;
         this.age = age;
         this.gender = gender;
         this.categoryMain = categoryMain;
         this.categorySub = categorySub;
-        this.school = school;
-        this.schoolAddress = schoolAddress;
+        this.belonging = belonging;
         this.profileMessage = profileMessage;
         this.profileImage = profileImage;
         this.profileBorder = profileBorder;

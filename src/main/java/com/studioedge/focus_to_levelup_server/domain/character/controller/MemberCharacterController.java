@@ -45,11 +45,9 @@ public class MemberCharacterController {
     @Operation(summary = "대표 캐릭터 조회", description = "현재 설정된 대표 캐릭터를 조회합니다.")
     @GetMapping("/default")
     public ResponseEntity<CommonResponse<MemberCharacterResponse>> getDefaultCharacter(
-            @AuthenticationPrincipal Member member,
-            @Parameter(description = "맴버 pk")
-            @RequestParam(required = false) Long memberId
+            @AuthenticationPrincipal Member member
     ) {
-        MemberCharacterResponse response = memberCharacterService.getDefaultCharacter(memberId == null ? member.getId() : memberId);
+        MemberCharacterResponse response = memberCharacterService.getDefaultCharacter(member.getId());
         return HttpResponseUtil.ok(response);
     }
 

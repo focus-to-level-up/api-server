@@ -1,12 +1,10 @@
 package com.studioedge.focus_to_levelup_server.domain.guild.service;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildWeeklyRewardRepository;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildListResponse;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildResponse;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildSearchResponse;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildWeeklyReward;
 import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildCategory;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.GuildNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
@@ -32,7 +30,6 @@ public class GuildQueryService {
 
     private final GuildRepository guildRepository;
     private final GuildMemberRepository guildMemberRepository;
-    private final GuildWeeklyRewardRepository guildWeeklyRewardRepository;
 
     /**
      * 길드 목록 조회 (페이징)
@@ -63,10 +60,7 @@ public class GuildQueryService {
     public GuildResponse getGuildById(Long guildId, Long memberId) {
         Guild guild = findGuildById(guildId);
         Optional<GuildMember> guildMember = guildMemberRepository.findByGuildIdAndMemberId(guildId, memberId);
-        GuildWeeklyReward guildWeeklyReward = guildWeeklyRewardRepository
-                .findFirstByGuildIdOrderByCreatedAtDesc(guildId)
-                .orElse(null);
-        return GuildResponse.of(guild, guildMember, guildWeeklyReward);
+        return GuildResponse.of(guild, guildMember);
     }
 
     /**

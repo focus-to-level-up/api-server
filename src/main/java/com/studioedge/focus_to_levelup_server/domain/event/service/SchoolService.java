@@ -35,6 +35,6 @@ public class SchoolService {
                 Sort.by(Sort.Direction.DESC, "totalLevel")
         );
         return schoolRepository.findAll(sortedPageable)
-                .map(school -> SchoolResponse.of(school, member.getMemberInfo().getSchool()));
+                .map(school -> SchoolResponse.of(school, member.getMemberInfo().getBelonging()));
     }
 }

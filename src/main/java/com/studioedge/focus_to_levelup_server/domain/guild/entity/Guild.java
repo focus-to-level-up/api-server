@@ -51,11 +51,11 @@ public class Guild extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer averageFocusTime = 0; // 평균 집중 시간 (평균값은 응답보낼때 나눠줘야함)
+    private Integer averageFocusTime = 0; // 평균 집중 시간 (초 단위)
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer lastWeekDiamondReward = 0; // 평균 집중 시간 (평균값은 응답보낼때 나눠줘야함)
+    private Integer lastWeekDiamondReward = 0; // 지난주 다이아 보상
 
     @OneToMany(mappedBy = "guild", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GuildMember> members = new ArrayList<>();
@@ -63,7 +63,8 @@ public class Guild extends BaseEntity {
     @Builder
     public Guild(String name, String description, Integer targetFocusTime,
                  Boolean isPublic, String password, GuildCategory category,
-                 Integer maxMembers, Integer currentMembers, Integer averageFocusTime) {
+                 Integer maxMembers, Integer currentMembers, Integer averageFocusTime,
+                 Integer lastWeekDiamondReward) {
         this.name = name;
         this.description = description;
         this.targetFocusTime = targetFocusTime;
@@ -73,6 +74,7 @@ public class Guild extends BaseEntity {
         this.maxMembers = maxMembers != null ? maxMembers : 20;
         this.currentMembers = currentMembers != null ? currentMembers : 1;
         this.averageFocusTime = averageFocusTime != null ? averageFocusTime : 0;
+        this.lastWeekDiamondReward = lastWeekDiamondReward != null ? lastWeekDiamondReward : 0;
     }
 
     // 비즈니스 메서드
@@ -94,6 +96,10 @@ public class Guild extends BaseEntity {
         this.averageFocusTime = averageFocusTime;
     }
 
+    public void updateLastWeekDiamondReward(Integer reward) {
+        this.lastWeekDiamondReward = reward;
+    }
+
     public void updateName(String name) {
         this.name = name;
     }
@@ -108,10 +114,6 @@ public class Guild extends BaseEntity {
 
     public void updatePassword(String password) {
         this.password = password;
-    }
-
-    public void updateWeeklyInfo(Integer lastWeekDiamondReward) {
-        this.lastWeekDiamondReward = lastWeekDiamondReward;
     }
 
     public void updateTargetFocusTime(Integer targetFocusTime) {

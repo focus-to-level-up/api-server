@@ -34,8 +34,7 @@ public record GuildListResponse(
             Integer averageFocusTime,
             GuildCategory category,
             Boolean isPublic,
-            Boolean isJoinable,
-            Integer lastWeekDiamondReward
+            Boolean isJoinable
     ) {
         public static GuildSummary from(Guild guild) {
             return new GuildSummary(
@@ -47,8 +46,7 @@ public record GuildListResponse(
                     guild.getAverageFocusTime(),
                     guild.getCategory(),
                     guild.getIsPublic(),
-                    !guild.isFull(),
-                    guild.getLastWeekDiamondReward()
+                    !guild.isFull()
             );
         }
     }
