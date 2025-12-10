@@ -46,7 +46,7 @@ public record GuildMemberResponse(
             AtomicInteger ranking = new AtomicInteger(1);
             List<GuildMemberResponse> members = guildMembers.stream()
                     .map(gm -> {
-                        Integer todayFocusTime = todayFocusTimeMap.getOrDefault(gm.getId(), 0);
+                        Integer todayFocusTime = todayFocusTimeMap.getOrDefault(gm.getMember().getId(), 0);
                         return GuildMemberResponse.of(gm, ranking.getAndIncrement(), todayFocusTime);
                     })
                     .toList();
