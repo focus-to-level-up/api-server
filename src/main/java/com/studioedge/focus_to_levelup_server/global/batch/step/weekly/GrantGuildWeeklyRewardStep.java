@@ -82,6 +82,7 @@ public class GrantGuildWeeklyRewardStep {
 
             Map<Long, Mail> memberBestRewardMap = new HashMap<>();
             List<GuildWeeklyReward> historyToSave = new ArrayList<>();
+            List<Guild> guildsToUpdate = new ArrayList<>();
 
             for (Guild guild : guilds) {
                 // 2. 각 길드의 맴버들 조회
@@ -134,6 +135,9 @@ public class GrantGuildWeeklyRewardStep {
                         .totalReward(totalReward)
                         .build();
                 historyToSave.add(history);
+
+                guild.updateWeeklyInfo(totalReward);
+                guildsToUpdate.add(guild);
             }
 
             // 6. 일괄 저장

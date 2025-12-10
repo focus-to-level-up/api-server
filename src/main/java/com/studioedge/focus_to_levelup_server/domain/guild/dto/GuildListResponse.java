@@ -1,7 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.guild.dto;
 
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildWeeklyReward;
 import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildCategory;
 import org.springframework.data.domain.Page;
 
@@ -38,9 +37,7 @@ public record GuildListResponse(
             Boolean isJoinable,
             Integer lastWeekDiamondReward
     ) {
-        public static GuildSummary from(Guild guild, GuildWeeklyReward guildWeeklyReward) {
-            Integer lastWeekDiamondReward = guildWeeklyReward == null ? 0 :
-                    guildWeeklyReward.getTotalReward();
+        public static GuildSummary from(Guild guild) {
             return new GuildSummary(
                     guild.getId(),
                     guild.getName(),
@@ -51,7 +48,7 @@ public record GuildListResponse(
                     guild.getCategory(),
                     guild.getIsPublic(),
                     !guild.isFull(),
-                    lastWeekDiamondReward
+                    guild.getLastWeekDiamondReward()
             );
         }
     }
