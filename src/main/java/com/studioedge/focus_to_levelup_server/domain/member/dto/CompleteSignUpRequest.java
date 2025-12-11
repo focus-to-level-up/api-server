@@ -45,7 +45,6 @@ public record CompleteSignUpRequest(
 
 ) {
     public static MemberInfo from(Member member, List<MemberAsset> initialAssets, CompleteSignUpRequest request) {
-            // TODO: Asset 마스터 데이터 삽입 후 활성화
             MemberAsset imageAsset = null;
             MemberAsset borderAsset = null;
 
@@ -70,7 +69,7 @@ public record CompleteSignUpRequest(
                     .profileImage(imageAsset)
                     .profileBorder(borderAsset)
                     .school(request.schoolName() == null ? "없음" : request.schoolName())
-                    .schoolAddress(request.schoolAddress())
+                    .schoolAddress(request.schoolAddress() == null ? "없음" : request.schoolAddress())
                     .build();
     }
 }
