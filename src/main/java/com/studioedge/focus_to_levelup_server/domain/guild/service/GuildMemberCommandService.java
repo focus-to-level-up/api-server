@@ -61,6 +61,6 @@ public class GuildMemberCommandService {
             targetGuildMember.updateRole(request.role());
         }
 
-        return GuildMemberResponse.of(targetGuildMember, null);
+        return GuildMemberResponse.of(targetGuildMember, null, 0);
     }
 }
