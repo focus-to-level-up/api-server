@@ -22,6 +22,7 @@ public class School extends BaseEntity {
     private String name;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private CategoryMainType categoryMain;
 
     @Column(nullable = false)
