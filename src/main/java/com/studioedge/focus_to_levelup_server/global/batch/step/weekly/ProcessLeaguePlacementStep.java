@@ -122,6 +122,10 @@ public class ProcessLeaguePlacementStep {
                         .collect(Collectors.toList())
         );
         leagueRepository.deleteAll(currentLeagues);
+
+        rankingRepository.flush();
+        leagueRepository.flush();
+
         mailRepository.saveAll(mailsToSend);
 
         // 2-4. 티어별 풀(Pool)을 이용하여 새로운 리그 생성 및 균등 분배

@@ -96,8 +96,8 @@ public class Member extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @ColumnDefault("'ACTIVE'")
-    private MemberStatus status = MemberStatus.ACTIVE;
+    @ColumnDefault("'PENDING'")
+    private MemberStatus status = MemberStatus.PENDING;
 
     @Builder
     public Member(SocialType socialType, String socialId, String nickname, String fcmToken,

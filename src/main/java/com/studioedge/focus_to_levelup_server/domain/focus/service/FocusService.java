@@ -136,7 +136,7 @@ public class FocusService {
         // 만약 dailySubject가 생성되어있지 않다면 저장해야함.
         dailySubjectRepository.save(dailySubject);
         if (AppConstants.SCHOOL_CATEGORIES.contains(memberInfo.getCategoryMain())) {
-            schoolRepository.findByName(memberInfo.getBelonging())
+            schoolRepository.findByName(memberInfo.getSchool())
                     .orElseThrow(SchoolNotFoundException::new)
                     .plusTotalLevel(focusExp);
         }
@@ -145,11 +145,12 @@ public class FocusService {
         List<GuildMember> guildMembers = guildMemberRepository.findAllByMemberIdWithGuild(m.getId());
         for (GuildMember gm : guildMembers) {
             gm.addWeeklyFocusTime(request.focusSeconds());
+            gm.getGuild().updateAverageFocusTime(request.focusSeconds());
         }
 
         // 하루 최대 집중시간 확인하기
-        if (request.focusSeconds() > dailyGoal.getMaxConsecutiveSeconds()) {
-            dailyGoal.renewMaxConsecutiveSeconds(request.focusSeconds());
+        if (request.maxConsecutiveSeconds() > dailyGoal.getMaxConsecutiveSeconds()) {
+            dailyGoal.renewMaxConsecutiveSeconds(request.maxConsecutiveSeconds());
         }
 
         // 오늘 가장 빠른 시작 시각, 가장 늦은 종료 시각 업데이트
