@@ -3,11 +3,17 @@ package com.studioedge.focus_to_levelup_server.domain.payment.service.history;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.PaymentLogRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.history.PaymentHistoryListResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.history.PaymentHistoryResponse;
+import com.studioedge.focus_to_levelup_server.domain.payment.dto.purchase.DiamondPackPurchaseStatusResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.entity.PaymentLog;
+import com.studioedge.focus_to_levelup_server.domain.payment.enums.ProductType;
+import com.studioedge.focus_to_levelup_server.domain.payment.enums.PurchaseStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -28,5 +34,26 @@ public class PaymentHistoryService {
                 .toList();
 
         return PaymentHistoryListResponse.of(responses);
+    }
+
+    /**
+     * 해당 월 다이아팩 구매 여부 확인
+     */
+    public DiamondPackPurchaseStatusResponse getDiamondPackPurchaseStatus(Long memberId) {
+        LocalDate now = LocalDate.now();
+        int month = now.getMonthValue();
+
+        LocalDateTime startOfMonth = LocalDateTime.of(now.withDayOfMonth(1), LocalTime.MIN);
+        LocalDateTime startOfNextMonth = startOfMonth.plusMonths(1);
+
+        boolean purchased = paymentLogRepository.existsByMemberIdAndProductTypeAndStatusAndCreatedAtBetween(
+                memberId,
+                ProductType.DIAMOND_PACK,
+                PurchaseStatus.COMPLETED,
+                startOfMonth,
+                startOfNextMonth
+        );
+
+        return DiamondPackPurchaseStatusResponse.of(purchased, month);
     }
 }

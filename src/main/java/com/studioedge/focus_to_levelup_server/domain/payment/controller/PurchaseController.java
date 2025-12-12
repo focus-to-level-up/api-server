@@ -2,6 +2,7 @@ package com.studioedge.focus_to_levelup_server.domain.payment.controller;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.history.PaymentHistoryListResponse;
+import com.studioedge.focus_to_levelup_server.domain.payment.dto.purchase.DiamondPackPurchaseStatusResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.refund.RefundRequest;
 import com.studioedge.focus_to_levelup_server.domain.payment.dto.refund.RefundResponse;
 import com.studioedge.focus_to_levelup_server.domain.payment.service.history.PaymentHistoryService;
@@ -42,6 +43,15 @@ public class PurchaseController {
             @AuthenticationPrincipal Member member
     ) {
         PaymentHistoryListResponse response = paymentHistoryService.getPaymentHistory(member.getId());
+        return HttpResponseUtil.ok(response);
+    }
+
+    @Operation(summary = "다이아팩 월별 구매 여부 조회", description = "해당 월에 다이아팩을 구매했는지 확인합니다")
+    @GetMapping("/diamond-pack/status")
+    public ResponseEntity<CommonResponse<DiamondPackPurchaseStatusResponse>> getDiamondPackPurchaseStatus(
+            @AuthenticationPrincipal Member member
+    ) {
+        DiamondPackPurchaseStatusResponse response = paymentHistoryService.getDiamondPackPurchaseStatus(member.getId());
         return HttpResponseUtil.ok(response);
     }
 }
