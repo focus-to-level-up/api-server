@@ -1,18 +1,21 @@
 package com.studioedge.focus_to_levelup_server.domain.store.service;
 
+import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
+import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.store.dao.ItemDetailRepository;
+import com.studioedge.focus_to_levelup_server.domain.store.dao.MemberItemRepository;
 import com.studioedge.focus_to_levelup_server.domain.store.entity.ItemDetail;
 import com.studioedge.focus_to_levelup_server.domain.store.entity.MemberItem;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.ItemNotCompletedException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.MemberItemNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.RewardAlreadyReceivedException;
-import com.studioedge.focus_to_levelup_server.domain.store.dao.ItemDetailRepository;
-import com.studioedge.focus_to_levelup_server.domain.store.dao.MemberItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,7 +31,7 @@ public class ItemRewardService {
     private final ItemDetailRepository itemDetailRepository;
     private final MemberRepository memberRepository;
     private final MemberInfoRepository memberInfoRepository;
-
+    private final MemberCharacterRepository memberCharacterRepository;
     /**
      * 아이템 달성 보상 수령
      *
@@ -70,14 +73,19 @@ public class ItemRewardService {
         int rewardLevel = itemDetail.getRewardLevel();
 
         // 레벨 직접 증가
-        member.addLevel(rewardLevel);
-        memberInfo.addTotalLevel(rewardLevel);
+        member.levelUp(rewardLevel);
+        memberInfo.totalLevelUp(rewardLevel);
 
         // 골드 지급 (rewardLevel 그대로)
         memberInfo.addGold(rewardLevel);
 
         // 보상 수령 처리
         memberItem.receiveReward();
+
+        // 대표 캐릭터 레벨업
+        MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefaultTrue(memberId)
+                .orElseThrow(CharacterDefaultNotFoundException::new);
+        memberCharacter.levelUp(rewardLevel);
 
         log.info("Reward claimed: memberId={}, memberItemId={}, rewardLevel={}", memberId, memberItemId, rewardLevel);
     }

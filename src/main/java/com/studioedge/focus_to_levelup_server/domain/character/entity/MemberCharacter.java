@@ -75,12 +75,16 @@ public class MemberCharacter extends BaseEntity {
         this.isDefault = false;
     }
 
-    public void levelUp(Integer exp) {
+    public void expUp(Integer exp) {
         this.currentExp += exp;
         if (this.currentExp >= 600) {
             this.currentLevel += (this.currentExp / 600);
             this.currentExp %= 600;
         }
+    }
+
+    public void levelUp(Integer level) {
+        this.currentLevel += level;
     }
 
     public void setAsDefault(Integer defaultEvolution) {
@@ -89,7 +93,8 @@ public class MemberCharacter extends BaseEntity {
     }
 
     public int evolve() {
-        return ++this.evolution;
+        this.evolution++;
+        return this.evolution;
     }
 
     public void jumpToLevel(int level) {

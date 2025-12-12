@@ -156,4 +156,16 @@ public class Mail extends BaseEntity {
             }
         }
     }
+
+    /**
+     * 메일 내용 업데이트 (batch 시스템 활용)
+     * */
+    public void updateRewardInfo(String title, String description, String popupTitle,
+                                 String popupContent, int reward) {
+        this.title = title;
+        this.description = description;
+        this.popupTitle = popupTitle;
+        this.popupContent = popupContent;
+        this.reward = reward;
+    }
 }

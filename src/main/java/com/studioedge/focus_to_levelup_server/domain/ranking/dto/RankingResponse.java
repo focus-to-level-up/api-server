@@ -8,6 +8,7 @@ import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
+import java.time.LocalTime;
 import java.util.List;
 
 @Builder
@@ -44,12 +45,16 @@ public record RankingResponse (
             Integer focusSeconds,
             @Schema(description = "집중 여부", example = "true")
             Boolean focusing,
+            @Schema(description = "집중 시작 시간", example = "11:00")
+            LocalTime startTime,
             @Schema(description = "본인 여부", example = "false")
             Boolean isMe
     ) {
         public static RankingDetailResponse of(Ranking ranking, DailyGoal dailyGoal, Long memberId) {
-            Member member = ranking.getMember();
             int focusSeconds = (dailyGoal != null) ? dailyGoal.getCurrentSeconds() : 0;
+            LocalTime startTime = dailyGoal.getStartTime() == null ? LocalTime.now() : dailyGoal.getStartTime();
+            Member member = ranking.getMember();
+
             return RankingDetailResponse.builder()
                     .memberId(member.getId())
                     .nickName(member.getNickname())
@@ -57,6 +62,7 @@ public record RankingResponse (
                     .level(member.getCurrentLevel())
                     .focusSeconds(focusSeconds)
                     .focusing(member.getIsFocusing())
+                    .startTime(startTime)
                     .isMe(member.getId().equals(memberId))
                     .build();
         }

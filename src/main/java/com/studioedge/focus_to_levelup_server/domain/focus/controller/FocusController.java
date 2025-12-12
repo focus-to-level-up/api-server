@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.controller;
 
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.StartFocusRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.FocusModeImageResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.service.FocusService;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
@@ -9,13 +10,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Focus")
 @RestController
@@ -40,9 +39,10 @@ public class FocusController {
             )
     })
     public ResponseEntity<CommonResponse<Void>> startFocus(
-            @AuthenticationPrincipal Member member
-    ) {
-        focusService.startFocus(member);
+            @AuthenticationPrincipal Member member,
+            @Valid @RequestBody StartFocusRequest request
+            ) {
+        focusService.startFocus(member, request);
         return HttpResponseUtil.updated(null);
     }
 

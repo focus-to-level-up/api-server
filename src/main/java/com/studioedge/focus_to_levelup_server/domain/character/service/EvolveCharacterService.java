@@ -63,7 +63,7 @@ public class EvolveCharacterService {
                 .map(CharacterAsset::getAsset)
                 .filter(asset ->
                         asset.getType() == AssetType.CHARACTER_PROFILE_IMAGE && // 프로필 이미지만
-                                asset.getName().contains(targetNameKeyword)             // 현재 진화 단계 이름 포함
+                                asset.getName().contains(targetNameKeyword)     // 현재 진화 단계 이름 포함
                 )
                 .findFirst()
                 .orElse(null);

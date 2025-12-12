@@ -57,13 +57,16 @@ public class DailyGoal extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Long usingAllowedAppSeconds = 0L;
+    private Integer usingAllowedAppSeconds = 0;
 
     @Column
-    private LocalTime earliestStartTime;
+    private LocalTime startTime; // 시작시간
 
     @Column
-    private LocalTime latestEndTime;
+    private LocalTime earliestStartTime; // 가장 빠른 시작 시간(아이템 확인용)
+
+    @Column
+    private LocalTime latestEndTime; // 가장 늦은 종료 시간(아이템 확인용)
 
     @Builder
     public DailyGoal(Member member, Integer targetMinutes, LocalDate serviceDate) {
@@ -94,6 +97,10 @@ public class DailyGoal extends BaseEntity {
 
     public void addCurrentSeconds(Integer seconds) {
         this.currentSeconds += seconds;
+    }
+
+    public void updateStartTime(LocalTime startTime) {
+        this.startTime = startTime;
     }
 
     public void updateEarliestStartTime(LocalTime startTime) {
