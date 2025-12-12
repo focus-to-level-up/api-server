@@ -20,10 +20,9 @@ import java.util.Collections;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AuthService {
-
     // 토큰 만료 시간 (밀리초)
-    private static final long ACCESS_TOKEN_EXPIRATION = 86400000L;    // 24시간
-    private static final long REFRESH_TOKEN_EXPIRATION = 1209600000L; // 14일
+    private static final long ACCESS_TOKEN_EXPIRATION = 1209600000L; // 2주
+    private static final long REFRESH_TOKEN_EXPIRATION = 2592000000L; // 1달
 
     private final AppleService appleService;
     private final KakaoService kakaoService;
