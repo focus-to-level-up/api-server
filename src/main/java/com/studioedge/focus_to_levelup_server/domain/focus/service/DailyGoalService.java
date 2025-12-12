@@ -1,5 +1,8 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.service;
 
+import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
+import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateDailyGoalRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.ReceiveDailyGoalRequest;
@@ -23,6 +26,7 @@ import java.time.LocalDate;
 public class DailyGoalService {
     private final MemberRepository memberRepository;
     private final DailyGoalRepository dailyGoalRepository;
+    private final MemberCharacterRepository memberCharacterRepository;
     /**
      * 목표 시간 설정
      * */
@@ -56,13 +60,15 @@ public class DailyGoalService {
                 .orElseThrow(DailyGoalNotFoundException::new);
         Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
+        MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefaultTrue(member.getId())
+                .orElseThrow(CharacterDefaultNotFoundException::new);
 
         if (!dailyGoal.receiveReward()) {
             throw new AlreadyReceivedDailyGoalException();
         }
-        member.levelUp(request.rewardExp());
-        member.getMemberInfo().totalLevelUp(request.rewardExp());
 
-        member.getMemberInfo().totalLevelUp(request.rewardExp());
+        member.expUp(request.rewardExp());
+        member.getMemberInfo().totalExpUp(request.rewardExp());
+        memberCharacter.expUp(request.rewardExp());
     }
 }

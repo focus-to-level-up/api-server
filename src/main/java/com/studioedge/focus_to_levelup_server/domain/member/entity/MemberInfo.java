@@ -188,7 +188,7 @@ public class MemberInfo {
     }
 
     // 총 레벨 업
-    public void totalLevelUp(Integer exp) {
+    public void totalExpUp(Integer exp) {
         this.totalExp += exp;
         if (this.totalExp >= 600) {
             this.totalLevel += (this.totalExp / 600);
@@ -196,7 +196,7 @@ public class MemberInfo {
         }
     }
 
-    public void addTotalLevel(Integer level) {
+    public void totalLevelUp(Integer level) {
         this.totalLevel += level;
     }
 

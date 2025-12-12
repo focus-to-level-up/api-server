@@ -80,6 +80,20 @@ public class GrantGuildWeeklyRewardStep {
             Map<Long, List<GuildMember>> membersByGuild = guildMemberRepository.findAllByGuildIdIn(guildIds)
                     .stream().collect(Collectors.groupingBy(gm -> gm.getGuild().getId()));
 
+            // 현재 조죄한 맴버 ID 추출
+            List<Long> allMemberIds = membersByGuild.values().stream()
+                    .flatMap(List::stream)
+                    .map(gm -> gm.getMember().getId())
+                    .distinct() // 중복 제거
+                    .toList();
+
+            LocalDate oneWeekAgo = LocalDate.now().minusDays(6);
+            List<Mail> existingMails = mailRepository.findAllByReceiverIdInAndTypeAndCreatedAtAfter(
+                    allMemberIds, MailType.GUILD_WEEKLY, oneWeekAgo.atStartOfDay()
+            );
+
+            Map<Long, Mail> dbMailMap = existingMails.stream()
+                    .collect(Collectors.toMap(m -> m.getReceiver().getId(), m -> m));
             Map<Long, Mail> memberBestRewardMap = new HashMap<>();
             List<GuildWeeklyReward> historyToSave = new ArrayList<>();
             List<Guild> guildsToUpdate = new ArrayList<>();
@@ -99,7 +113,6 @@ public class GrantGuildWeeklyRewardStep {
                 // 평균 집중 시간 (초) = 총합 / 인원수
                 int avgSeconds = (int) (totalSeconds / memberCount);
                 double avgHours = avgSeconds / 3600.0;
-
                 // 부스트 사용한 유저의 수
                 int boostCount = (int) members.stream().filter(GuildMember::getIsBoosted).count();
 
@@ -115,14 +128,35 @@ public class GrantGuildWeeklyRewardStep {
                 // 4. Mail 객체 생성 (모든 멤버에게 발송)
                 for (GuildMember gm : members) {
                     Long memberId = gm.getMember().getId();
-                    Mail newMail = createDiamondMail(gm.getMember(), guild.getName(), totalReward);
+                    Mail newMailCandidate = createDiamondMail(gm.getMember(), guild.getName(), totalReward);
+
+                    // Case A: DB에 이미 메일이 있는 경우 (다른 Chunk에서 이미 처리됨)
+                    if (dbMailMap.containsKey(memberId)) {
+                        Mail existingMail = dbMailMap.get(memberId);
+                        // 새로운 보상이 기존 보상보다 클 때만 업데이트 (덮어쓰기)
+                        if (newMailCandidate.getReward() > existingMail.getReward()) {
+                            // [중요] 엔티티 값만 변경하면 Dirty Checking으로 자동 UPDATE 됨
+                            existingMail.updateRewardInfo(
+                                    newMailCandidate.getTitle(),
+                                    newMailCandidate.getDescription(),
+                                    newMailCandidate.getPopupTitle(),
+                                    newMailCandidate.getPopupContent(),
+                                    newMailCandidate.getReward()
+                            );
+                        }
+                        // DB에 있는 메일이 더 좋거나 같으면 아무것도 안함 (유지)
+                        continue;
+                    }
+
+                    // Case B: DB에는 없지만, 현재 Chunk 내에서 이미 처리된 경우 (같은 Chunk 내 다중 길드)
                     if (memberBestRewardMap.containsKey(memberId)) {
-                        Mail existMail = memberBestRewardMap.get(memberId);
-                        if (newMail.getReward() > existMail.getReward()) {
-                            memberBestRewardMap.put(memberId, newMail);
+                        Mail existingMapMail = memberBestRewardMap.get(memberId);
+                        if (newMailCandidate.getReward() > existingMapMail.getReward()) {
+                            memberBestRewardMap.put(memberId, newMailCandidate); // 더 좋은 걸로 교체
                         }
                     } else {
-                        memberBestRewardMap.put(memberId, newMail);
+                        // Case C: 처음 처리하는 경우
+                        memberBestRewardMap.put(memberId, newMailCandidate);
                     }
                 }
 
@@ -146,6 +180,9 @@ public class GrantGuildWeeklyRewardStep {
             }
             if (!historyToSave.isEmpty()) {
                 guildWeeklyRewardRepository.saveAll(historyToSave);
+            }
+            if (!guildsToUpdate.isEmpty()) {
+                guildRepository.saveAll(guildsToUpdate);
             }
 
             log.info(">> Granted rewards for {} guilds. Mails: {}, Histories: {}",

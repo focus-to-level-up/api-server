@@ -170,7 +170,8 @@ public class MemberServiceImpl implements MemberService {
         CategoryMainType mainCategory = request.categoryMain();
         CategorySubType subCategory = request.categorySub();
 
-        if (AppConstants.SCHOOL_CATEGORIES.contains(mainCategory)) {
+        if (AppConstants.SCHOOL_CATEGORIES.contains(mainCategory) &&
+            !request.categorySub().equals(CategorySubType.N_SU)) {
             // 1-1. 초/중/고 카테고리인데 학교 이름이 없는 경우
             if (request.schoolName() == null || request.schoolName().isBlank()) {
                 throw new InvalidSignUpException();

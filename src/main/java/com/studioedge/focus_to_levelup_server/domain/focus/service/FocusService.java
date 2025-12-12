@@ -3,12 +3,14 @@ package com.studioedge.focus_to_levelup_server.domain.focus.service;
 import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.character.service.TrainingRewardService;
 import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.StartFocusRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.FocusModeImageResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.MonsterAnimationResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
@@ -29,6 +31,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMem
 import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
 import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingExcludeException;
+import com.studioedge.focus_to_levelup_server.domain.store.service.ItemAchievementService;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.BackgroundRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.MonsterImageRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Background;
@@ -36,9 +39,8 @@ import com.studioedge.focus_to_levelup_server.domain.system.entity.Monster;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.MonsterImage;
 import com.studioedge.focus_to_levelup_server.domain.system.enums.MonsterImageType;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.BackgroundNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.store.service.ItemAchievementService;
-import com.studioedge.focus_to_levelup_server.domain.character.service.TrainingRewardService;
 import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
+import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -119,9 +121,9 @@ public class FocusService {
         }
 
         // 레벨 업
-        member.levelUp(focusExp);
+        member.expUp(focusExp);
         // 총 레벨 업
-        memberInfo.totalLevelUp(focusExp);
+        memberInfo.totalExpUp(focusExp);
         // 골드 획득
         memberInfo.addGold(focusExp);
         // 일일 목표 공부 시간 더하기
@@ -129,13 +131,16 @@ public class FocusService {
         // 과목 공부 시간 더하기
         dailySubject.addSeconds(request.focusSeconds());
         // 캐릭터 친밀도 상승
-        memberCharacter.levelUp(focusExp);
+        memberCharacter.expUp(focusExp);
         // 집중 상태 해제
         member.focusOff();
 
         // 만약 dailySubject가 생성되어있지 않다면 저장해야함.
         dailySubjectRepository.save(dailySubject);
-        if (AppConstants.SCHOOL_CATEGORIES.contains(memberInfo.getCategoryMain())) {
+        dailySubjectRepository.flush();
+
+        if (AppConstants.SCHOOL_CATEGORIES.contains(memberInfo.getCategoryMain()) &&
+            !memberInfo.getCategorySub().equals(CategorySubType.N_SU)) {
             schoolRepository.findByName(memberInfo.getSchool())
                     .orElseThrow(SchoolNotFoundException::new)
                     .plusTotalLevel(focusExp);
@@ -165,10 +170,14 @@ public class FocusService {
     }
 
     @Transactional
-    public void startFocus(Member m) {
+    public void startFocus(Member m, StartFocusRequest request) {
         Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
+        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), getServiceDate())
+                .orElseThrow(DailyGoalNotFoundException::new);
+
         member.focusOn();
+        dailyGoal.updateStartTime(request.startTime());
     }
 
     // @TODO: 향후 리팩토링 필요함. 몬스터 종류 많아지고, 맵마다 다른 몬스터가 나온다면

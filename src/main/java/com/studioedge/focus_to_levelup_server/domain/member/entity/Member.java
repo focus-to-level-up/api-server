@@ -168,7 +168,7 @@ public class Member extends BaseEntity {
         this.isFocusing = false;
     }
 
-    public void levelUp(Integer exp) {
+    public void expUp(Integer exp) {
         this.currentExp += exp;
         if (this.currentExp >= 600) {
             this.currentLevel += (this.currentExp / 600);
@@ -176,7 +176,7 @@ public class Member extends BaseEntity {
         }
     }
 
-    public void addLevel(Integer level) {
+    public void levelUp(Integer level) {
         this.currentLevel += level;
     }
 
