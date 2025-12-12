@@ -267,19 +267,13 @@ public class AuthService {
             throw new TokenMismatchException();
         }
 
-        // 5. 새로운 Access Token 생성
-        UserAuthentication authentication = new UserAuthentication(
-                memberId,
-                null,
-                Collections.emptyList()
-        );
-        String newAccessToken = jwtTokenProvider.generateToken(
-                authentication,
-                ACCESS_TOKEN_EXPIRATION,
-                TokenType.ACCESS
-        );
+        // 5. 새로운 Access Token + Refresh Token 생성 (RTR 방식)
+        Token newToken = generateToken(member.getId());
 
-        return TokenRefreshResponse.of(newAccessToken);
+        // 6. 새로운 Refresh Token을 DB에 저장 (기존 토큰 무효화)
+        member.setRefreshToken(newToken.getRefreshToken());
+
+        return TokenRefreshResponse.of(newToken.getAccessToken(), newToken.getRefreshToken());
     }
 
     /**
