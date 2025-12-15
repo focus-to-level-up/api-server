@@ -7,6 +7,9 @@ import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberChar
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
 import com.studioedge.focus_to_levelup_server.domain.event.entity.School;
+import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
+import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberAssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
@@ -18,7 +21,6 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.AssetRepository;
@@ -56,7 +58,7 @@ public class MemberServiceImpl implements MemberService {
     private final MemberCharacterRepository memberCharacterRepository;
     private final CharacterRepository characterRepository;
     private final RankingRepository rankingRepository;
-    private final LeagueRepository leagueRepository;
+    private final GuildMemberRepository guildMemberRepository;
 
     @Override
     @Transactional
@@ -147,6 +149,13 @@ public class MemberServiceImpl implements MemberService {
             throw new CategoryUpdateException();
         }
         memberInfo.updateCategory(request);
+
+        List<GuildMember> memberWithGuilds = guildMemberRepository.findAllByMemberIdWithGuild(member.getId());
+        for (GuildMember guildMember : memberWithGuilds) {
+            if (guildMember.getRole().equals(GuildRole.LEADER)) {
+                guildMember.getGuild().updateCategory(request.categorySub());
+            }
+        }
     }
 
     @Override

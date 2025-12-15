@@ -1,6 +1,5 @@
 package com.studioedge.focus_to_levelup_server.domain.guild.dto;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildCategory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -17,9 +16,6 @@ public record GuildCreateRequest(
         @NotNull(message = "공개/비공개 여부를 선택해주세요.")
         Boolean isPublic,
 
-        String password, // Optional (비공개 시만)
-
-        @NotNull(message = "길드 카테고리를 선택해주세요.")
-        GuildCategory category
+        String password // Optional (비공개 시만)
 ) {
 }

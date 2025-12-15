@@ -2,7 +2,7 @@ package com.studioedge.focus_to_levelup_server.domain.guild.dto;
 
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildWeeklyReward;
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildCategory;
+import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -39,7 +39,7 @@ public record GuildListResponse(
             Integer maxMembers,
             Integer lastAverageFocusTime,
             Integer averageFocusTime,
-            GuildCategory category,
+            CategorySubType category,
             Boolean isPublic,
             Boolean isJoinable,
             Integer lastWeekDiamondReward

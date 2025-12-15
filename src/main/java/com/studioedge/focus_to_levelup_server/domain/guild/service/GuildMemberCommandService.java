@@ -56,6 +56,7 @@ public class GuildMemberCommandService {
             requesterGuildMember.updateRole(GuildRole.SUB_LEADER);
             // 대상자를 LEADER로 승격
             targetGuildMember.updateRole(GuildRole.LEADER);
+            targetGuildMember.getGuild().updateCategory(requesterGuildMember.getMember().getMemberInfo().getCategorySub());
         } else {
             // 일반 역할 변경 (SUB_LEADER ↔ MEMBER)
             targetGuildMember.updateRole(request.role());
