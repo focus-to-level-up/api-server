@@ -4,10 +4,10 @@ import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildListResponse
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildMemberResponse;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildResponse;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildSearchResponse;
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildCategory;
 import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildMemberQueryService;
 import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildQueryService;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
 import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -92,7 +92,7 @@ public class GuildController {
     })
     public ResponseEntity<CommonResponse<GuildSearchResponse>> searchGuilds(
             @Parameter(description = "검색 키워드") @RequestParam(required = false) String keyword,
-            @Parameter(description = "길드 카테고리") @RequestParam(required = false) GuildCategory category,
+            @Parameter(description = "길드 카테고리") @RequestParam(required = false) CategorySubType category,
             @Parameter(description = "페이지 번호") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size,
             @Parameter(description = "정렬 기준") @RequestParam(defaultValue = "currentMembers") String sortBy,

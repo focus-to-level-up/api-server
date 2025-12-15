@@ -9,15 +9,18 @@ import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildSearchRespon
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildWeeklyReward;
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildCategory;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.GuildNotFoundException;
+import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -50,7 +53,7 @@ public class GuildQueryService {
      * 카테고리별 길드 목록 조회 (페이징)
      * @param excludeFull true이면 정원이 찬 길드(currentMembers == maxMembers) 제외
      */
-    public GuildListResponse getGuildsByCategory(GuildCategory category, Pageable pageable, boolean excludeFull) {
+    public GuildListResponse getGuildsByCategory(CategorySubType category, Pageable pageable, boolean excludeFull) {
         Page<Guild> guildPage = excludeFull
                 ? guildRepository.findAllByCategoryAvailable(category, pageable)
                 : guildRepository.findAllByCategory(category, pageable);
@@ -84,7 +87,7 @@ public class GuildQueryService {
     /**
      * 길드 검색 (키워드 + 카테고리)
      */
-    public GuildSearchResponse searchGuildsByCategory(String keyword, GuildCategory category, Pageable pageable) {
+    public GuildSearchResponse searchGuildsByCategory(String keyword, CategorySubType category, Pageable pageable) {
         Page<Guild> guildPage = guildRepository.searchByKeywordAndCategory(keyword, category, pageable);
         Map<Long, GuildWeeklyReward> rewardMap = getRewardMap(guildPage.getContent());
 

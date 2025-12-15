@@ -1,7 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.guild.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildCategory;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
+import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -39,7 +39,7 @@ public class Guild extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private GuildCategory category;
+    private CategorySubType category;
 
     @Column(nullable = false)
     @ColumnDefault("20")
@@ -62,7 +62,7 @@ public class Guild extends BaseEntity {
 
     @Builder
     public Guild(String name, String description, Integer targetFocusTime,
-                 Boolean isPublic, String password, GuildCategory category,
+                 Boolean isPublic, String password, CategorySubType category,
                  Integer maxMembers, Integer currentMembers, Integer averageFocusTime) {
         this.name = name;
         this.description = description;
@@ -92,6 +92,10 @@ public class Guild extends BaseEntity {
 
     public void updateAverageFocusTime(Integer averageFocusTime) {
         this.averageFocusTime = averageFocusTime;
+    }
+
+    public void updateCategory(CategorySubType category) {
+        this.category = category;
     }
 
     public void updateName(String name) {

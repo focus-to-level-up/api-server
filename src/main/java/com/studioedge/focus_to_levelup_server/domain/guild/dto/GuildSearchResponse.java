@@ -2,7 +2,7 @@ package com.studioedge.focus_to_levelup_server.domain.guild.dto;
 
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildWeeklyReward;
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildCategory;
+import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -14,13 +14,13 @@ public record GuildSearchResponse(
         Long totalElements,
         Integer currentPage,
         String keyword,
-        GuildCategory category
+        CategorySubType category
 ) {
     public static GuildSearchResponse of(
             Page<Guild> guildPage,
             Map<Long, GuildWeeklyReward> rewardMap, // 추가됨
             String keyword,
-            GuildCategory category
+            CategorySubType category
     ) {
         List<GuildListResponse.GuildSummary> guilds = guildPage.getContent().stream()
                 .map(guild -> {

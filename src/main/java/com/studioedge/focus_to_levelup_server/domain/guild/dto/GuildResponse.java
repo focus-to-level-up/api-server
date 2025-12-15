@@ -3,8 +3,8 @@ package com.studioedge.focus_to_levelup_server.domain.guild.dto;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildWeeklyReward;
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildCategory;
 import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
+import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
 
 import java.util.Optional;
 
@@ -16,7 +16,7 @@ public record GuildResponse(
         Integer averageFocusTime,
         Integer currentMembers,
         Integer maxMembers,
-        GuildCategory category,
+        CategorySubType category,
         Boolean isPublic,
         Integer lastWeekFocusTimeReward,
         Integer lastWeekBoostReward,

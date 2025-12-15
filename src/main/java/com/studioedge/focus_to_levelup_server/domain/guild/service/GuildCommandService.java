@@ -64,7 +64,7 @@ public class GuildCommandService {
                 .name(request.name())
                 .description(request.description())
                 .targetFocusTime(request.targetFocusTime())
-                .category(request.category())
+                .category(member.getMemberInfo().getCategorySub())
                 .isPublic(request.isPublic())
                 .password(encodedPassword)
                 .maxMembers(20)

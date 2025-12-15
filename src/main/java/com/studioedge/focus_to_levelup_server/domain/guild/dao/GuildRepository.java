@@ -1,7 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.guild.dao;
 
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildCategory;
+import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,7 +21,7 @@ public interface GuildRepository extends JpaRepository<Guild, Long> {
     List<Guild> findAllByIsPublicTrueAndCurrentMembersLessThan(Integer maxMembers);
 
     // 카테고리별 정렬
-    List<Guild> findAllByCategoryOrderByAverageFocusTimeDesc(GuildCategory category, Pageable pageable);
+    List<Guild> findAllByCategoryOrderByAverageFocusTimeDesc(CategorySubType category, Pageable pageable);
 
     // 키워드 검색
     @Query("SELECT g FROM Guild g WHERE g.name LIKE %:keyword%")
@@ -31,7 +31,7 @@ public interface GuildRepository extends JpaRepository<Guild, Long> {
     @Query("SELECT g FROM Guild g WHERE g.name LIKE %:keyword% AND g.category = :category")
     Page<Guild> searchByKeywordAndCategory(
             @Param("keyword") String keyword,
-            @Param("category") GuildCategory category,
+            @Param("category") CategorySubType category,
             Pageable pageable
     );
 
@@ -43,9 +43,9 @@ public interface GuildRepository extends JpaRepository<Guild, Long> {
     Page<Guild> findAllAvailable(Pageable pageable);
 
     // 카테고리별 조회 (페이징)
-    Page<Guild> findAllByCategory(GuildCategory category, Pageable pageable);
+    Page<Guild> findAllByCategory(CategorySubType category, Pageable pageable);
 
     // 카테고리별 조회 - 정원 미달 길드만 (페이징)
     @Query("SELECT g FROM Guild g WHERE g.category = :category AND g.currentMembers < g.maxMembers")
-    Page<Guild> findAllByCategoryAvailable(@Param("category") GuildCategory category, Pageable pageable);
+    Page<Guild> findAllByCategoryAvailable(@Param("category") CategorySubType category, Pageable pageable);
 }
