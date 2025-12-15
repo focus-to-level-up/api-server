@@ -3,11 +3,11 @@ package com.studioedge.focus_to_levelup_server.domain.focus.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 public record StartFocusRequest (
-        @NotNull(message = "괌고 집중 시작시간은 필수적입니다.")
-        @Schema(description = "과목 집중 시작시간", example = "11:00")
-        LocalTime startTime
+        @NotNull(message = "집중 시작시간은 필수적입니다.")
+        @Schema(description = "집중 시작 날짜 및 시간", example = "2025-12-15T11:00:00")
+        LocalDateTime startTime
 ) {
 }

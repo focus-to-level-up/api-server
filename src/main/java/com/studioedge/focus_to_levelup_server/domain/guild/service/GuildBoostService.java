@@ -2,10 +2,12 @@ package com.studioedge.focus_to_levelup_server.domain.guild.service;
 
 import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildBoostRepository;
 import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildWeeklyRewardRepository;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildListResponse;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildBoost;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
+import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildWeeklyReward;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.AlreadyBoostedException;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.MaxBoostLimitExceededException;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.NotGuildMemberException;
@@ -20,7 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 길드 부스트 서비스
@@ -36,6 +41,7 @@ public class GuildBoostService {
 
     private final GuildBoostRepository guildBoostRepository;
     private final GuildMemberRepository guildMemberRepository;
+    private final GuildWeeklyRewardRepository guildWeeklyRewardRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final MemberRepository memberRepository;
     private final GuildQueryService guildQueryService;
@@ -133,9 +139,18 @@ public class GuildBoostService {
     @Transactional(readOnly = true)
     public GuildListResponse getMyBoostedGuilds(Long memberId) {
         List<GuildBoost> guildBoosts = guildBoostRepository.findAllByMemberIdAndIsActiveTrueWithGuild(memberId);
+        List<Long> guildIds = guildBoosts.stream()
+                .map(gm -> gm.getGuild().getId())
+                .toList();
+
+        Map<Long, GuildWeeklyReward> rewardMap = getRewardMap(guildIds);
 
         List<GuildListResponse.GuildSummary> guilds = guildBoosts.stream()
-                .map(gb -> GuildListResponse.GuildSummary.from(gb.getGuild()))
+                .map(gb -> {
+                    Guild guild = gb.getGuild();
+                    GuildWeeklyReward reward = rewardMap.get(guild.getId());
+                    return GuildListResponse.GuildSummary.from(guild, reward);
+                })
                 .toList();
 
         return new GuildListResponse(guilds, 1, (long) guilds.size(), 0);
@@ -209,5 +224,20 @@ public class GuildBoostService {
                     guildBoost.getMember().getId()
             ).ifPresent(GuildMember::deactivateBoost);
         }
+    }
+
+    private Map<Long, GuildWeeklyReward> getRewardMap(List<Long> guildIds) {
+        if (guildIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<GuildWeeklyReward> rewards = guildWeeklyRewardRepository.findLatestRewardsByGuildIds(guildIds);
+
+        return rewards.stream()
+                .collect(Collectors.toMap(
+                        r -> r.getGuild().getId(),
+                        r -> r,
+                        (existing, replacement) -> existing
+                ));
     }
 }

@@ -66,7 +66,7 @@ public class StartNewSeasonStep {
             Season newSeason = Season.builder()
                     .name("Season " + (seasonCount + 1))
                     .startDate(today)
-                    .endDate(today.plusWeeks(6))
+                    .endDate(today.plusWeeks(6).minusDays(1))
                     .build();
             seasonRepository.save(newSeason);
 

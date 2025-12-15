@@ -1,5 +1,7 @@
 package com.studioedge.focus_to_levelup_server.global.batch.step.daily;
 
+import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
+import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
@@ -19,7 +21,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
+
+import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
 
 @Slf4j
 @Configuration
@@ -29,6 +35,7 @@ public class CheckFocusingIsOnStep {
     private final PlatformTransactionManager platformTransactionManager;
 
     private final MemberRepository memberRepository;
+    private final DailyGoalRepository dailyGoalRepository;
     private final RankingRepository rankingRepository;
 
 
@@ -59,6 +66,24 @@ public class CheckFocusingIsOnStep {
         return member -> {
             MemberSetting setting = member.getMemberSetting();
             boolean isJustWarned = setting.warning();
+
+            Optional<DailyGoal> dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(
+                    member.getId(), getServiceDate().minusDays(1)
+            );
+
+            boolean isStartedBeforeMidnight = false;
+            if (dailyGoal.isPresent()) {
+                LocalDateTime startTime = dailyGoal.get().getStartTime();
+                if (startTime != null) {
+                    LocalDateTime midnight = getServiceDate().atStartOfDay();
+                    if (startTime.isBefore(midnight)) {
+                        isStartedBeforeMidnight = true;
+                    }
+                }
+            }
+            if (!isStartedBeforeMidnight) {
+                return member;
+            }
 
             if (!isJustWarned) {
                 log.info(">> 사용자 밴 처리 및 랭킹 삭제: {}", member.getNickname());

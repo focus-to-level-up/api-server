@@ -24,6 +24,8 @@ import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
 import org.springframework.batch.item.data.builder.RepositoryItemWriterBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -49,6 +51,16 @@ public class GrantWeeklyRewardStep {
                 .reader(grantWeeklyRewardReader())
                 .processor(grantWeeklyRewardProcessor())
                 .writer(grantWeeklyRewardWriter())
+                .faultTolerant()
+                // 1. 특정 예외 발생 시 배치를 멈추지 않고 건너뜀
+                .skip(IllegalArgumentException.class) // 로직 에러
+                .skip(NullPointerException.class)     // 데이터 누락 에러
+                .skip(DataIntegrityViolationException.class) // DB 제약조건 에러
+                // 2. 최대 몇 개까지 건너뛸지 제한
+                .skipLimit(20)
+                // 3. 재시도 로직 (DB 연결 실패 등 일시적 장애용)
+                .retry(DeadlockLoserDataAccessException.class)
+                .retryLimit(3)
                 .build();
     }
 
@@ -74,18 +86,28 @@ public class GrantWeeklyRewardStep {
         return ranking -> {
             Member member = ranking.getMember();
 
-            // 2. 유저의 대표 캐릭터 정보 조회
-            // 유저가 지난주 보상을 받지 못했다면, 해당 보상은 덮어씌어진다.
+            // 2. 유저의 대표 캐릭터 정보 조회 (데이터 누락 대비 방어 로직 추가)
             MemberCharacter memberCharacter = memberCharacterRepository
                     .findByMemberIdAndIsDefaultTrue(member.getId())
-                    .orElseThrow(() -> new IllegalStateException("대표 캐릭터 없음: Member ID " + member.getId()));
+                    .orElse(null);
+
+            if (memberCharacter == null) {
+                log.warn(">> [Skip] 주간 보상 지급 제외: 대표 캐릭터가 설정되지 않음 (Member ID: {})", member.getId());
+                return null; // null을 반환하면 Writer로 넘어가지 않고 해당 건만 건너뜁니다.
+            }
 
             // 3. 캐릭터 이미지 조회 (IDLE 타입)
             CharacterImage characterImage = characterImageRepository.findByCharacterIdAndEvolutionAndImageType(
                     memberCharacter.getCharacter().getId(),
                     memberCharacter.getDefaultEvolution(),
                     CharacterImageType.IDLE
-            ).orElseThrow(() -> new IllegalStateException("캐릭터 이미지 조회 실패: CharID " + memberCharacter.getCharacter().getId()));
+            ).orElse(null);
+
+            if (characterImage == null) {
+                log.warn(">> [Skip] 주간 보상 지급 제외: 캐릭터 이미지 데이터 누락 (Char ID: {}, Evolution: {})",
+                        memberCharacter.getCharacter().getId(), memberCharacter.getDefaultEvolution());
+                return null; // 이미지가 없으면 보상 생성을 건너뜁니다.
+            }
 
             // 4. WeeklyReward 생성
             return WeeklyReward.builder()

@@ -12,6 +12,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -60,7 +61,7 @@ public class DailyGoal extends BaseEntity {
     private Integer usingAllowedAppSeconds = 0;
 
     @Column
-    private LocalTime startTime; // 시작시간
+    private LocalDateTime startTime; // 시작시간
 
     @Column
     private LocalTime earliestStartTime; // 가장 빠른 시작 시간(아이템 확인용)
@@ -99,7 +100,7 @@ public class DailyGoal extends BaseEntity {
         this.currentSeconds += seconds;
     }
 
-    public void updateStartTime(LocalTime startTime) {
+    public void updateStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
 

@@ -66,9 +66,6 @@ public class UpdateWeeklyStatStep {
                 .reader(updateWeeklyStatReader())
                 .processor(updateWeeklyStatProcessor())
                 .writer(updateWeeklyStatWriter())
-                .faultTolerant()
-                .skip(Exception.class)
-                .skipLimit(100)
                 .build();
     }
 
@@ -162,7 +159,7 @@ public class UpdateWeeklyStatStep {
                 .mapToInt(DailyGoal::getCurrentSeconds)
                 .sum() / 60;
 
-        // 3-2. 대표 캐릭터 이미지 조회 (N+1 발생 지점이지만, 원본 로직 유지)
+        // 3-2. 대표 캐릭터 이미지 조회
         MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefaultTrue(member.getId())
                 .orElseThrow(() -> new IllegalStateException("현재 맴버의 대표 캐릭터가 설정되어있지 않습니다. ID: " + member.getId()));
         CharacterImage characterImage = characterImageRepository.findByCharacterIdAndEvolutionAndImageType(
