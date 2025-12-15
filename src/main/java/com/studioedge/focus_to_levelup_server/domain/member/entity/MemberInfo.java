@@ -61,7 +61,7 @@ public class MemberInfo {
 
     @Column(nullable = false)
     @ColumnDefault("1")
-    private Integer totalLevel = 0;
+    private Integer totalLevel = 1;
 
     @Column(nullable = false)
     @ColumnDefault("0")

@@ -41,7 +41,7 @@ public class FocusController {
     public ResponseEntity<CommonResponse<Void>> startFocus(
             @AuthenticationPrincipal Member member,
             @Valid @RequestBody StartFocusRequest request
-            ) {
+    ) {
         focusService.startFocus(member, request);
         return HttpResponseUtil.updated(null);
     }

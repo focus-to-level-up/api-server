@@ -22,6 +22,8 @@ import org.springframework.batch.item.data.RepositoryItemReader;
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -51,6 +53,16 @@ public class GrantGuildWeeklyRewardStep {
                 .reader(grantGuildWeeklyRewardReader())
                 .processor(grantGuildWeeklyRewardProcessor())
                 .writer(grantGuildWeeklyRewardWriter())
+                .faultTolerant()
+                // 1. 특정 예외 발생 시 배치를 멈추지 않고 건너뜀
+                .skip(IllegalArgumentException.class) // 로직 에러
+                .skip(NullPointerException.class)     // 데이터 누락 에러
+                .skip(DataIntegrityViolationException.class) // DB 제약조건 에러
+                // 2. 최대 몇 개까지 건너뛸지 제한
+                .skipLimit(20)
+                // 3. 재시도 로직 (DB 연결 실패 등 일시적 장애용)
+                .retry(DeadlockLoserDataAccessException.class)
+                .retryLimit(3)
                 .build();
     }
     @Bean

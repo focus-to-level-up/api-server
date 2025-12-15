@@ -1,5 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.guild.service;
 
+import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildRepository;
 import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildWeeklyRewardRepository;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildListResponse;
 import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildResponse;
@@ -9,15 +11,14 @@ import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildWeeklyReward;
 import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildCategory;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.GuildNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 길드 조회 서비스
@@ -42,9 +43,9 @@ public class GuildQueryService {
         Page<Guild> guildPage = excludeFull
                 ? guildRepository.findAllAvailable(pageable)
                 : guildRepository.findAll(pageable);
-        return GuildListResponse.of(guildPage);
+        Map<Long, GuildWeeklyReward> rewardMap = getRewardMap(guildPage.getContent());
+        return GuildListResponse.of(guildPage, rewardMap);
     }
-
     /**
      * 카테고리별 길드 목록 조회 (페이징)
      * @param excludeFull true이면 정원이 찬 길드(currentMembers == maxMembers) 제외
@@ -53,7 +54,8 @@ public class GuildQueryService {
         Page<Guild> guildPage = excludeFull
                 ? guildRepository.findAllByCategoryAvailable(category, pageable)
                 : guildRepository.findAllByCategory(category, pageable);
-        return GuildListResponse.of(guildPage);
+        Map<Long, GuildWeeklyReward> rewardMap = getRewardMap(guildPage.getContent());
+        return GuildListResponse.of(guildPage, rewardMap);
     }
 
     /**
@@ -74,16 +76,9 @@ public class GuildQueryService {
      */
     public GuildSearchResponse searchGuilds(String keyword, Pageable pageable) {
         Page<Guild> guildPage = guildRepository.searchByKeyword(keyword, pageable);
-        return new GuildSearchResponse(
-                guildPage.getContent().stream()
-                        .map(GuildListResponse.GuildSummary::from)
-                        .toList(),
-                guildPage.getTotalPages(),
-                guildPage.getTotalElements(),
-                guildPage.getNumber(),
-                keyword,
-                null
-        );
+        Map<Long, GuildWeeklyReward> rewardMap = getRewardMap(guildPage.getContent());
+
+        return GuildSearchResponse.of(guildPage, rewardMap, keyword, null);
     }
 
     /**
@@ -91,16 +86,9 @@ public class GuildQueryService {
      */
     public GuildSearchResponse searchGuildsByCategory(String keyword, GuildCategory category, Pageable pageable) {
         Page<Guild> guildPage = guildRepository.searchByKeywordAndCategory(keyword, category, pageable);
-        return new GuildSearchResponse(
-                guildPage.getContent().stream()
-                        .map(GuildListResponse.GuildSummary::from)
-                        .toList(),
-                guildPage.getTotalPages(),
-                guildPage.getTotalElements(),
-                guildPage.getNumber(),
-                keyword,
-                category
-        );
+        Map<Long, GuildWeeklyReward> rewardMap = getRewardMap(guildPage.getContent());
+
+        return GuildSearchResponse.of(guildPage, rewardMap, keyword, category);
     }
 
     /**
@@ -111,11 +99,23 @@ public class GuildQueryService {
                 .orElseThrow(GuildNotFoundException::new);
     }
 
-    /**
-     * 내부용 길드 조회 (멤버 포함, JOIN FETCH)
-     */
-    public Guild findGuildByIdWithMembers(Long guildId) {
-        return guildRepository.findByIdWithMembers(guildId)
-                .orElseThrow(GuildNotFoundException::new);
+    private Map<Long, GuildWeeklyReward> getRewardMap(List<Guild> guilds) {
+        if (guilds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<Long> guildIds = guilds.stream()
+                .map(Guild::getId)
+                .toList();
+
+        // IN 절 쿼리로 일괄 조회
+        List<GuildWeeklyReward> rewards = guildWeeklyRewardRepository.findLatestRewardsByGuildIds(guildIds);
+
+        return rewards.stream()
+                .collect(Collectors.toMap(
+                        r -> r.getGuild().getId(),
+                        r -> r,
+                        (existing, replacement) -> existing // 중복 시 기존 값 유지 (방어 코드)
+                ));
     }
 }
