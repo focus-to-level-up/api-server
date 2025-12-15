@@ -217,10 +217,9 @@ public class ItemAchievementService {
         // 달성 여부는 DailyGoal의 최대값으로 판단
         boolean isAchieved = maxConsecutiveMinutes >= requiredMinutes;
 
-        if (isAchieved) {
-            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
-            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
-        }
+        // 달성 여부와 관계없이 키 유지 (달성 시 값 설정, 미달성 시 null)
+        progressData.put("achievedDate", isAchieved ? serviceDate.format(DATE_FORMATTER) : null);
+        progressData.put("achievedDay", isAchieved ? DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()) : null);
 
         try {
             memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
@@ -278,10 +277,9 @@ public class ItemAchievementService {
         // 달성 조건: 새벽 4시 이후 && 요구 시간보다 이른 경우
         boolean isAchieved = earliestStartTime.getHour() >= 4 && earliestStartTime.getHour() < requiredHour;
 
-        if (isAchieved) {
-            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
-            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
-        }
+        // 달성 여부와 관계없이 키 유지 (달성 시 값 설정, 미달성 시 null)
+        progressData.put("achievedDate", isAchieved ? serviceDate.format(DATE_FORMATTER) : null);
+        progressData.put("achievedDay", isAchieved ? DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()) : null);
 
         try {
             memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
@@ -340,10 +338,9 @@ public class ItemAchievementService {
         boolean isAchieved = (requiredHour == 0 && latestHour >= 0 && latestHour < 4) ||
                              (requiredHour > 0 && latestHour >= requiredHour);
 
-        if (isAchieved) {
-            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
-            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
-        }
+        // 달성 여부와 관계없이 키 유지 (달성 시 값 설정, 미달성 시 null)
+        progressData.put("achievedDate", isAchieved ? serviceDate.format(DATE_FORMATTER) : null);
+        progressData.put("achievedDay", isAchieved ? DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()) : null);
 
         try {
             memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
@@ -400,10 +397,9 @@ public class ItemAchievementService {
 
         boolean isAchieved = restHours < requiredRestHours;
 
-        if (isAchieved) {
-            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
-            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
-        }
+        // 달성 여부와 관계없이 키 유지 (달성 시 값 설정, 미달성 시 null)
+        progressData.put("achievedDate", isAchieved ? serviceDate.format(DATE_FORMATTER) : null);
+        progressData.put("achievedDay", isAchieved ? DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()) : null);
 
         try {
             memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
@@ -499,6 +495,7 @@ public class ItemAchievementService {
 
         // 달성 조건: 약한 요일들 중 하나라도 이번 주 평균 이상이면 달성
         boolean isAchieved = false;
+        String achievedDayStr = null;
         for (DayOfWeek weakestDayOfWeek : weakestDaysOfWeek) {
             LocalDate thisWeekTargetDay = weekStart.with(TemporalAdjusters.nextOrSame(weakestDayOfWeek));
             int thisWeekTargetDaySeconds = thisWeekDailyMap.getOrDefault(thisWeekTargetDay, 0);
@@ -508,13 +505,13 @@ public class ItemAchievementService {
 
             if (thisWeekTargetDaySeconds >= thisWeekAverageSeconds) {
                 isAchieved = true;
-                progressData.put("achievedDay", DAY_OF_WEEK_KR.get(weakestDayOfWeek));
+                achievedDayStr = DAY_OF_WEEK_KR.get(weakestDayOfWeek);
             }
         }
 
-        if (isAchieved) {
-            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
-        }
+        // 달성 여부와 관계없이 키 유지 (달성 시 값 설정, 미달성 시 null)
+        progressData.put("achievedDate", isAchieved ? serviceDate.format(DATE_FORMATTER) : null);
+        progressData.put("achievedDay", achievedDayStr);
 
         try {
             memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
@@ -570,10 +567,9 @@ public class ItemAchievementService {
 
         boolean isAchieved = achievedDays.size() == 7;
 
-        if (isAchieved) {
-            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
-            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
-        }
+        // 달성 여부와 관계없이 키 유지 (달성 시 값 설정, 미달성 시 null)
+        progressData.put("achievedDate", isAchieved ? serviceDate.format(DATE_FORMATTER) : null);
+        progressData.put("achievedDay", isAchieved ? DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()) : null);
 
         try {
             memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
@@ -620,10 +616,9 @@ public class ItemAchievementService {
         // 지난 주 기록이 있어야 하고, 이번 주가 더 많아야 함
         boolean isAchieved = lastWeekSeconds > 0 && thisWeekSeconds > lastWeekSeconds;
 
-        if (isAchieved) {
-            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
-            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
-        }
+        // 달성 여부와 관계없이 키 유지 (달성 시 값 설정, 미달성 시 null)
+        progressData.put("achievedDate", isAchieved ? serviceDate.format(DATE_FORMATTER) : null);
+        progressData.put("achievedDay", isAchieved ? DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()) : null);
 
         try {
             memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
@@ -661,10 +656,9 @@ public class ItemAchievementService {
 
         boolean isAchieved = totalHours >= requiredHours;
 
-        if (isAchieved) {
-            progressData.put("achievedDate", serviceDate.format(DATE_FORMATTER));
-            progressData.put("achievedDay", DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()));
-        }
+        // 달성 여부와 관계없이 키 유지 (달성 시 값 설정, 미달성 시 null)
+        progressData.put("achievedDate", isAchieved ? serviceDate.format(DATE_FORMATTER) : null);
+        progressData.put("achievedDay", isAchieved ? DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()) : null);
 
         try {
             memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
@@ -991,6 +985,76 @@ public class ItemAchievementService {
             memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
         } catch (Exception e) {
             log.error("Error updating progressData for 누적 집중의 대가 (sibling)", e);
+        }
+    }
+
+    // ========== 아이템 구매 시 초기 progressData 설정 ==========
+
+    /**
+     * 아이템 구매 시 초기 progressData 생성
+     * 집중 세션 전에도 클라이언트에서 표시할 수 있도록 기본값 설정
+     *
+     * @param itemName 아이템 이름
+     * @param selection 선택한 옵션 (parameter)
+     * @return JSON 형식의 초기 progressData
+     */
+    public String createInitialProgressData(String itemName, Integer selection) {
+        Map<String, Object> progressData = new HashMap<>();
+
+        switch (itemName) {
+            case "집중력 폭발" -> {
+                progressData.put("maxConsecutiveMinutes", 0);
+                progressData.put("requiredMinutes", selection);
+            }
+            case "시작 시간 사수" -> {
+                progressData.put("earliestStartTime", null);
+                progressData.put("currentStartTime", null);
+                progressData.put("requiredHour", selection);
+                progressData.put("recordedDate", null);
+            }
+            case "마지막 생존자" -> {
+                progressData.put("latestEndTime", null);
+                progressData.put("currentEndTime", null);
+                progressData.put("requiredHour", selection);
+                progressData.put("recordedDate", null);
+            }
+            case "휴식은 사치" -> {
+                progressData.put("todayRestHours", 0.0);
+                progressData.put("todayRestMinutes", 0);
+                progressData.put("requiredRestHours", selection);
+            }
+            case "약점 극복" -> {
+                progressData.put("lastWeekRecordedDays", 0);
+                progressData.put("requiredDays", 7);
+                progressData.put("status", "지난 주 기록 부족");
+            }
+            case "저지 불가" -> {
+                progressData.put("achievedDaysCount", 0);
+                progressData.put("achievedDays", "");
+            }
+            case "과거 나와 대결" -> {
+                progressData.put("lastWeekMinutes", 0);
+                progressData.put("thisWeekMinutes", 0);
+            }
+            case "누적 집중의 대가" -> {
+                progressData.put("thisWeekMinutes", 0);
+                progressData.put("targetHours", selection);
+            }
+            default -> {
+                log.warn("Unknown item name for initial progressData: {}", itemName);
+                return null;
+            }
+        }
+
+        // 공통 필드: 달성 관련 키 항상 포함 (초기값 null)
+        progressData.put("achievedDate", null);
+        progressData.put("achievedDay", null);
+
+        try {
+            return objectMapper.writeValueAsString(progressData);
+        } catch (Exception e) {
+            log.error("Error creating initial progressData for item: {}", itemName, e);
+            return null;
         }
     }
 }

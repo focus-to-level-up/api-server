@@ -30,6 +30,7 @@ public class ItemPurchaseService {
     private final MemberItemRepository memberItemRepository;
     private final MemberInfoRepository memberInfoRepository;
     private final MemberRepository memberRepository;
+    private final ItemAchievementService itemAchievementService;
 
     /**
      * 아이템 구매
@@ -59,14 +60,24 @@ public class ItemPurchaseService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
-        // 6. MemberItem 생성
+        // 6. MemberItem 생성 (초기 progressData 포함)
         int itemCount = getItemCount(item.getType());
+        String initialProgressData = itemAchievementService.createInitialProgressData(
+                item.getName(),
+                request.selectedParameter()
+        );
+
         for (int i = 0; i < itemCount; i++) {
             MemberItem memberItem = MemberItem.builder()
                     .member(member)
                     .item(item)
                     .selection(request.selectedParameter())
                     .build();
+
+            // 초기 progressData 설정
+            if (initialProgressData != null) {
+                memberItem.updateProgressData(initialProgressData);
+            }
 
             memberItemRepository.save(memberItem);
         }
