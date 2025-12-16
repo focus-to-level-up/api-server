@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mysql-master:
+    image: mysql:8.0.33
+    platform: linux/amd64
+    container_name: focus-mysql-master
+    restart: always
+    ports:
+      - 13307:3306
+    environment:
+      TZ: Asia/Seoul
+      MYSQL_DATABASE: focus_db
+      MYSQL_ROOT_PASSWORD: focus
+      MYSQL_USER: focus
+      MYSQL_PASSWORD: focus
+    command:
+      - --default-time-zone=+09:00
+      - -bind-address=0.0.0.0
+    volumes:
+      - ./src/main/resources/db:/docker-entrypoint-initdb.d
+      - ./mysql/master/data:/var/lib/mysql
+      - ./mysql/master/config:/etc/mysql/conf.d
+    networks:
+      - focus-network
+
+  mysql-slave:
+    image: mysql:8.0.33
+    platform: linux/amd64
+    container_name: focus-mysql-slave
+    restart: always
+    ports:
+      - 13308:3306
+    environment:
+      TZ: Asia/Seoul
+      MYSQL_DATABASE: focus_db
+      MYSQL_ROOT_PASSWORD: focus
+      MYSQL_USER: focus
+      MYSQL_PASSWORD: focus
+    command:
+      - --default-time-zone=+09:00
+      - -bind-address=0.0.0.0
+    volumes:
+      - ./mysql/slave/data:/var/lib/mysql
+      - ./mysql/slave/config:/etc/mysql/conf.d
+    networks:
+      - focus-network
+    depends_on:
+      - mysql-master
+
+networks:
+  focus-network:
+    driver: bridge

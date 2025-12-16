@@ -1,8 +1,7 @@
-package com.studioedge.focus_to_levelup_server.test;
+package com.studioedge.focus_to_levelup_server.global.fcm;
 
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.fcm.FcmService;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
 import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,7 +9,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;

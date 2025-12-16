@@ -1,0 +1,35 @@
+# application-replication.yml (로컬 개발용)
+spring:
+  datasource:
+  # Data db (API용)
+  datasource-data:
+    jdbc-url: jdbc:mysql://localhost:13307/focus_db?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    username: focus
+    password: focus
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # Meta DB (Batch 메타데이터용)
+  datasource-meta:
+    jdbc-url: jdbc:mysql://localhost:13308/focus_meta_db?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    username: focus
+    password: focus
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  batch:
+    jdbc:
+      schema: classpath:org/springframework/batch/core/schema-mysql.sql
+      initialize-schema: always
+
+  sql:
+    init:
+      mode: always
+      data-locations: ${MASTER_DATA_PATH}
+      encoding: UTF-8
+      continue-on-error: false
+
+# Hibernate SQL 로깅 (파라미터 값 포함)
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.orm.jdbc.bind: TRACE
