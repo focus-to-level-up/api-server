@@ -63,6 +63,7 @@ public class ItemPurchaseService {
         // 6. MemberItem 생성 (초기 progressData 포함)
         int itemCount = getItemCount(item.getType());
         String initialProgressData = itemAchievementService.createInitialProgressData(
+                memberId,
                 item.getName(),
                 request.selectedParameter()
         );

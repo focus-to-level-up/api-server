@@ -101,9 +101,9 @@ public class ExceptionMapper {
         mapper.put(CategoryUpdateException.class,
                 ExceptionSituation.of("카테고리는 변경일을 기준으로 1달 이후에 변경 가능합니다.", HttpStatus.BAD_REQUEST));
         mapper.put(AssetUnauthorizedException.class,
-                ExceptionSituation.of("현재 에셋을 사용할 수 있는 권한이 없습니다.", HttpStatus.UNAUTHORIZED));
+                ExceptionSituation.of("현재 에셋을 사용할 수 있는 권한이 없습니다.", HttpStatus.FORBIDDEN));
         mapper.put(InvalidSignUpException.class,
-                ExceptionSituation.of("가입정보를 정확히 확인하여 전송해주시길 바랍니다.", HttpStatus.UNAUTHORIZED));
+                ExceptionSituation.of("가입정보를 정확히 확인하여 전송해주시길 바랍니다.", HttpStatus.BAD_REQUEST));
     }
 
     /**
@@ -125,7 +125,7 @@ public class ExceptionMapper {
         mapper.put(CharacterSlotFullException.class,
                 ExceptionSituation.of("훈련장 슬롯이 가득 찼습니다. 캐릭터를 배치할 수 없습니다. (최대 9개)", HttpStatus.BAD_REQUEST));
         mapper.put(CharacterUnauthorizedException.class,
-                ExceptionSituation.of("소유하고 있는 캐릭터가 아닙니다.", HttpStatus.UNAUTHORIZED));
+                ExceptionSituation.of("소유하고 있는 캐릭터가 아닙니다.", HttpStatus.FORBIDDEN));
         mapper.put(CharacterEvolveException.class,
                 ExceptionSituation.of("현재 캐릭터는 진화 조건을 충족하지 않습니다.", HttpStatus.BAD_REQUEST));
     }
@@ -191,12 +191,12 @@ public class ExceptionMapper {
         mapper.put(SubjectNotFoundException.class,
                 ExceptionSituation.of("해당 과목을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         mapper.put(SubjectUnAuthorizedException.class,
-                ExceptionSituation.of("해당 과목에 접근할 권한이 없습니다.", HttpStatus.UNAUTHORIZED));
+                ExceptionSituation.of("해당 과목에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN));
 
         mapper.put(TodoNotFoundException.class,
                 ExceptionSituation.of("해당 할일을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         mapper.put(TodoUnAuthorizedException.class,
-                ExceptionSituation.of("해당 할일에 접근할 권한이 없습니다.", HttpStatus.UNAUTHORIZED));
+                ExceptionSituation.of("해당 할일에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN));
 
         mapper.put(AllowedAppNotFoundException.class,
                 ExceptionSituation.of("해당 허용가능 앱을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
@@ -229,7 +229,7 @@ public class ExceptionMapper {
         mapper.put(SchoolNotFoundException.class,
                 ExceptionSituation.of("입력한 학교가 존재하지 않습니다.", HttpStatus.BAD_REQUEST));
         mapper.put(EventUnAuthorizedException.class,
-                ExceptionSituation.of("이벤트에 참여할 권한이 없습니다.", HttpStatus.UNAUTHORIZED));
+                ExceptionSituation.of("이벤트에 참여할 권한이 없습니다.", HttpStatus.FORBIDDEN));
     }
 
     /**
