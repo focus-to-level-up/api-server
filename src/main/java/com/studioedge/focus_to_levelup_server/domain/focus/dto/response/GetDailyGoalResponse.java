@@ -17,7 +17,9 @@ public record GetDailyGoalResponse (
         @Schema(description = "보너스 경험치", example = "546")
         Integer bonusExp,
         @Schema(description = "레벨 증가량", example = "9")
-        Integer levelUp
+        Integer levelUp,
+        @Schema(description = "일일 목표 수령 여부", example = "false")
+        Boolean isReceived
 ) {
     public static GetDailyGoalResponse of(DailyGoal dailyGoal) {
         float rewardMultiplier = dailyGoal.getRewardMultiplier();
@@ -37,6 +39,7 @@ public record GetDailyGoalResponse (
                 .rewardMultiplier(rewardMultiplier)
                 .bonusExp(bonusExp)
                 .levelUp(bonusExp / 600)
+                .isReceived(dailyGoal.getIsReceived())
                 .build();
     }
 }

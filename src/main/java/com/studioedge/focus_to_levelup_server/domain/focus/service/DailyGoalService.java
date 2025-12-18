@@ -43,8 +43,8 @@ public class DailyGoalService {
      * 목표 시간 조회
      * */
     @Transactional(readOnly = true)
-    public GetDailyGoalResponse getTodayDailyGoal(Member member) {
-        LocalDate serviceDate = AppConstants.getServiceDate();
+    public GetDailyGoalResponse getTodayDailyGoal(Member member, LocalDate date) {
+        LocalDate serviceDate = date == null ? AppConstants.getServiceDate() : date;
         DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(member.getId(), serviceDate)
                 .orElseThrow(DailyGoalNotFoundException::new);
         return GetDailyGoalResponse.of(dailyGoal);

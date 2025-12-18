@@ -8,6 +8,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
 import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @Tag(name = "DailyGoal")
 @RestController
@@ -47,10 +50,13 @@ public class DailyGoalController {
                     description = "오늘 DailyGoal이 성성되지 않았습니다. 목표시간 설정을 먼저 해주세요"
             )
     })
-    public ResponseEntity<CommonResponse<GetDailyGoalResponse>> getTodayDailyGoal(
-            @AuthenticationPrincipal Member member
+    public ResponseEntity<CommonResponse<GetDailyGoalResponse>> getDailyGoal(
+            @AuthenticationPrincipal Member member,
+            @Parameter(description = "날짜")
+            @RequestParam(defaultValue = "2025-12-18") LocalDate date
+
     ) {
-        return HttpResponseUtil.ok(dailyGoalService.getTodayDailyGoal(member));
+        return HttpResponseUtil.ok(dailyGoalService.getTodayDailyGoal(member, date));
     }
 
     /**
