@@ -68,9 +68,13 @@ revenuecat:
   free-trial:
     duration: ${REVENUECAT_FREE_TRIAL_DURATION:P14D}  # ISO 8601 기간 형식 (14일)
 
-# Firebase 설정 (사전예약 보상 시스템 - Firestore)
+# Firebase 설정
+# 1. FCM용 (concenludev/concenluprod) - 기본 앱
+# 2. 사전예약 DB용 (concenlu-936e4) - pre-registration 앱
 firebase:
   service-account-json: ${FIREBASE_SERVICE_ACCOUNT_JSON}
+  pre-registration:
+    service-account-json: ${FIREBASE_PRE_REGISTRATION_JSON:}
 
 logging:
   level:
