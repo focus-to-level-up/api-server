@@ -180,13 +180,9 @@ public class MemberServiceImpl implements MemberService {
         CategorySubType subCategory = request.categorySub();
 
         if (AppConstants.SCHOOL_CATEGORIES.contains(mainCategory) &&
-            !request.categorySub().equals(CategorySubType.N_SU)) {
-            // 1-1. 초/중/고 카테고리인데 학교 이름이 없는 경우
-            if (request.schoolName() == null || request.schoolName().isBlank()) {
-                throw new InvalidSignUpException();
-            }
-            // 1-2. 입력한 학교가 존재하는지 확인
-            // @TODO: 프론트와 합의 후, 학교 객체에 관해서 결정해야합니다.
+            !request.categorySub().equals(CategorySubType.N_SU) &&
+            request.schoolName() != null) {
+            // 1. 입력한 학교가 존재하는지 확인
             schoolRepository.findByName(request.schoolName())
                     .orElseGet(() -> {
                         School newSchool = School.builder()
