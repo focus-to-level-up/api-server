@@ -3,8 +3,10 @@ package com.studioedge.focus_to_levelup_server.domain.guild.dao;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
 import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,4 +60,13 @@ public interface GuildMemberRepository extends JpaRepository<GuildMember, Long> 
             "JOIN FETCH gm.guild " +   // groupingBy를 위해 Guild 정보 필요
             "WHERE gm.guild.id IN :guildIds")
     List<GuildMember> findAllByGuildIdIn(@Param("guildIds") List<Long> guildIds);
+
+    /**
+     * [추가] 모든 길드 멤버의 주간 집중 시간 및 부스트 상태 초기화
+     * (매주 월요일 배치 실행)
+     */
+    @Modifying(clearAutomatically = true) // 영속성 컨텍스트 초기화 필수
+    @Transactional
+    @Query("UPDATE GuildMember gm SET gm.weeklyFocusTime = 0, gm.isBoosted = false")
+    int resetAllWeeklyFocusTimeAndBoost();
 }

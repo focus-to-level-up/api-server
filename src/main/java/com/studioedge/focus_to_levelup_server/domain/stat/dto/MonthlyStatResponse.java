@@ -18,10 +18,17 @@ public record MonthlyStatResponse(
                 .build();
     }
 
-    public static MonthlyStatResponse of(Integer month, Integer totalSeconds) {
+    public static MonthlyStatResponse ofSeconds(Integer month, Integer totalSeconds) {
         return MonthlyStatResponse.builder()
                 .month(month)
                 .totalFocusMinutes(totalSeconds / 60)
+                .build();
+    }
+
+    public static MonthlyStatResponse ofMinutes(Integer month, Integer totalMinutes) {
+        return MonthlyStatResponse.builder()
+                .month(month)
+                .totalFocusMinutes(totalMinutes) // 나누기 없음
                 .build();
     }
 }

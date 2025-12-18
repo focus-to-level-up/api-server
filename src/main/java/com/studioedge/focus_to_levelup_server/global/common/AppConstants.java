@@ -22,7 +22,7 @@ public final class AppConstants {
 
     /**
      * 랭킹에서 제외되는 집중 시간
-     * */
+     */
     public static final int RANKING_WARNING_FOCUS_MINUTES = 240;
 
     /**

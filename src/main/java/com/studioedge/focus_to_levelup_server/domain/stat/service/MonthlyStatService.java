@@ -60,11 +60,11 @@ public class MonthlyStatService {
         for (int month = 1; month <= 12; month++) {
             if (year == today.getYear() && month == today.getMonthValue()) {
                 // "현재 달"은 실시간 데이터로 덮어쓰기 (또는 추가)
-                responses.add(MonthlyStatResponse.of(month, currentMonthLiveSeconds));
+                responses.add(MonthlyStatResponse.ofSeconds(month, currentMonthLiveSeconds));
             } else {
                 // "과거 달"은 집계 데이터 사용 (없으면 0)
                 Integer totalMinutes = aggregatedMap.getOrDefault(month, 0);
-                responses.add(MonthlyStatResponse.of(month, totalMinutes));
+                responses.add(MonthlyStatResponse.ofMinutes(month, totalMinutes));
             }
         }
 
