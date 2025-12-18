@@ -7,6 +7,8 @@ import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberChar
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
 import com.studioedge.focus_to_levelup_server.domain.event.entity.School;
+import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
+import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
 import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
@@ -43,6 +45,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.INITIAL_SUBJECT_COLORS;
+
 @Service
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
@@ -59,6 +63,7 @@ public class MemberServiceImpl implements MemberService {
     private final CharacterRepository characterRepository;
     private final RankingRepository rankingRepository;
     private final GuildMemberRepository guildMemberRepository;
+    private final SubjectRepository subjectRepository;
 
     @Override
     @Transactional
@@ -66,6 +71,7 @@ public class MemberServiceImpl implements MemberService {
         validateSignUp(request);
 
         saveInitialCharacter(member);
+        saveInitialSubjects(member);
         List<MemberAsset> memberAssets = saveInitialMemberAsset(member);
         MemberSetting memberSetting = saveMemberSetting(member);
         MemberInfo memberInfo = saveMemberInfo(member, memberAssets, request);
@@ -280,6 +286,20 @@ public class MemberServiceImpl implements MemberService {
             return "-";
         }
         else return ranking.get().getTier().toString();
+    }
+
+    private void saveInitialSubjects(Member member) {
+        List<Subject> subjects = new ArrayList<>();
+        for (int i=0; i<3; i++) {
+            subjects.add(
+                    Subject.builder()
+                            .member(member)
+                            .name("과목" + (i + 1))
+                            .color(INITIAL_SUBJECT_COLORS[i])
+                            .build()
+            );
+        }
+        subjectRepository.saveAll(subjects);
     }
 
     @Override

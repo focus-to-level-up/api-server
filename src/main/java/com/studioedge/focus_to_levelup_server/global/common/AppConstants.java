@@ -25,6 +25,17 @@ public final class AppConstants {
      */
     public static final int RANKING_WARNING_FOCUS_MINUTES = 240;
 
+
+    /**
+     * 회원가입 시 지급되는 기본 과목 3개
+     */
+    public static final String[] INITIAL_SUBJECT_COLORS = new String[] {
+            "EE5D42",
+            "FA846C",
+            "FF9852"
+    };
+
+
     /**
      * 회원가입 시 지급되는 기본 프로필 에셋의 이름 목록
      */
