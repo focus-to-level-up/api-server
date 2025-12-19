@@ -47,6 +47,17 @@ public class ItemAchievementService {
             DayOfWeek.SUNDAY, "일요일"
     );
 
+    // 약점 극복용 짧은 요일 표기
+    private static final Map<DayOfWeek, String> DAY_OF_WEEK_SHORT = Map.of(
+            DayOfWeek.MONDAY, "월",
+            DayOfWeek.TUESDAY, "화",
+            DayOfWeek.WEDNESDAY, "수",
+            DayOfWeek.THURSDAY, "목",
+            DayOfWeek.FRIDAY, "금",
+            DayOfWeek.SATURDAY, "토",
+            DayOfWeek.SUNDAY, "일"
+    );
+
     /**
      * 집중 세션 종료 시 모든 달성 조건 체크
      *
@@ -374,10 +385,9 @@ public class ItemAchievementService {
     }
 
     /**
-     * 5. 약점 극복: 지난 주 가장 약한 요일(들)에 이번 주 평균 이상 집중하면 달성
-     * - 지난 주 데이터로 최소 집중 시간인 요일들 찾기
-     * - 표시는 가장 늦은 요일 하나만 (예: "목요일 0분")
-     * - 달성 판정은 모든 약한 요일 중 하나라도 이번 주 평균 이상이면 성공
+     * 5. 약점 극복: 지난 주 가장 약한 요일에서 지난 주 평균 이상 집중하면 달성
+     * - 지난 주 가장 집중 시간이 적은 요일 찾기 (동점이면 가장 늦은 요일)
+     * - 이번 주 해당 요일 집중 시간 >= 지난 주 평균이면 달성
      */
     private boolean checkWeakestDayImprovement(MemberItem memberItem, Long memberId, LocalDate serviceDate) {
         LocalDate weekStart = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
@@ -414,14 +424,16 @@ public class ItemAchievementService {
                 .min()
                 .orElse(0);
 
-        // 지난 주 최솟값을 가진 모든 요일들
-        List<DayOfWeek> allWeakestDays = lastWeekByDayOfWeek.entrySet().stream()
+        // 지난 주 평균 계산
+        double lastWeekAverageSeconds = lastWeekByDayOfWeek.values().stream()
+                .mapToInt(Integer::intValue)
+                .average()
+                .orElse(0.0);
+
+        // 가장 늦은 약한 요일 하나만 선택 (표시 및 달성 조건 통일)
+        DayOfWeek weakestDay = lastWeekByDayOfWeek.entrySet().stream()
                 .filter(e -> e.getValue() == lastWeekMinSeconds)
                 .map(Map.Entry::getKey)
-                .toList();
-
-        // 표시용: 가장 늦은 요일 하나 (일요일에 가까운)
-        DayOfWeek displayWeakestDay = allWeakestDays.stream()
                 .max(Comparator.comparingInt(DayOfWeek::getValue))
                 .orElse(DayOfWeek.SUNDAY);
 
@@ -437,43 +449,26 @@ public class ItemAchievementService {
                         Collectors.summingInt(DailySubject::getFocusSeconds)
                 ));
 
-        // 이번 주 평균 계산
-        double thisWeekAverageSeconds = thisWeekDailyMap.values().stream()
-                .mapToInt(Integer::intValue)
-                .average()
-                .orElse(0.0);
-
-        // 약한 요일의 시간 표시 (요일 + 시간 형식)
+        // 약한 요일의 시간 표시 (요일 - HM 형식)
         int weakestMinutes = lastWeekMinSeconds / 60;
         int hours = weakestMinutes / 60;
         int mins = weakestMinutes % 60;
 
-        String displayText;
-        if (hours > 0 && mins > 0) {
-            displayText = DAY_OF_WEEK_KR.get(displayWeakestDay) + " " + hours + "시간 " + mins + "분";
-        } else if (hours > 0) {
-            displayText = DAY_OF_WEEK_KR.get(displayWeakestDay) + " " + hours + "시간";
-        } else {
-            displayText = DAY_OF_WEEK_KR.get(displayWeakestDay) + " " + mins + "분";
-        }
+        // "일 - 0H0M" 형식으로 표시
+        String displayText = DAY_OF_WEEK_SHORT.get(weakestDay) + " - " + hours + "H" + mins + "M";
 
-        progressData.put("weakestDay", DAY_OF_WEEK_KR.get(displayWeakestDay));
+        // 달성 조건: 이번 주 해당 요일 집중 시간 >= 지난 주 평균
+        LocalDate thisWeekTargetDay = weekStart.with(TemporalAdjusters.nextOrSame(weakestDay));
+        int thisWeekTargetDaySeconds = thisWeekDailyMap.getOrDefault(thisWeekTargetDay, 0);
+        int thisWeekTargetDayMinutes = thisWeekTargetDaySeconds / 60;
+
+        progressData.put("weakestDay", DAY_OF_WEEK_SHORT.get(weakestDay));
         progressData.put("weakestDayMinutes", weakestMinutes);
         progressData.put("displayText", displayText);
-        progressData.put("thisWeekAverageMinutes", (int) (thisWeekAverageSeconds / 60));
+        progressData.put("lastWeekAverageMinutes", (int) (lastWeekAverageSeconds / 60));
+        progressData.put("thisWeekTargetDayMinutes", thisWeekTargetDayMinutes);
 
-        // 달성 조건: 모든 약한 요일 중 하나라도 이번 주 평균 이상이면 달성
-        boolean isAchieved = false;
-        if (thisWeekAverageSeconds > 0) {
-            for (DayOfWeek weakDay : allWeakestDays) {
-                LocalDate thisWeekTargetDay = weekStart.with(TemporalAdjusters.nextOrSame(weakDay));
-                int thisWeekTargetDaySeconds = thisWeekDailyMap.getOrDefault(thisWeekTargetDay, 0);
-                if (thisWeekTargetDaySeconds >= thisWeekAverageSeconds) {
-                    isAchieved = true;
-                    break;
-                }
-            }
-        }
+        boolean isAchieved = lastWeekAverageSeconds > 0 && thisWeekTargetDaySeconds >= lastWeekAverageSeconds;
 
         // 달성 여부와 관계없이 키 유지 (달성 시 값 설정, 미달성 시 null)
         progressData.put("achievedDate", isAchieved ? serviceDate.format(DATE_FORMATTER) : null);
@@ -579,8 +574,8 @@ public class ItemAchievementService {
         progressData.put("lastWeekMinutes", lastWeekSeconds / 60);
         progressData.put("thisWeekMinutes", thisWeekSeconds / 60);
 
-        // 지난 주 기록이 있어야 하고, 이번 주가 더 많아야 함
-        boolean isAchieved = lastWeekSeconds > 0 && thisWeekSeconds > lastWeekSeconds;
+        // 이번 주가 지난 주보다 많아야 함 (지난 주가 0이어도 이번 주가 0보다 크면 달성)
+        boolean isAchieved = thisWeekSeconds > lastWeekSeconds;
 
         // 달성 여부와 관계없이 키 유지 (달성 시 값 설정, 미달성 시 null)
         progressData.put("achievedDate", isAchieved ? serviceDate.format(DATE_FORMATTER) : null);
@@ -776,6 +771,12 @@ public class ItemAchievementService {
                 .min()
                 .orElse(0);
 
+        // 지난 주 평균 계산
+        double lastWeekAverageSeconds = lastWeekByDayOfWeek.values().stream()
+                .mapToInt(Integer::intValue)
+                .average()
+                .orElse(0.0);
+
         // 가장 늦은 요일 하나만
         DayOfWeek weakestDay = lastWeekByDayOfWeek.entrySet().stream()
                 .filter(e -> e.getValue() == lastWeekMinSeconds)
@@ -783,24 +784,36 @@ public class ItemAchievementService {
                 .max(Comparator.comparingInt(DayOfWeek::getValue))
                 .orElse(DayOfWeek.SUNDAY);
 
-        // 요일 + 시간 형식
+        // 이번 주 집중 기록 조회
+        List<DailySubject> thisWeekSubjects = dailySubjectRepository.findAllByMemberIdAndDateRangeWithSubject(
+                memberId, weekStart, weekEnd
+        );
+
+        Map<LocalDate, Integer> thisWeekDailyMap = thisWeekSubjects.stream()
+                .collect(Collectors.groupingBy(
+                        DailySubject::getDate,
+                        Collectors.summingInt(DailySubject::getFocusSeconds)
+                ));
+
+        // 이번 주 해당 요일 집중 시간
+        LocalDate thisWeekTargetDay = weekStart.with(TemporalAdjusters.nextOrSame(weakestDay));
+        int thisWeekTargetDaySeconds = thisWeekDailyMap.getOrDefault(thisWeekTargetDay, 0);
+        int thisWeekTargetDayMinutes = thisWeekTargetDaySeconds / 60;
+
+        // 요일 - HM 형식
         int weakestMinutes = lastWeekMinSeconds / 60;
         int hours = weakestMinutes / 60;
         int mins = weakestMinutes % 60;
 
-        String displayText;
-        if (hours > 0 && mins > 0) {
-            displayText = DAY_OF_WEEK_KR.get(weakestDay) + " " + hours + "시간 " + mins + "분";
-        } else if (hours > 0) {
-            displayText = DAY_OF_WEEK_KR.get(weakestDay) + " " + hours + "시간";
-        } else {
-            displayText = DAY_OF_WEEK_KR.get(weakestDay) + " " + mins + "분";
-        }
+        // "일 - 0H0M" 형식으로 표시
+        String displayText = DAY_OF_WEEK_SHORT.get(weakestDay) + " - " + hours + "H" + mins + "M";
 
         Map<String, Object> progressData = new HashMap<>();
-        progressData.put("weakestDay", DAY_OF_WEEK_KR.get(weakestDay));
+        progressData.put("weakestDay", DAY_OF_WEEK_SHORT.get(weakestDay));
         progressData.put("weakestDayMinutes", weakestMinutes);
         progressData.put("displayText", displayText);
+        progressData.put("lastWeekAverageMinutes", (int) (lastWeekAverageSeconds / 60));
+        progressData.put("thisWeekTargetDayMinutes", thisWeekTargetDayMinutes);
 
         try {
             memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
@@ -1047,6 +1060,7 @@ public class ItemAchievementService {
 
     private String createInitialWeakestDayProgress(Long memberId, LocalDate serviceDate) throws Exception {
         LocalDate weekStart = serviceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate weekEnd = serviceDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
         LocalDate lastWeekStart = weekStart.minusWeeks(1);
         LocalDate lastWeekEnd = weekStart.minusWeeks(1).with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
@@ -1072,29 +1086,47 @@ public class ItemAchievementService {
                 .min()
                 .orElse(0);
 
+        // 지난 주 평균 계산
+        double lastWeekAverageSeconds = lastWeekByDayOfWeek.values().stream()
+                .mapToInt(Integer::intValue)
+                .average()
+                .orElse(0.0);
+
         DayOfWeek weakestDay = lastWeekByDayOfWeek.entrySet().stream()
                 .filter(e -> e.getValue() == lastWeekMinSeconds)
                 .map(Map.Entry::getKey)
                 .max(Comparator.comparingInt(DayOfWeek::getValue))
                 .orElse(DayOfWeek.SUNDAY);
 
+        // 이번 주 집중 기록 조회
+        List<DailySubject> thisWeekSubjects = dailySubjectRepository.findAllByMemberIdAndDateRangeWithSubject(
+                memberId, weekStart, weekEnd
+        );
+
+        Map<LocalDate, Integer> thisWeekDailyMap = thisWeekSubjects.stream()
+                .collect(Collectors.groupingBy(
+                        DailySubject::getDate,
+                        Collectors.summingInt(DailySubject::getFocusSeconds)
+                ));
+
+        // 이번 주 해당 요일 집중 시간
+        LocalDate thisWeekTargetDay = weekStart.with(TemporalAdjusters.nextOrSame(weakestDay));
+        int thisWeekTargetDaySeconds = thisWeekDailyMap.getOrDefault(thisWeekTargetDay, 0);
+        int thisWeekTargetDayMinutes = thisWeekTargetDaySeconds / 60;
+
         int weakestMinutes = lastWeekMinSeconds / 60;
         int hours = weakestMinutes / 60;
         int mins = weakestMinutes % 60;
 
-        String displayText;
-        if (hours > 0 && mins > 0) {
-            displayText = DAY_OF_WEEK_KR.get(weakestDay) + " " + hours + "시간 " + mins + "분";
-        } else if (hours > 0) {
-            displayText = DAY_OF_WEEK_KR.get(weakestDay) + " " + hours + "시간";
-        } else {
-            displayText = DAY_OF_WEEK_KR.get(weakestDay) + " " + mins + "분";
-        }
+        // "일 - 0H0M" 형식으로 표시
+        String displayText = DAY_OF_WEEK_SHORT.get(weakestDay) + " - " + hours + "H" + mins + "M";
 
         Map<String, Object> progressData = new HashMap<>();
-        progressData.put("weakestDay", DAY_OF_WEEK_KR.get(weakestDay));
+        progressData.put("weakestDay", DAY_OF_WEEK_SHORT.get(weakestDay));
         progressData.put("weakestDayMinutes", weakestMinutes);
         progressData.put("displayText", displayText);
+        progressData.put("lastWeekAverageMinutes", (int) (lastWeekAverageSeconds / 60));
+        progressData.put("thisWeekTargetDayMinutes", thisWeekTargetDayMinutes);
         progressData.put("achievedDate", null);
         progressData.put("achievedDay", null);
 
