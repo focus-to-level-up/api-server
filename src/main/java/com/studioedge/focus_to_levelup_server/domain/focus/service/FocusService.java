@@ -140,10 +140,10 @@ public class FocusService {
         dailySubjectRepository.flush();
 
         if (AppConstants.SCHOOL_CATEGORIES.contains(memberInfo.getCategoryMain()) &&
-            !memberInfo.getCategorySub().equals(CategorySubType.N_SU)) {
+            !memberInfo.getCategorySub().equals(CategorySubType.N_SU) &&
+            memberInfo.getSchool() != null && !memberInfo.getSchool().isBlank()) {
             schoolRepository.findByName(memberInfo.getSchool())
-                    .orElseThrow(SchoolNotFoundException::new)
-                    .plusTotalLevel(focusExp);
+                    .ifPresent(school -> school.plusTotalLevel(focusExp));
         }
 
         // 길드 주간 집중 시간 업데이트 (가입한 모든 길드)
