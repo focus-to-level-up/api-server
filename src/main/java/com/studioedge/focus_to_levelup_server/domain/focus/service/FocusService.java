@@ -5,7 +5,6 @@ import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberChar
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.character.service.TrainingRewardService;
 import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
-import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
@@ -30,7 +29,6 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
-import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingExcludeException;
 import com.studioedge.focus_to_levelup_server.domain.store.service.ItemAchievementService;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.BackgroundRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.MonsterImageRepository;
@@ -97,7 +95,6 @@ public class FocusService {
             if (isBanned) {
                 member.banRanking();
                 rankingRepository.deleteByMemberId(m.getId());
-                throw new RankingExcludeException();
             }
         }
 
