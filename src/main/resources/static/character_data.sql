@@ -241,7 +241,7 @@ VALUES
     -- Evolution 2
     (@character_id, 2, 'PICTURE',    CONCAT(@s3_base_url, @folder, @file, '2.png')),
     (@character_id, 2, 'ATTACK',     CONCAT(@s3_base_url, @folder, @file, '2_attack.gif')),
-    (@character_id, 2, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '2_weapon.png')),
+    (@character_id, 2, 'WEAPON',     CONCAT(@s3_base_url, @folder, @file, '2_weapon.gif')),
     (@character_id, 2, 'IDLE',       CONCAT(@s3_base_url, @folder, @file, '2_idle.gif')),
     (@character_id, 2, 'HEAD',       CONCAT(@s3_base_url, @folder, @file, '2_head.png')), -- ADDED
     -- Evolution 3

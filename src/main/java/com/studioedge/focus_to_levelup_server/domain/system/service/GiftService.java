@@ -1,6 +1,5 @@
 package com.studioedge.focus_to_levelup_server.domain.system.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
@@ -27,7 +26,6 @@ public class GiftService {
     private final MemberRepository memberRepository;
     private final MemberInfoRepository memberInfoRepository;
     private final MailRepository mailRepository;
-    private final ObjectMapper objectMapper;
 
     /**
      * 보너스 티켓 선물 (유저 → 유저)
@@ -66,33 +64,24 @@ public class GiftService {
      * 보너스 티켓 선물 우편 생성
      */
     private Mail createBonusTicketGiftMail(Member sender, Member receiver, Integer ticketCount, String message) {
-        try {
-            java.util.Map<String, Object> descriptionMap = new java.util.HashMap<>();
-            descriptionMap.put("bonusTicketCount", ticketCount);
-            if (message != null && !message.isBlank()) {
-                descriptionMap.put("message", message);
-            }
-            String description = objectMapper.writeValueAsString(descriptionMap);
+        String description = "10% 다이아 보너스 티켓 " + ticketCount + "개";
 
-            String popupContent = sender.getNickname() + "님이 10% 다이아 보너스 티켓 " + ticketCount + "개를 선물하셨습니다!";
-            if (message != null && !message.isBlank()) {
-                popupContent += "\n\n\"" + message + "\"";
-            }
-
-            return Mail.builder()
-                    .receiver(receiver)
-                    .senderName(sender.getNickname())
-                    .type(MailType.GIFT_BONUS_TICKET)
-                    .title(sender.getNickname() + "님의 선물")
-                    .description(description)
-                    .popupTitle("🎁 보너스 티켓 선물 도착!")
-                    .popupContent(popupContent)
-                    .reward(0)
-                    .expiredAt(LocalDate.now().plusDays(14)) // 선물은 14일 후 만료
-                    .build();
-        } catch (Exception e) {
-            log.error("Failed to create bonus ticket gift mail JSON", e);
-            throw new IllegalStateException("보너스 티켓 선물 우편 생성에 실패했습니다.");
+        String popupContent = sender.getNickname() + "님이 10% 다이아 보너스 티켓 " + ticketCount + "개를 선물하셨습니다!";
+        if (message != null && !message.isBlank()) {
+            popupContent += "\n\n\"" + message + "\"";
         }
+
+        return Mail.builder()
+                .receiver(receiver)
+                .senderName(sender.getNickname())
+                .type(MailType.GIFT_BONUS_TICKET)
+                .title(sender.getNickname() + "님의 선물")
+                .description(description)
+                .popupTitle("보너스 티켓 선물 도착!")
+                .popupContent(popupContent)
+                .reward(0)
+                .bonusTicketCount(ticketCount)
+                .expiredAt(LocalDate.now().plusDays(14)) // 선물은 14일 후 만료
+                .build();
     }
 }

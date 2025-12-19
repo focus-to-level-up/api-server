@@ -1,6 +1,5 @@
 package com.studioedge.focus_to_levelup_server.domain.system.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.service.CharacterCommandService;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
@@ -46,7 +45,6 @@ public class PreRegistrationService {
     private final PhoneNumberVerificationRepository phoneNumberVerificationRepository;
     private final RevenueCatApiService revenueCatApiService;
     private final FirebaseService firebaseService;
-    private final ObjectMapper objectMapper;
 
     private static final int PRE_REGISTRATION_DIAMOND = 3000;
 
@@ -177,32 +175,23 @@ public class PreRegistrationService {
      * @param rarity 선택 가능한 캐릭터 등급 (RARE, EPIC, UNIQUE)
      */
     private Mail createCharacterSelectionTicketMail(Member member, Rarity rarity) {
-        try {
-            String description = objectMapper.writeValueAsString(new java.util.HashMap<String, Object>() {{
-                put("rarity", rarity.name());
-            }});
+        String rarityName = switch (rarity) {
+            case RARE -> "RARE";
+            case EPIC -> "EPIC";
+            case UNIQUE -> "UNIQUE";
+        };
 
-            String rarityName = switch (rarity) {
-                case RARE -> "RARE";
-                case EPIC -> "EPIC";
-                case UNIQUE -> "UNIQUE";
-            };
-
-            return Mail.builder()
-                    .receiver(member)
-                    .senderName("Focus to Level Up")
-                    .type(MailType.CHARACTER_SELECTION_TICKET)
-                    .title("사전예약 보상을 수령하세요")
-                    .description(description)
-                    .popupTitle("사전예약 " + rarityName + " 캐릭터 선택권")
-                    .popupContent("사전예약 보상으로 받으신 " + rarityName + " 등급 캐릭터 선택권입니다. 우편 수령 시 원하는 캐릭터를 선택하세요!")
-                    .reward(0)
-                    .expiredAt(LocalDate.now().plusDays(28))
-                    .build();
-        } catch (Exception e) {
-            log.error("Failed to create character selection ticket mail JSON", e);
-            throw new IllegalStateException("캐릭터 선택권 우편 생성에 실패했습니다.");
-        }
+        return Mail.builder()
+                .receiver(member)
+                .senderName("Focus to Level Up")
+                .type(MailType.CHARACTER_SELECTION_TICKET)
+                .title("사전예약 보상을 수령하세요")
+                .description("사전예약 " + rarityName + " 캐릭터 선택권")
+                .popupTitle("사전예약 " + rarityName + " 캐릭터 선택권")
+                .popupContent("사전예약 보상으로 받으신 " + rarityName + " 등급 캐릭터 선택권입니다. 우편 수령 시 원하는 캐릭터를 선택하세요!")
+                .reward(0)
+                .expiredAt(LocalDate.now().plusDays(28))
+                .build();
     }
 
     /**
