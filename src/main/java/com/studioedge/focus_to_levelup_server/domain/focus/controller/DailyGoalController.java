@@ -116,9 +116,10 @@ public class DailyGoalController {
     })
     public ResponseEntity<CommonResponse<Void>> receiveDailyGoal(
             @AuthenticationPrincipal Member member,
+            @PathVariable Long dailyGoalId,
             @Valid @RequestBody ReceiveDailyGoalRequest request
     ) {
-        dailyGoalService.receiveDailyGoal(member, request);
+        dailyGoalService.receiveDailyGoal(member, dailyGoalId, request);
         return HttpResponseUtil.ok(null);
     }
 }
