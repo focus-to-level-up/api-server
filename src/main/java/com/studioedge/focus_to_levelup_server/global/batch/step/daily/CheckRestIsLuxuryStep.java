@@ -17,6 +17,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -64,8 +66,8 @@ public class CheckRestIsLuxuryStep {
                 .tasklet(((contribution, chunkContext) -> {
                     log.info(">> Step: checkRestIsLuxury started.");
 
-                    // 전날 날짜 (새벽 4시에 실행되므로 어제가 판정 대상)
-                    LocalDate yesterday = LocalDate.now().minusDays(1);
+                    // 전날 서비스 날짜 (새벽 4시 기준)
+                    LocalDate yesterday = AppConstants.getServiceDate().minusDays(1);
                     log.info(">> Checking REST_IS_LUXURY for date: {}", yesterday);
 
                     // "휴식은 사치" 미완료 아이템을 가진 모든 MemberItem 조회
