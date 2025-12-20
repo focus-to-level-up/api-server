@@ -1,15 +1,12 @@
 package com.studioedge.focus_to_levelup_server.domain.stat.service;
 
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.stat.dao.MonthlyStatRepository;
-import com.studioedge.focus_to_levelup_server.domain.stat.dao.MonthlySubjectStatRepository;
 import com.studioedge.focus_to_levelup_server.domain.stat.dto.MonthlyDetailResponse;
 import com.studioedge.focus_to_levelup_server.domain.stat.dto.MonthlyStatListResponse;
 import com.studioedge.focus_to_levelup_server.domain.stat.dto.MonthlyStatResponse;
 import com.studioedge.focus_to_levelup_server.domain.stat.entity.MonthlyStat;
-import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,19 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
 
 @Service
 @RequiredArgsConstructor
 public class MonthlyStatService {
 
     private final MonthlyStatRepository monthlyStatRepository;
-    private final MonthlySubjectStatRepository monthlySubjectStatRepository;
     private final DailyGoalRepository dailyGoalRepository;
-    private final DailySubjectRepository dailySubjectRepository;
 
     @Transactional(readOnly = true)
     public MonthlyStatListResponse getMonthlyStats(Long memberId, int year) {
@@ -77,109 +73,91 @@ public class MonthlyStatService {
     }
 
     /**
-     * [신규] 월간 상세 조회 (4개월 비교 + 일별 데이터)
+     * 월간 상세 조회 (4개월 비교 + 일별 데이터)
      */
     @Transactional(readOnly = true)
-    public MonthlyDetailResponse getMonthlyDetail(Long memberId, int year, int month, boolean initial) {
+    public MonthlyDetailResponse getMonthlyDetail(Long memberId, int year, int month, boolean init) {
 
-        LocalDate serviceDate = AppConstants.getServiceDate(); // 오늘 (새벽 4시 기준)
-        LocalDate targetDate = LocalDate.of(year, month, 1); // 선택한 달의 1일
+        LocalDate serviceDate = getServiceDate();
+        LocalDate targetDate = LocalDate.of(year, month, 1);
 
-        // --- 1. 4개월 비교 데이터 생성 (선택한 달 포함 과거 4개월) ---
-        List<MonthlyDetailResponse.MonthlyComparisonData> comparisonList = new ArrayList<>();
-
-        // 조회할 4개의 달을 시간순(과거 -> 미래)으로 리스트에 담습니다.
+        // 1. 조회할 4개의 달(YearMonth) 리스트 구성
         List<LocalDate> queryMonths = new ArrayList<>();
-        if (initial) {
-            // init=true (클릭 시): 선택한 달부터 미래로 4개월 [Target, +1, +2, +3]
+        if (init) {
             for (int i = 0; i < 4; i++) {
                 queryMonths.add(targetDate.plusMonths(i));
             }
         } else {
-            // init=false (초기 진입): 선택한 달이 마지막이 되도록 과거 4개월 [Target-3, -2, -1, Target]
             for (int i = 3; i >= 0; i--) {
                 queryMonths.add(targetDate.minusMonths(i));
             }
         }
 
-        // i=3 (3달전) -> i=0 (이번달) 순서로 반복 (e.g., 8월, 9월, 10월, 11월)
-        for (LocalDate queryDate : queryMonths) {
-            int queryYear = queryDate.getYear();
-            int queryMonth = queryDate.getMonthValue();
+        // 2. 전체 조회 범위 계산 (쿼리 최적화용)
+        // 리스트의 첫 번째 달의 1일 ~ 리스트의 마지막 달의 말일
+        LocalDate globalStartDate = queryMonths.get(0);
+        LocalDate globalEndDate = queryMonths.get(queryMonths.size() - 1).with(TemporalAdjusters.lastDayOfMonth());
 
-            int totalSeconds = 0;
+        // 3. [DB 조회] 해당 기간의 모든 DailyGoal 한 번에 조회
+        List<DailyGoal> allDailyGoals = dailyGoalRepository.findAllByMemberIdAndDailyGoalDateBetween(
+                memberId, globalStartDate, globalEndDate
+        );
 
-            // 현재 달(진행 중)인 경우 -> DailyGoal 실시간 집계
-            if (queryYear == serviceDate.getYear() && queryMonth == serviceDate.getMonthValue()) {
-                List<DailyGoal> goals = dailyGoalRepository.findAllByMemberIdAndDailyGoalDateBetween(
-                        memberId, queryDate, serviceDate
-                );
-                totalSeconds = goals.stream().mapToInt(DailyGoal::getCurrentSeconds).sum();
-            }
-            // 미래인 경우 -> 0
-            else if (queryDate.isAfter(serviceDate)) {
-                totalSeconds = 0;
-            }
-            // 과거 달(완료됨)인 경우 -> MonthlyStat 집계 데이터 조회
-            else {
-                totalSeconds = monthlyStatRepository.findByMemberIdAndYearAndMonth(memberId, queryYear, queryMonth)
-                        .map(MonthlyStat::getTotalFocusMinutes)
-                        .orElse(0);
-            }
+        // 4. (Memory) 날짜별 초(Second) 데이터 매핑 (Map<LocalDate, Integer>)
+        Map<LocalDate, Integer> dailyMap = allDailyGoals.stream()
+                .collect(Collectors.toMap(
+                        DailyGoal::getDailyGoalDate,
+                        DailyGoal::getCurrentSeconds,
+                        Integer::sum // 혹시 모를 중복 날짜 합산 처리
+                ));
 
-            comparisonList.add(MonthlyDetailResponse.MonthlyComparisonData.builder()
-                    .year(queryYear)
-                    .month(queryMonth)
-                    .totalFocusMinutes(totalSeconds / 60)
-                    .build());
-        }
+        // 5. 응답 데이터 생성
+        List<MonthlyDetailResponse.MonthlyComparisonData> comparisonList = new ArrayList<>();
 
+        for (LocalDate monthDate : queryMonths) {
+            int currentYear = monthDate.getYear();
+            int currentMonth = monthDate.getMonthValue();
 
-        // --- 2. 선택한 달의 일별 데이터 생성 (1일 ~ 말일/오늘) ---
-        List<MonthlyDetailResponse.DailyFocusData> dailyFocusList;
+            // 해당 월의 1일 ~ 말일 구하기
+            LocalDate monthStart = monthDate;
+            LocalDate monthEnd = monthDate.with(TemporalAdjusters.lastDayOfMonth());
 
-        // 미래의 달을 조회한 경우 -> 빈 리스트
-        if (targetDate.isAfter(serviceDate)) {
-            dailyFocusList = Collections.emptyList();
-        }
-        else {
-            LocalDate startDate = targetDate; // 1일
-            LocalDate endDate;
+            List<MonthlyDetailResponse.DailyFocusData> dailyList = new ArrayList<>();
+            int monthlyTotalSeconds = 0;
 
-            // 선택한 달이 '이번 달'이면 -> '오늘'까지만 조회 (e.g., 1일 ~ 16일)
-            if (targetDate.getYear() == serviceDate.getYear() && targetDate.getMonthValue() == serviceDate.getMonthValue()) {
-                endDate = serviceDate;
-            }
-            // 선택한 달이 '과거'이면 -> '말일'까지 조회 (e.g., 1일 ~ 30일)
-            else {
-                endDate = targetDate.with(TemporalAdjusters.lastDayOfMonth());
-            }
+            // 1일부터 말일까지 순회
+            LocalDate iterDate = monthStart;
+            while (!iterDate.isAfter(monthEnd)) {
+                // 미래 날짜는 0으로 처리 (표시 안 함 or 0으로 표시 - 요구사항에 따라 조정 가능)
+                // 여기서는 0으로 채워서 리스트 길이를 유지합니다 (그래프 그리기에 용이)
+                int seconds = 0;
 
-            // DB에서 해당 기간의 DailyGoal 조회
-            List<DailyGoal> dailyGoals = dailyGoalRepository.findAllByMemberIdAndDailyGoalDateBetween(
-                    memberId, startDate, endDate
-            );
+                // 서비스 날짜(오늘) 이전이거나 같은 경우만 데이터 가져옴
+                if (!iterDate.isAfter(serviceDate)) {
+                    seconds = dailyMap.getOrDefault(iterDate, 0);
+                }
 
-            // Map으로 변환 (날짜 -> 시간)
-            Map<LocalDate, Integer> goalMap = dailyGoals.stream()
-                    .collect(Collectors.toMap(DailyGoal::getDailyGoalDate, DailyGoal::getCurrentSeconds));
+                monthlyTotalSeconds += seconds;
 
-            // 1일부터 endDate까지 리스트 생성 (빈 날짜는 0으로 채움)
-            dailyFocusList = new ArrayList<>();
-            LocalDate current = startDate;
-            while (!current.isAfter(endDate)) {
-                int seconds = goalMap.getOrDefault(current, 0);
-                dailyFocusList.add(MonthlyDetailResponse.DailyFocusData.builder()
-                        .date(current)
+                dailyList.add(MonthlyDetailResponse.DailyFocusData.builder()
+                        .date(iterDate)
                         .focusMinutes(seconds / 60)
                         .build());
-                current = current.plusDays(1);
+
+                iterDate = iterDate.plusDays(1);
             }
+
+            // DTO 추가
+            comparisonList.add(MonthlyDetailResponse.MonthlyComparisonData.builder()
+                    .year(currentYear)
+                    .month(currentMonth)
+                    .totalFocusMinutes(monthlyTotalSeconds / 60)
+                    .dailyFocusList(dailyList)
+                    .build());
         }
 
         return MonthlyDetailResponse.builder()
                 .monthlyComparison(comparisonList)
-                .dailyFocusList(dailyFocusList)
                 .build();
     }
 }

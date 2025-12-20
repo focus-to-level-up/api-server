@@ -1,5 +1,11 @@
 package com.studioedge.focus_to_levelup_server.domain.stat.service;
 
+import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterImageRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
+import com.studioedge.focus_to_levelup_server.domain.character.entity.CharacterImage;
+import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
+import com.studioedge.focus_to_levelup_server.domain.character.enums.CharacterImageType;
+import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
@@ -16,7 +22,6 @@ import com.studioedge.focus_to_levelup_server.domain.stat.dto.WeeklyStatListResp
 import com.studioedge.focus_to_levelup_server.domain.stat.dto.WeeklyStatResponse;
 import com.studioedge.focus_to_levelup_server.domain.stat.entity.WeeklyStat;
 import com.studioedge.focus_to_levelup_server.domain.stat.entity.WeeklySubjectStat;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
 import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,6 +42,8 @@ public class WeeklyStatService {
     private final MemberInfoRepository memberInfoRepository;
     private final WeeklySubjectStatRepository weeklySubjectStatRepository;
     private final DailySubjectRepository dailySubjectRepository;
+    private final MemberCharacterRepository memberCharacterRepository;
+    private final CharacterImageRepository characterImageRepository;
 
     @Transactional(readOnly = true)
     public WeeklyStatListResponse getWeeklyStats(Long memberId, int year, int month) {
@@ -149,16 +156,19 @@ public class WeeklyStatService {
 
         // 유저 정보 조회 (레벨, 이미지)
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElseThrow(InvalidMemberException::new); // 혹은 빈 정보 반환 처리
-
-        String imageUrl = Optional.ofNullable(memberInfo.getProfileImage())
-                .flatMap(asset -> Optional.ofNullable(asset.getAsset()))
-                .map(Asset::getAssetUrl)
+                .orElseThrow(InvalidMemberException::new);
+        MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefaultTrue(memberId)
+                .orElseThrow(CharacterDefaultNotFoundException::new);
+        String imageUrl = characterImageRepository.findByCharacterIdAndEvolutionAndImageType(
+                        memberCharacter.getCharacter().getId(),
+                        memberCharacter.getDefaultEvolution(),
+                        CharacterImageType.PICTURE
+                )
+                .map(CharacterImage::getImageUrl)
                 .orElse(null);
-
         return WeeklyStatResponse.of(
                 startData,
-                endDate, // 종료일도 일요일로 표기 (혹은 endDate 대신 AppConstants.getServiceDate() 사용 가능)
+                endDate,
                 totalMinutes,
                 memberInfo.getMember().getCurrentLevel(),
                 imageUrl,

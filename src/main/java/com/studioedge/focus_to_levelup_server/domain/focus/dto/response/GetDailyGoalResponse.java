@@ -21,25 +21,71 @@ public record GetDailyGoalResponse (
         @Schema(description = "일일 목표 수령 여부", example = "false")
         Boolean isReceived
 ) {
-    public static GetDailyGoalResponse of(DailyGoal dailyGoal) {
-        float rewardMultiplier = dailyGoal.getRewardMultiplier();
-        int currentMinutes = dailyGoal.getCurrentSeconds() / 60;
-        int bonusExp = (int) (currentMinutes * rewardMultiplier);
+//    public static GetDailyGoalResponse of(DailyGoal dailyGoal) {
+//        float rewardMultiplier = dailyGoal.getRewardMultiplier();
+//        int currentMinutes = dailyGoal.getCurrentSeconds() / 60;
+//
+//        if (currentMinutes < dailyGoal.getTargetMinutes()) {
+//            float exponent = (float) ((currentMinutes / 60.0) - 2.0);
+//            rewardMultiplier = (float) Math.pow(1.1, Math.max(0.0, exponent));
+//            // 소수점 2째자리까지
+//            rewardMultiplier = (float) (Math.round(rewardMultiplier * 100) / 100.0);
+//        }
+//
+//        int bonusExp = (int) (currentMinutes * rewardMultiplier);
+//
+//        return GetDailyGoalResponse.builder()
+//                .dailyGoalId(dailyGoal.getId())
+//                .currentSeconds(dailyGoal.getCurrentSeconds())
+//                .targetMinutes(dailyGoal.getTargetMinutes())
+//                .rewardMultiplier(rewardMultiplier)
+//                .bonusExp(bonusExp)
+//                .levelUp(bonusExp / 600)
+//                .build();
+//    }
 
-        if (currentMinutes < dailyGoal.getTargetMinutes()) {
-            float exponent = (float) ((currentMinutes / 60.0) - 2.0);
-            rewardMultiplier = (float) Math.pow(1.1, Math.max(0.0, exponent));
-            // 소수점 2째자리까지
-            rewardMultiplier = (float) (Math.round(rewardMultiplier * 100) / 100.0);
+    public static GetDailyGoalResponse of(DailyGoal dailyGoal) {
+        int currentMinutes = dailyGoal.getCurrentSeconds() / 60;
+        int targetMinutes = dailyGoal.getTargetMinutes();
+
+        // 1. 계산 기준 시간(x) 산정
+        int x;
+
+        if (currentMinutes >= targetMinutes) {
+            // [목표 달성 시] x = 목표 시간(시간 단위)
+            x = targetMinutes / 60;
+        } else {
+            // [목표 미달 시 - 패널티 적용]
+            // "N시간 24분 -> N-1시간이 x값"
+            // 즉, (현재 시간 / 60) - 1
+            x = (currentMinutes / 60) - 1;
         }
+
+        // 2. 보상 배율 계산
+        // f(x) = 1.1^(x-2)
+        // 단, x < 2 이면 보너스 없음 (배율 1.0)
+        float rewardMultiplier = 1.0f;
+        if (x >= 2) {
+            double rawMultiplier = Math.pow(1.1, x - 2);
+            rewardMultiplier = (float) (Math.round(rawMultiplier * 100.0) / 100.0);
+        }
+
+        // 보너스 경험치 = 기본 경험치 * (배율 - 1)
+        // 예: 배율 1.21이면 -> 0.21만큼이 보너스
+        int baseExp = currentMinutes * 10;
+        int bonusExp = (int) (baseExp * (rewardMultiplier - 1.0f));
+
+        // 3. 레벨업 게이지 (총 경험치 기준인지 보너스 기준인지에 따라 수정, 보통 총합)
+        int totalExp = baseExp + bonusExp;
+
         return GetDailyGoalResponse.builder()
                 .dailyGoalId(dailyGoal.getId())
                 .currentSeconds(dailyGoal.getCurrentSeconds())
-                .targetMinutes(dailyGoal.getTargetMinutes())
+                .targetMinutes(targetMinutes)
                 .rewardMultiplier(rewardMultiplier)
-                .bonusExp(bonusExp)
-                .levelUp(bonusExp / 600)
                 .isReceived(dailyGoal.getIsReceived())
+                .bonusExp(bonusExp) // 보너스 경험치만 표시
+                .levelUp(totalExp / 600) // 레벨업은 총 획득 경험치 기준일 가능성이 높음
                 .build();
     }
 }

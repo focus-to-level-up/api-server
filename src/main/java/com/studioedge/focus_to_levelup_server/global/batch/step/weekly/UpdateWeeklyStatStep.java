@@ -165,7 +165,7 @@ public class UpdateWeeklyStatStep {
         CharacterImage characterImage = characterImageRepository.findByCharacterIdAndEvolutionAndImageType(
                 memberCharacter.getCharacter().getId(),
                 memberCharacter.getDefaultEvolution(),
-                CharacterImageType.IDLE
+                CharacterImageType.PICTURE
         ).orElseThrow(() -> new IllegalStateException("맴버의 대표 캐릭터 이미지를 조회할 수 없습니다. CharID: " + memberCharacter.getCharacter().getId()));
 
         // 3-3. WeeklyStat 엔티티 생성
