@@ -73,24 +73,16 @@ public class CouponCommandService {
         MailType mailType = determineMailType(coupon.getRewardType());
         Integer reward = (coupon.getRewardType() == RewardType.DIAMOND) ? coupon.getReward() : 0;
 
-        // 구독권 타입인 경우 description에 JSON 메타데이터 생성
-        String description = coupon.getDescription();
-        if (coupon.getRewardType() == RewardType.ETC && coupon.getSubscriptionType() != null) {
-            description = String.format(
-                "{\"subscriptionType\": \"%s\", \"durationDays\": %d}",
-                coupon.getSubscriptionType().name(),
-                coupon.getSubscriptionDurationDays()
-            );
-        }
-
         return Mail.builder()
                 .receiver(member)
                 .senderName("운영자")
                 .type(mailType)
                 .title("쿠폰 사용 보상")
-                .description(description)
+                .description(coupon.getDescription())
                 .reward(reward)
                 .expiredAt(LocalDate.now().plusDays(7)) // 7일 후 만료
+                // 캐릭터 보상 쿠폰인 경우 characterId 설정
+                .characterId(coupon.getCharacterId())
                 .build();
     }
 

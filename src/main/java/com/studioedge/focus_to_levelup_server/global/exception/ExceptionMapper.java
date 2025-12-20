@@ -248,8 +248,6 @@ public class ExceptionMapper {
                 ExceptionSituation.of("잘못된 캐릭터 선택입니다.", HttpStatus.BAD_REQUEST));
         mapper.put(ReceiverNotFoundException.class,
                 ExceptionSituation.of("선물을 받을 유저를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
-        mapper.put(InvalidMailMetadataException.class,
-                ExceptionSituation.of("우편 메타데이터 형식이 올바르지 않습니다.", HttpStatus.BAD_REQUEST));
     }
 
     /**
