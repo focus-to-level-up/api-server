@@ -135,8 +135,8 @@ public class PreRegistrationService {
         mailRepository.save(diamondMail);
         mailIds.add(diamondMail.getId());
 
-        // 3. 프리미엄 구독권 14일 지급 (RevenueCat Promotional Entitlement)
-        revenueCatApiService.grantPreRegistrationPremium(memberId);
+        // 3. 프리미엄 구독권 14일 지급 - 비활성화 (entitlement grant가 결제 충돌 유발)
+        // revenueCatApiService.grantPreRegistrationPremium(memberId);
 
         // 4. 캐릭터 선택권 지급 (우편함) - RARE 등급 선택권
         Mail characterSelectionMail = createCharacterSelectionTicketMail(member, Rarity.RARE);
@@ -190,6 +190,7 @@ public class PreRegistrationService {
                 .popupTitle("사전예약 " + rarityName + " 캐릭터 선택권")
                 .popupContent("사전예약 보상으로 받으신 " + rarityName + " 등급 캐릭터 선택권입니다. 우편 수령 시 원하는 캐릭터를 선택하세요!")
                 .reward(0)
+                .allowedRarity(rarity.name())
                 .expiredAt(LocalDate.now().plusDays(28))
                 .build();
     }

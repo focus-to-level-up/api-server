@@ -328,18 +328,50 @@ public class ItemAchievementService {
     /**
      * 4. 휴식은 사치: 하루 쉬는 시간 < parameter (4/5/6시간)
      * 쉬는 시간 = (오늘 마지막 종료 시각 - 오늘 첫 시작 시각) - 총 집중 시간
+     *
+     * 주의: 이 미션은 하루가 끝나기 전까지 휴식 시간이 계속 증가할 수 있으므로,
+     * 집중 세션 종료 시에는 성공 판정을 하지 않고 progressData만 업데이트합니다.
+     * 실제 성공 판정은 "오늘의 학습 종료" 시점 또는 새벽 4시 Daily Batch에서 수행됩니다.
+     * @see #checkRestIsLuxuryOnStudyEnd(Long, LocalDate, DailyGoal)
+     * @see com.studioedge.focus_to_levelup_server.global.batch.step.daily.CheckRestIsLuxuryStep
      */
     private boolean checkLimitedRest(MemberItem memberItem, Long memberId, LocalDate serviceDate, DailyGoal dailyGoal) {
+        // progressData 업데이트는 updateLimitedRestProgress에서 수행
+        // 성공 판정은 학습 종료 시점 또는 Daily Batch에서 수행하므로 항상 false 반환
+        return false;
+    }
+
+    /**
+     * "휴식은 사치" 미션 성공 판정 (오늘의 학습 종료 시점에 호출)
+     *
+     * @param memberId 회원 ID
+     * @param serviceDate 서비스 날짜
+     * @param dailyGoal 오늘의 목표 정보
+     */
+    public void checkRestIsLuxuryOnStudyEnd(Long memberId, LocalDate serviceDate, DailyGoal dailyGoal) {
+        log.info("=== checkRestIsLuxuryOnStudyEnd called: memberId={}, serviceDate={}", memberId, serviceDate);
+
+        // "휴식은 사치" 미완료 아이템 조회
+        List<MemberItem> memberItems = memberItemRepository.findAllByMemberIdWithItem(memberId).stream()
+                .filter(mi -> !mi.getIsCompleted())
+                .filter(mi -> "휴식은 사치".equals(mi.getItem().getName()))
+                .toList();
+
+        if (memberItems.isEmpty()) {
+            log.debug("No incomplete '휴식은 사치' items for memberId={}", memberId);
+            return;
+        }
+
         // DailyGoal에서 시작/종료 시각 조회
         LocalTime earliestStartTime = dailyGoal.getEarliestStartTime();
         LocalTime latestEndTime = dailyGoal.getLatestEndTime();
 
-        // 시작/종료 시각 정보가 없으면 계산 불가
         if (earliestStartTime == null || latestEndTime == null) {
-            return false;
+            log.debug("No start/end time for memberId={} on {}", memberId, serviceDate);
+            return;
         }
 
-        // 서비스 날짜 기준 총 집중 시간 조회
+        // 총 집중 시간 조회
         List<DailySubject> todaySubjects = dailySubjectRepository.findAllByMemberIdAndDateRangeWithSubject(
                 memberId, serviceDate, serviceDate
         );
@@ -361,27 +393,45 @@ public class ItemAchievementService {
         long restSeconds = Math.max(0, activitySeconds - totalFocusSeconds);
         double restHours = restSeconds / 3600.0;
         int restMinutes = (int) (restSeconds / 60);
-        int requiredRestHours = memberItem.getSelection();
 
-        // progressData 업데이트
-        Map<String, Object> progressData = new HashMap<>();
-        progressData.put("todayRestHours", Math.round(restHours * 10) / 10.0);
-        progressData.put("todayRestMinutes", restMinutes);
-        progressData.put("requiredRestHours", requiredRestHours);
+        log.info("REST_IS_LUXURY check: memberId={}, restHours={:.1f}, activitySeconds={}, totalFocusSeconds={}",
+                memberId, restHours, activitySeconds, totalFocusSeconds);
 
-        boolean isAchieved = restHours < requiredRestHours;
+        // 오늘 이미 달성된 아이템 ID 추적 (같은 아이템은 하루에 1개만 달성)
+        Set<Long> achievedItemIdsToday = new HashSet<>();
 
-        // 달성 여부와 관계없이 키 유지 (달성 시 값 설정, 미달성 시 null)
-        progressData.put("achievedDate", isAchieved ? serviceDate.format(DATE_FORMATTER) : null);
-        progressData.put("achievedDay", isAchieved ? DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()) : null);
+        for (MemberItem memberItem : memberItems) {
+            Long itemId = memberItem.getItem().getId();
 
-        try {
-            memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
-        } catch (Exception e) {
-            log.error("Error updating progressData for 휴식은 사치", e);
+            // 이미 오늘 같은 itemId가 달성되었으면 스킵
+            if (achievedItemIdsToday.contains(itemId)) {
+                continue;
+            }
+
+            int requiredRestHours = memberItem.getSelection();
+            boolean isAchieved = restHours < requiredRestHours;
+
+            // progressData 업데이트
+            Map<String, Object> progressData = new HashMap<>();
+            progressData.put("todayRestHours", Math.round(restHours * 10) / 10.0);
+            progressData.put("todayRestMinutes", restMinutes);
+            progressData.put("requiredRestHours", requiredRestHours);
+            progressData.put("achievedDate", isAchieved ? serviceDate.format(DATE_FORMATTER) : null);
+            progressData.put("achievedDay", isAchieved ? DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()) : null);
+
+            try {
+                memberItem.updateProgressData(objectMapper.writeValueAsString(progressData));
+            } catch (Exception e) {
+                log.error("Error updating progressData for 휴식은 사치", e);
+            }
+
+            if (isAchieved) {
+                memberItem.complete(serviceDate);
+                achievedItemIdsToday.add(itemId);
+                log.info("REST_IS_LUXURY achieved: memberId={}, selection={}h, restHours={:.1f}h",
+                        memberId, requiredRestHours, restHours);
+            }
         }
-
-        return isAchieved;
     }
 
     /**

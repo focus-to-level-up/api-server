@@ -14,6 +14,7 @@ import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNo
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.store.service.ItemAchievementService;
 import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class DailyGoalService {
     private final MemberRepository memberRepository;
     private final DailyGoalRepository dailyGoalRepository;
     private final MemberCharacterRepository memberCharacterRepository;
+    private final ItemAchievementService itemAchievementService;
     /**
      * 목표 시간 설정
      * */
@@ -51,8 +53,10 @@ public class DailyGoalService {
     }
 
     /**
-     * 목표 보상 수령
-     * */
+     * 목표 보상 수령 (오늘의 학습 종료)
+     * - 보상 수령 처리
+     * - "휴식은 사치" 미션 성공 판정
+     */
     @Transactional
     public void receiveDailyGoal(Member m, ReceiveDailyGoalRequest request) {
         LocalDate serviceDate = AppConstants.getServiceDate();
@@ -70,5 +74,8 @@ public class DailyGoalService {
         member.expUp(request.rewardExp());
         member.getMemberInfo().totalExpUp(request.rewardExp());
         memberCharacter.expUp(request.rewardExp());
+
+        // "휴식은 사치" 미션 성공 판정 (오늘의 학습 종료 시점에 판정)
+        itemAchievementService.checkRestIsLuxuryOnStudyEnd(m.getId(), serviceDate, dailyGoal);
     }
 }
