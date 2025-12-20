@@ -19,6 +19,7 @@ public class DailyJobBatch {
      * 3. 유저 랭킹 경고 만료 확인 -> 만료시, null
      * 4. 집중중인 유저 확인 -> 랭킹 경고
      * 5. 랭킹 제외유저 복귀
+     * 6. "휴식은 사치" 미션 성공 판정 (전날 기준)
      * */
     private final JobRepository jobRepository;
 
@@ -27,13 +28,15 @@ public class DailyJobBatch {
                         Step deleteExpiredMail,
                         Step restoreRankingWarning,
                         Step checkFocusingIsOn,
-                        Step restoreExcludeRanking) {
+                        Step restoreExcludeRanking,
+                        Step checkRestIsLuxury) {
         return new JobBuilder("dailyJob", jobRepository)
                 .start(clearPlanner)
                 .next(deleteExpiredMail)
                 .next(restoreRankingWarning)
                 .next(checkFocusingIsOn)
                 .next(restoreExcludeRanking)
+                .next(checkRestIsLuxury)
                 .build();
     }
 }

@@ -40,4 +40,10 @@ public interface MemberItemRepository extends JpaRepository<MemberItem, Long> {
     @Modifying
     @Query("DELETE FROM MemberItem mi WHERE mi.member.id = :memberId")
     void deleteAllByMemberId(@Param("memberId") Long memberId);
+
+    /**
+     * 특정 아이템 이름의 미완료 아이템 조회 (배치용)
+     */
+    @Query("SELECT mi FROM MemberItem mi JOIN FETCH mi.item i JOIN FETCH mi.member WHERE i.name = :itemName AND mi.isCompleted = false")
+    List<MemberItem> findAllNotCompletedByItemName(@Param("itemName") String itemName);
 }
