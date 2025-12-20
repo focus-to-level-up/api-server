@@ -81,7 +81,7 @@ public class FocusService {
          * 현재 집중중 상태 해제
          * */
         int focusMinutes = request.focusSeconds() / 60;
-        int focusExp = focusMinutes * 10;
+        int remainSeconds = request.focusSeconds() % 60;
         LocalDate serviceDate = getServiceDate();
 
         Member member = memberRepository.findById(m.getId())
@@ -117,6 +117,16 @@ public class FocusService {
             throw new SubjectUnAuthorizedException();
         }
 
+        // 초단위의 남은 시간이 60분보다 클 경우
+        remainSeconds += dailySubject.getRemainSeconds();
+        if (remainSeconds >= 60) {
+            focusMinutes += 1;
+            dailySubject.setRemainSeconds(remainSeconds - 60);
+        } else {
+            dailySubject.setRemainSeconds(remainSeconds);
+        }
+
+        int focusExp = focusMinutes * 10;
         // 레벨 업
         member.expUp(focusExp);
         // 총 레벨 업

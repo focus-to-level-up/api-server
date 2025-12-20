@@ -46,6 +46,10 @@ public class DailySubject extends BaseEntity {
     @ColumnDefault("0")
     private Integer focusSeconds = 0;
 
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer remainSeconds = 0; // 과목별 남은 초단위(분단위 보상체제 이후)
+
     @Builder
     public DailySubject(Member member, Subject subject, LocalDate date) {
         this.member = member;
@@ -55,5 +59,9 @@ public class DailySubject extends BaseEntity {
 
     public void addSeconds(int seconds) {
         this.focusSeconds += seconds;
+    }
+
+    public void setRemainSeconds(int seconds) {
+        this.remainSeconds = seconds;
     }
 }
