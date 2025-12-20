@@ -75,6 +75,6 @@ public class DailyGoalService {
         memberCharacter.expUp(request.rewardExp());
 
         // "휴식은 사치" 미션 성공 판정 (오늘의 학습 종료 시점에 판정)
-        itemAchievementService.checkRestIsLuxuryOnStudyEnd(m.getId(), serviceDate, dailyGoal);
+        itemAchievementService.checkRestIsLuxuryOnStudyEnd(m.getId(), dailyGoal.getDailyGoalDate(), dailyGoal);
     }
 }
