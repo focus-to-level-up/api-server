@@ -1,7 +1,5 @@
 package com.studioedge.focus_to_levelup_server.domain.system.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
@@ -22,7 +20,6 @@ import com.studioedge.focus_to_levelup_server.domain.system.dto.response.MailAcc
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.MemberAsset;
-import com.studioedge.focus_to_levelup_server.domain.system.exception.InvalidMailMetadataException;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.MailAlreadyReceivedException;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.MailExpiredException;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.MailNotFoundException;
@@ -31,8 +28,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -47,7 +42,6 @@ public class MailCommandService {
     private final AssetRepository assetRepository;
     private final MemberAssetRepository memberAssetRepository;
     private final CharacterCommandService characterCommandService;
-    private final ObjectMapper objectMapper;
 
     /**
      * 우편 수락 및 보상 지급
@@ -120,8 +114,8 @@ public class MailCommandService {
      * 테두리 우편 처리
      */
     private MailAcceptResponse handleBorderMail(Mail mail, Long memberId) {
-        Map<String, Object> metadata = parseMailDescription(mail.getDescription());
-        String assetName = (String) metadata.get("assetName");
+        // Mail 엔티티의 assetName 필드 직접 사용
+        String assetName = mail.getAssetName();
 
         if (assetName == null) {
             throw new IllegalArgumentException("우편에 에셋 정보가 존재하지 않습니다.");
@@ -172,18 +166,9 @@ public class MailCommandService {
             memberInfo.addDiamond(diamondReward);
         }
 
-        // 보너스 티켓 지급 (description에서 JSON 파싱)
-        Map<String, Object> metadata = parseMailDescription(mail.getDescription());
-        int bonusTicketCount = 0;
-        if (metadata.containsKey("bonusTicketCount")) {
-            Object bonusTicketObj = metadata.get("bonusTicketCount");
-            if (!(bonusTicketObj instanceof Number)) {
-                throw new InvalidMailMetadataException();
-            }
-            bonusTicketCount = ((Number) bonusTicketObj).intValue();
-        }
-
-        if (bonusTicketCount > 0) {
+        // 보너스 티켓 지급 (Mail 엔티티의 bonusTicketCount 필드 직접 사용)
+        Integer bonusTicketCount = mail.getBonusTicketCount();
+        if (bonusTicketCount != null && bonusTicketCount > 0) {
             memberInfo.addBonusTicket(bonusTicketCount);
             log.info("Rewarded {} bonus tickets to member {}", bonusTicketCount, memberId);
         }
@@ -202,15 +187,11 @@ public class MailCommandService {
      * 캐릭터 우편 처리 (사전예약 보상, 이벤트 보상 등)
      */
     private MailAcceptResponse handleCharacterMail(Mail mail, Long memberId) {
-        // description에서 JSON 파싱
-        Map<String, Object> metadata = parseMailDescription(mail.getDescription());
-
-        Long characterId = metadata.containsKey("characterId")
-                ? ((Number) metadata.get("characterId")).longValue()
-                : null;
+        // Mail 엔티티의 characterId 필드 직접 사용
+        Long characterId = mail.getCharacterId();
 
         if (characterId == null) {
-            log.error("Character ID not found in mail description: {}", mail.getDescription());
+            log.error("Character ID not found in mail: {}", mail.getId());
             throw new IllegalArgumentException("캐릭터 정보가 올바르지 않습니다.");
         }
 
@@ -249,12 +230,11 @@ public class MailCommandService {
             throw new IllegalArgumentException("캐릭터 선택권 우편은 캐릭터를 선택해야 합니다.");
         }
 
-        // description에서 허용된 등급 파싱
-        Map<String, Object> metadata = parseMailDescription(mail.getDescription());
-        String allowedRarityStr = (String) metadata.get("rarity");
+        // Mail 엔티티의 allowedRarity 필드 직접 사용
+        String allowedRarityStr = mail.getAllowedRarity();
 
         if (allowedRarityStr == null) {
-            log.error("Rarity not found in mail description: {}", mail.getDescription());
+            log.error("Rarity not found in mail: {}", mail.getId());
             throw new IllegalArgumentException("캐릭터 선택권 정보가 올바르지 않습니다.");
         }
 
@@ -294,17 +274,5 @@ public class MailCommandService {
                 mail.getTitle(),
                 CharacterRewardInfo.from(selectedCharacter)
         );
-    }
-
-    /**
-     * Mail description JSON 파싱
-     */
-    private Map<String, Object> parseMailDescription(String description) {
-        try {
-            return objectMapper.readValue(description, Map.class);
-        } catch (JsonProcessingException e) {
-            log.error("Failed to parse mail description JSON: {}", description, e);
-            throw new IllegalArgumentException("우편 메타데이터 파싱에 실패했습니다.");
-        }
     }
 }

@@ -85,11 +85,18 @@ public class Mail extends BaseEntity {
     /** 보너스 티켓 개수 */
     private Integer bonusTicketCount;
 
+    /** 자산 이름 (PROFILE_BORDER 관련 보상) */
+    private String assetName;
+
+    /** 허용 등급 (CHARACTER_SELECTION_TICKET 전용) */
+    private String allowedRarity;
+
     @Builder
     public Mail(Member receiver, String senderName, MailType type, String title,
                 String description, String popupTitle, String popupContent, Integer reward, LocalDate expiredAt, Long paymentLogId,
                 Integer diamondAmount, Integer goldAmount,
-                Long characterId, String characterImageUrl, Tier profileBorderTier, String profileBorderImageUrl, Integer bonusTicketCount)
+                Long characterId, String characterImageUrl, Tier profileBorderTier, String profileBorderImageUrl, Integer bonusTicketCount,
+                String assetName, String allowedRarity)
     {
         this.receiver = receiver;
         this.senderName = senderName != null ? senderName : "운영자";
@@ -109,6 +116,8 @@ public class Mail extends BaseEntity {
         this.profileBorderTier = profileBorderTier;
         this.profileBorderImageUrl = profileBorderImageUrl;
         this.bonusTicketCount = bonusTicketCount;
+        this.assetName = assetName;
+        this.allowedRarity = allowedRarity;
     }
 
     // 비즈니스 메서드

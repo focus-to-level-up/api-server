@@ -50,10 +50,15 @@ public class Coupon extends BaseEntity {
     @Column(name = "subscription_duration_days")
     private Integer subscriptionDurationDays;
 
+    // 캐릭터 쿠폰 전용 필드 (rewardType = CHARACTER인 경우 사용)
+    @Column(name = "character_id")
+    private Long characterId;
+
     @Builder
     public Coupon(String couponCode, String description, RewardType rewardType,
                   Integer reward, LocalDateTime expiredAt,
-                  SubscriptionType subscriptionType, Integer subscriptionDurationDays)
+                  SubscriptionType subscriptionType, Integer subscriptionDurationDays,
+                  Long characterId)
     {
         this.couponCode = couponCode;
         this.description = description;
@@ -62,6 +67,7 @@ public class Coupon extends BaseEntity {
         this.expiredAt = expiredAt;
         this.subscriptionType = subscriptionType;
         this.subscriptionDurationDays = subscriptionDurationDays;
+        this.characterId = characterId;
     }
 
     // 비즈니스 메서드
