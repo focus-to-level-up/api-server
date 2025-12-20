@@ -54,9 +54,8 @@ public class DailyGoalService {
      * 목표 보상 수령
      * */
     @Transactional
-    public void receiveDailyGoal(Member m, ReceiveDailyGoalRequest request) {
-        LocalDate serviceDate = AppConstants.getServiceDate();
-        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), serviceDate)
+    public void receiveDailyGoal(Member m, Long dailyGoalId, ReceiveDailyGoalRequest request) {
+        DailyGoal dailyGoal = dailyGoalRepository.findById(dailyGoalId)
                 .orElseThrow(DailyGoalNotFoundException::new);
         Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
