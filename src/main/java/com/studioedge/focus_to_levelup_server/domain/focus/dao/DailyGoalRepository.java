@@ -38,4 +38,20 @@ public interface DailyGoalRepository extends JpaRepository<DailyGoal, Long> {
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+
+    // === Admin 통계용 쿼리 ===
+
+    /**
+     * 일간: 특정 날짜의 유저별 집중시간(초) 목록 조회
+     */
+    @Query("SELECT dg.currentSeconds FROM DailyGoal dg WHERE dg.dailyGoalDate = :date")
+    List<Integer> findAllDailySecondsByDate(@Param("date") LocalDate date);
+
+    /**
+     * 주간: 날짜 범위의 유저별 집중시간(초) 합계 목록 조회
+     */
+    @Query("SELECT SUM(dg.currentSeconds) FROM DailyGoal dg " +
+            "WHERE dg.dailyGoalDate BETWEEN :startDate AND :endDate " +
+            "GROUP BY dg.member.id")
+    List<Long> findAllWeeklySecondsBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }
