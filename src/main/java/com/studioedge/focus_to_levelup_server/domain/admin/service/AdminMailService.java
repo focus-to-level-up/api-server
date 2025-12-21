@@ -65,8 +65,8 @@ public class AdminMailService {
                 .description(customDescription != null ? customDescription : "사전예약 보상이 지급되었습니다.")
                 .popupTitle("사전예약 보상")
                 .popupContent("사전예약에 참여해 주셔서 감사합니다!\n특별 보상이 지급되었습니다.")
-                .diamondAmount(500)
-                .bonusTicketCount(3)
+                .diamondAmount(3000)
+                .bonusTicketCount(0)
                 .expiredAt(LocalDate.now().plusDays(30))
                 .build();
 
