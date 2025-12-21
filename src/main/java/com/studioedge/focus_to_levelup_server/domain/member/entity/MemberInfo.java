@@ -262,4 +262,21 @@ public class MemberInfo {
         this.bonusTicketCount -= actualDecrease;
         return actualDecrease;
     }
+
+    // === Admin 전용 메서드 ===
+
+    /**
+     * 상태 메시지 변경 (Admin 전용)
+     */
+    public void updateProfileMessage(String profileMessage) {
+        this.profileMessage = profileMessage;
+    }
+
+    /**
+     * 학교 정보 변경 (Admin 전용)
+     */
+    public void updateSchool(String school, String schoolAddress) {
+        this.school = school;
+        this.schoolAddress = schoolAddress != null ? schoolAddress : "없음";
+    }
 }

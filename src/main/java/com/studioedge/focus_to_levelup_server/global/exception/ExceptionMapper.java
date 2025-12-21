@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.global.exception;
 
+import com.studioedge.focus_to_levelup_server.domain.admin.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
@@ -27,6 +28,7 @@ public class ExceptionMapper {
     private static final Map<Class<? extends Exception>, ExceptionSituation> mapper = new LinkedHashMap<>();
 
     static {
+        setUpAdminException();
         setUpAuthException();
         setUpStoreException();
         setUpMemberException();
@@ -46,6 +48,18 @@ public class ExceptionMapper {
 
     public static ExceptionSituation getSituationOf(Exception exception) {
         return mapper.get(exception.getClass());
+    }
+
+    /**
+     * Admin 관련 예외 등록
+     */
+    private static void setUpAdminException() {
+        mapper.put(AdminAccessDeniedException.class,
+                ExceptionSituation.of("관리자 권한이 없습니다.", HttpStatus.FORBIDDEN));
+        mapper.put(SuperAdminRequiredException.class,
+                ExceptionSituation.of("슈퍼 관리자 권한이 필요합니다.", HttpStatus.FORBIDDEN));
+        mapper.put(AdminNotFoundException.class,
+                ExceptionSituation.of("관리자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 
     /**
