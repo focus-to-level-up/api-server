@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDateTime;
 
-public record SaveFocusRequest(
+public record SaveFocusRequestV2 (
         @Positive(message = "목표 시간은 반드시 양수여야합니다.")
         @Min(value = 120, message = "목표 시간은 2시간 이상이어야 합니다.")
         @NotNull(message = "목표 시간은 필수입니다.")
@@ -19,6 +19,9 @@ public record SaveFocusRequest(
         Integer maxConsecutiveSeconds,
         @NotNull(message = "집중 시작 시각은 필수입니다.")
         @Schema(description = "집중 시작 시각 (ISO 8601, UTC 또는 로컬 시간)", example = "2025-11-19T14:30:00")
-        LocalDateTime startTime
-) {
+        LocalDateTime startTime,
+        @NotNull(message = "일일 목표 pk는 필수입니다..")
+        @Schema(description = "일일 목표 pk", example = "3")
+        Long dailyGoalId
+){
 }

@@ -3,11 +3,10 @@ package com.studioedge.focus_to_levelup_server.domain.store.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailySubject;
-import com.studioedge.focus_to_levelup_server.domain.store.entity.MemberItem;
 import com.studioedge.focus_to_levelup_server.domain.store.dao.MemberItemRepository;
+import com.studioedge.focus_to_levelup_server.domain.store.entity.MemberItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -65,10 +64,8 @@ public class ItemAchievementService {
      * @param request 요청온 유저의 집중 시간 정보
      * @param dailyGoal 오늘의 목표 정보 (최대 집중 시간 포함)
      */
-    public void checkAchievements(Long memberId, SaveFocusRequest request, DailyGoal dailyGoal) {
-        int focusSeconds = request.focusSeconds();
-        LocalDateTime sessionStartTime = request.startTime();
-
+    public void checkAchievements(Long memberId, Integer focusSeconds,
+                                  LocalDateTime sessionStartTime, DailyGoal dailyGoal) {
         log.info("=== checkAchievements called: memberId={}, focusSeconds={}, startTime={}", memberId, focusSeconds, sessionStartTime);
         LocalDateTime sessionEndTime = LocalDateTime.now();
         LocalDate serviceDate = getServiceDate();

@@ -2,8 +2,10 @@ package com.studioedge.focus_to_levelup_server.domain.focus.controller;
 
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateSubjectRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequestV2;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetSubjectResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.service.FocusService;
+import com.studioedge.focus_to_levelup_server.domain.focus.service.FocusServiceV2;
 import com.studioedge.focus_to_levelup_server.domain.focus.service.SubjectService;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
@@ -29,6 +31,7 @@ import java.util.List;
 public class SubjectController {
     private final SubjectService subjectService;
     private final FocusService focusService;
+    private final FocusServiceV2 focusServiceV2;
     /**
      * 과목 리스트 조회
      * */
@@ -130,12 +133,61 @@ public class SubjectController {
                     description = "해당 과목/유저/일일목표를 찾을 수 없습니다."
             )
     })
-    public ResponseEntity<CommonResponse<Void>> saveFocus(
+    public ResponseEntity<CommonResponse<Void>> saveFocusV1(
             @AuthenticationPrincipal Member member,
             @PathVariable(name = "subjectId") Long subjectId,
             @Valid @RequestBody SaveFocusRequest request
     ) {
         focusService.saveFocus(member, subjectId, request);
+        return HttpResponseUtil.ok(null);
+    }
+
+    /**
+     * 과목 공부시간 저장 ver2
+     * */
+    @PostMapping("/v2/subject/{subjectId}")
+    @Operation(summary = "과목 학습 시간 저장 ver2", description = """
+            ### 기능
+            - 뽀모도로/일반 학습 세션 종료 후, 실제 학습 시간을 저장하고 보상을 정산받습니다.
+            
+            ### 개발 유의사항
+            - 1분에 경험치 10, 골드 10이 지급됩니다. (레벨당 600 EXP)
+            - `DailyGoal`의 `currentMinutes` 필드 누적
+            - `Member`의 `currentExp`, `currentLevel` 업데이트 (레벨업 확인)
+            - `MemberCharacter`의 친밀도 누적
+            
+            ### 요청
+            - `subjectId`: [경로] 학습한 과목 PK
+            - `focusSeconds`: [Body] [필수] 실제 학습한 시간(분)
+            - `startTime`: [Body] [필수] 집중 시작 시간
+            - `maxConsecutiveSeconds`: [Body] [필수] 최대 연속 집중 시간
+            
+            """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "학습 시간 저장 및 보상 정산 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "DTO 유효성 검사 실패 (e.g., 1분 미만)"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "해당 과목에 대한 소유권이 없습니다."
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "해당 과목/유저/일일목표를 찾을 수 없습니다."
+            )
+    })
+    public ResponseEntity<CommonResponse<Void>> saveFocusV2(
+            @AuthenticationPrincipal Member member,
+            @PathVariable(name = "subjectId") Long subjectId,
+            @Valid @RequestBody SaveFocusRequestV2 request
+    ) {
+        focusServiceV2.saveFocus(member, subjectId, request);
         return HttpResponseUtil.ok(null);
     }
 
