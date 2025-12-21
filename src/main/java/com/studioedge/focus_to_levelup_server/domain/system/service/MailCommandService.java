@@ -76,6 +76,7 @@ public class MailCommandService {
             case PROFILE_BORDER -> handleBorderMail(mail, memberId);
             case EVENT, GUILD_WEEKLY, TIER_PROMOTION, SEASON_END -> handleDiamondMail(mail, memberId);
             case COUPON -> handleCouponMail(mail, memberId);
+            case ADMIN_REWARD -> handleAdminRewardMail(mail, memberId);
         };
     }
 
@@ -86,6 +87,49 @@ public class MailCommandService {
     private MailAcceptResponse handleCouponMail(Mail mail, Long memberId) {
         // 현재는 다이아 보상만 처리 (기본 구현)
         return handleDiamondMail(mail, memberId);
+    }
+
+    /**
+     * 어드민 재화 지급 우편 처리 (다이아, 골드, 보너스 티켓)
+     */
+    private MailAcceptResponse handleAdminRewardMail(Mail mail, Long memberId) {
+        // MemberInfo 조회
+        MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
+                .orElseThrow(InvalidMemberException::new);
+
+        // 다이아 지급
+        Integer diamondAmount = mail.getDiamondAmount();
+        if (diamondAmount != null && diamondAmount > 0) {
+            memberInfo.addDiamond(diamondAmount);
+            log.info("Rewarded {} diamonds to member {} via admin mail", diamondAmount, memberId);
+        }
+
+        // 골드 지급
+        Integer goldAmount = mail.getGoldAmount();
+        if (goldAmount != null && goldAmount > 0) {
+            memberInfo.addGold(goldAmount);
+            log.info("Rewarded {} gold to member {} via admin mail", goldAmount, memberId);
+        }
+
+        // 보너스 티켓 지급
+        Integer bonusTicketCount = mail.getBonusTicketCount();
+        if (bonusTicketCount != null && bonusTicketCount > 0) {
+            memberInfo.addBonusTicket(bonusTicketCount);
+            log.info("Rewarded {} bonus tickets to member {} via admin mail", bonusTicketCount, memberId);
+        }
+
+        // 우편 수령 처리
+        mail.markAsReceived();
+
+        // 다이아 우선, 없으면 골드 반환
+        int rewardAmount = (diamondAmount != null && diamondAmount > 0) ? diamondAmount :
+                           (goldAmount != null ? goldAmount : 0);
+
+        return MailAcceptResponse.ofDiamond(
+                mail.getId(),
+                mail.getTitle(),
+                rewardAmount
+        );
     }
 
     /**
