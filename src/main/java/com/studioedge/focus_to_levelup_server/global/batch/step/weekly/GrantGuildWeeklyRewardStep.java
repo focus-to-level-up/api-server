@@ -27,6 +27,7 @@ import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,6 +47,8 @@ public class GrantGuildWeeklyRewardStep {
     private static final int MAX_REWARD = 500;
     private static final int MIN_MEMBER_COUNT = 2;
     private static final int BOOST_BONUS = 50;
+
+    private final Clock clock;
     @Bean
     public Step grantGuildWeeklyReward() {
         return new StepBuilder("grantGuildWeeklyReward", jobRepository)
@@ -99,7 +102,7 @@ public class GrantGuildWeeklyRewardStep {
                     .distinct() // 중복 제거
                     .toList();
 
-            LocalDate oneWeekAgo = LocalDate.now().minusDays(6);
+            LocalDate oneWeekAgo = LocalDate.now(clock).minusDays(6);
             List<Mail> existingMails = mailRepository.findAllByReceiverIdInAndTypeAndCreatedAtAfter(
                     allMemberIds, MailType.GUILD_WEEKLY, oneWeekAgo.atStartOfDay()
             );
@@ -224,7 +227,7 @@ public class GrantGuildWeeklyRewardStep {
                 .popupTitle("길드 주간 보상")
                 .popupContent(guildName + "의 길드 주간 보상을 수령하세요")
                 .reward(diamondAmount)
-                .expiredAt(LocalDate.now().plusDays(7))
+                .expiredAt(LocalDate.now(clock).plusDays(7))
                 .build();
     }
 }

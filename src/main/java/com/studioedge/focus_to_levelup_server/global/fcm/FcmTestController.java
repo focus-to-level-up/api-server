@@ -1,4 +1,4 @@
-package com.studioedge.focus_to_levelup_server.test;
+package com.studioedge.focus_to_levelup_server.global.fcm;
 
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;

@@ -58,13 +58,8 @@ src/main/resources/static/*.json
 src/main/resources/static/*.pem
 src/main/resources/static/*.key
 
-### Service Account Keys ###
-
-
-### Logs ###
-
 ### Claude.md ###
 CLAUDE.md
 
-### Dummy data###
+### Dummy Data ###
 dump.sql

@@ -71,7 +71,6 @@ public class UpdateWeeklyStatStep {
 
     @Bean
     public RepositoryItemReader<Member> updateWeeklyStatReader() {
-        LocalDate today = LocalDate.now();
         return new RepositoryItemReaderBuilder<Member>()
                 .name("updateWeeklyStatReader")
                 .pageSize(100)

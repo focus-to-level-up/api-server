@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +41,8 @@ public class StartNewSeasonStep {
     private final MemberRepository memberRepository;
     private final LeagueRepository leagueRepository;
 
+    private final Clock clock;
+
     private static final int TARGET_LEAGUE_SIZE = 100;
 
     @Bean
@@ -58,7 +61,7 @@ public class StartNewSeasonStep {
             leagueRepository.deleteAllInBatch();
             log.info(">> 기존 시즌 데이터(League, Ranking) 삭제 완료");
 
-            LocalDate today = LocalDate.now();
+            LocalDate today = LocalDate.now(clock);
 
             // 1. 새 시즌 생성
             // 이름 로직: "Season " + (count + 1) 등
@@ -134,6 +137,7 @@ public class StartNewSeasonStep {
             // 현재는 그냥 둠 (Ranking 테이블에 쌓임 -> 조회 시 SeasonId로 필터링 필수)
 
             log.info(">> 시즌 재배치 완료. 참여 인원: {}, 생성 리그: {}", newRankings.size(), newLeagues.size());
+            log.info(String.valueOf(today));
 
             return RepeatStatus.FINISHED;
         };
