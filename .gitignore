@@ -65,3 +65,6 @@ src/main/resources/static/*.key
 
 ### Claude.md ###
 CLAUDE.md
+
+### Dummy data###
+dump.sql

@@ -19,13 +19,10 @@ import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberReposi
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberSettingRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
 import com.studioedge.focus_to_levelup_server.domain.store.service.ItemAchievementService;
 import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
@@ -37,7 +34,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.RANKING_WARNING_FOCUS_MINUTES;
 import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
 
 @Service
@@ -45,14 +41,12 @@ import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.
 public class FocusServiceV2 {
     private final MemberRepository memberRepository;
     private final MemberInfoRepository memberInfoRepository;
-    private final MemberSettingRepository memberSettingRepository;
     private final SubjectRepository subjectRepository;
     private final DailyGoalRepository dailyGoalRepository;
     private final MemberCharacterRepository memberCharacterRepository;
     private final DailySubjectRepository dailySubjectRepository;
     private final SchoolRepository schoolRepository;
     private final GuildMemberRepository guildMemberRepository;
-    private final RankingRepository rankingRepository;
     private final ItemAchievementService itemAchievementService;
     private final TrainingRewardService trainingRewardService;
 
@@ -73,15 +67,6 @@ public class FocusServiceV2 {
                 .orElseThrow(MemberNotFoundException::new);
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(m.getId())
                 .orElseThrow(InvalidMemberException::new);
-        MemberSetting memberSetting = memberSettingRepository.findByMemberId(m.getId())
-                .orElseThrow(InvalidMemberException::new);
-        if (focusMinutes >= RANKING_WARNING_FOCUS_MINUTES) {
-            boolean isBanned = memberSetting.warning();
-            if (isBanned) {
-                member.banRanking();
-                rankingRepository.deleteByMemberId(m.getId());
-            }
-        }
 
         DailyGoal dailyGoal = dailyGoalRepository.findById(request.dailyGoalId())
                 .orElseThrow(DailyGoalNotFoundException::new);
