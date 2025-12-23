@@ -21,7 +21,7 @@ import java.util.Optional;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-@Profile("dev")
+@Profile({"dev", "prod"})
 public class GlobalBatchScheduler {
     private final JobLauncher jobLauncher;
     private final SeasonRepository seasonRepository;

@@ -85,13 +85,13 @@ public class CheckFocusingIsOnStep {
                 return member;
             }
 
-            if (!isJustWarned) {
-                log.info(">> 사용자 밴 처리 및 랭킹 삭제: {}", member.getNickname());
-                member.banRanking();
-                rankingRepository.deleteByMemberId(member.getId());
-            } else {
-                log.info(">> 사용자 경고 부여: {}", member.getNickname());
-            }
+//            if (!isJustWarned) {
+//                log.info(">> 사용자 밴 처리 및 랭킹 삭제: {}", member.getNickname());
+//                member.banRanking();
+//                rankingRepository.deleteByMemberId(member.getId());
+//            } else {
+//                log.info(">> 사용자 경고 부여: {}", member.getNickname());
+//            }
 
             member.focusOff();
 
