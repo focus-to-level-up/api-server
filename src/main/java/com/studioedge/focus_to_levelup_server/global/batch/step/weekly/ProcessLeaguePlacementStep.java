@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -40,6 +41,8 @@ public class ProcessLeaguePlacementStep {
     private final SeasonRepository seasonRepository;
     private final MailRepository mailRepository;
 
+    private final Clock clock;
+
     private static final int TARGET_LEAGUE_SIZE = 100;
 
     @Bean
@@ -55,7 +58,7 @@ public class ProcessLeaguePlacementStep {
             log.info(">> Step: 승강제 심사 및 리그 재배치 시작");
 
             // 1. 현재 진행 중인 시즌 조회
-            Season currentSeason = seasonRepository.findFirstByEndDateGreaterThanEqualOrderByStartDateDesc(LocalDate.now())
+            Season currentSeason = seasonRepository.findFirstByEndDateGreaterThanEqualOrderByStartDateDesc(LocalDate.now(clock))
                     .orElseThrow(() -> new IllegalStateException("진행 중인 시즌이 없습니다."));
 
             // 2. 카테고리별의 리그를 순회하면서 처리
@@ -164,7 +167,7 @@ public class ProcessLeaguePlacementStep {
 
         // 2. 리그 생성
         List<League> createdLeagues = new ArrayList<>();
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
 
         for (int i = 0; i < leagueCount; i++) {
             String leagueName = String.format("%s %s %d리그", category.getCategoryName(), tier.name(), i + 1);
@@ -218,7 +221,7 @@ public class ProcessLeaguePlacementStep {
                 .popupTitle(nextTier.name() + " 승급 보상")
                 .popupContent(nextTier.name() + "로 승급한걸 축하합니다!")
                 .reward(diamonds)
-                .expiredAt(LocalDate.now().plusDays(7))
+                .expiredAt(LocalDate.now(clock).plusDays(7))
                 .build();
     }
 

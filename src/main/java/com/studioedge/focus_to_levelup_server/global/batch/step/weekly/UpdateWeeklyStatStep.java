@@ -33,6 +33,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.CollectionUtils;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,7 @@ public class UpdateWeeklyStatStep {
     private final WeeklyStatRepository weeklyStatRepository;
     private final WeeklySubjectStatRepository weeklySubjectStatRepository;
 
+    private final Clock clock;
     private record WeeklyStatContainer(
             WeeklyStat weeklyStat,
             List<WeeklySubjectStat> subjectStats
@@ -85,7 +87,7 @@ public class UpdateWeeklyStatStep {
     @StepScope // Step 실행 시점의 날짜를 계산하기 위해 @StepScope 추가
     public ItemProcessor<Member, WeeklyStatContainer> updateWeeklyStatProcessor() {
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
         LocalDate endDate = today.minusDays(1);   // 지난주 일요일
         LocalDate startDate = today.minusDays(7); // 지난주 월요일
 

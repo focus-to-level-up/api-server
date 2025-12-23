@@ -105,7 +105,7 @@ public class StartNewSeasonStep {
                             .categoryType(category)
                             .tier(Tier.BRONZE) // 전원 브론즈 시작
                             .startDate(today)
-                            .endDate(today.plusWeeks(6)) // 6주
+                            .endDate(today.plusDays(6)) // 6주
                             .currentWeek(1)
                             .build();
                     categoryLeagues.add(league);

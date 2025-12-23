@@ -10,7 +10,6 @@ import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingReposito
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.WeeklyRewardRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.WeeklyReward;
-import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Step;
@@ -29,6 +28,7 @@ import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Map;
 
@@ -44,6 +44,7 @@ public class GrantWeeklyRewardStep {
     private final CharacterImageRepository characterImageRepository;
     private final WeeklyRewardRepository weeklyRewardRepository;
 
+    private final Clock clock;
     @Bean
     public Step grantWeeklyReward() {
         return new StepBuilder("grantWeeklyReward", jobRepository)
@@ -52,7 +53,6 @@ public class GrantWeeklyRewardStep {
                 .processor(grantWeeklyRewardProcessor())
                 .writer(grantWeeklyRewardWriter())
                 .faultTolerant()
-                // 1. 특정 예외 발생 시 배치를 멈추지 않고 건너뜀
                 .skip(IllegalArgumentException.class) // 로직 에러
                 .skip(NullPointerException.class)     // 데이터 누락 에러
                 .skip(DataIntegrityViolationException.class) // DB 제약조건 에러
@@ -67,7 +67,7 @@ public class GrantWeeklyRewardStep {
     @Bean
     @StepScope // 날짜 계산이 실행 시점에 이루어지도록 Scope 설정
     public RepositoryItemReader<Ranking> grantWeeklyRewardReader() {
-        LocalDate lastLeagueEndDate = AppConstants.getServiceDate().minusDays(1);
+        LocalDate lastLeagueEndDate = LocalDate.now(clock).minusDays(1);
 
         log.info(">> 지난주 리그 종료일({}) 기준 랭킹 데이터를 조회합니다.", lastLeagueEndDate);
 
@@ -85,6 +85,7 @@ public class GrantWeeklyRewardStep {
     public ItemProcessor<Ranking, WeeklyReward> grantWeeklyRewardProcessor() {
         return ranking -> {
             Member member = ranking.getMember();
+
 
             // 2. 유저의 대표 캐릭터 정보 조회 (데이터 누락 대비 방어 로직 추가)
             MemberCharacter memberCharacter = memberCharacterRepository
@@ -108,6 +109,9 @@ public class GrantWeeklyRewardStep {
                         memberCharacter.getCharacter().getId(), memberCharacter.getDefaultEvolution());
                 return null; // 이미지가 없으면 보상 생성을 건너뜁니다.
             }
+
+            // 1. memberInfo 에서 isReceivedWeeklyReward false 변경
+            member.receiveWeeklyReward(false);
 
             // 4. WeeklyReward 생성
             return WeeklyReward.builder()

@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,6 +38,8 @@ public class PlaceNewMemberInRankingStep {
     private final RankingRepository rankingRepository;
     private final SeasonRepository seasonRepository;
 
+    private final Clock clock;
+
     private static final int MAX_LEAGUE_CAPACITY = 110;
 
     @Bean
@@ -52,7 +55,7 @@ public class PlaceNewMemberInRankingStep {
             log.info(">> Step: 신규 유저 브론즈 리그 배치 시작");
 
             // 1. 진행 중인 시즌 조회
-            Season currentSeason = seasonRepository.findFirstByEndDateGreaterThanEqualOrderByStartDateDesc(LocalDate.now())
+            Season currentSeason = seasonRepository.findFirstByEndDateGreaterThanEqualOrderByStartDateDesc(LocalDate.now(clock))
                     .orElseThrow(() -> new IllegalStateException("진행 중인 시즌이 없습니다."));
 
             // 2. 랭킹이 없는 유저 조회
@@ -130,7 +133,7 @@ public class PlaceNewMemberInRankingStep {
                         .name(leagueName)
                         .categoryType(category)
                         .tier(Tier.BRONZE)
-                        .startDate(LocalDate.now())
+                        .startDate(LocalDate.now(clock))
                         .endDate(season.getEndDate())
                         .build();
 

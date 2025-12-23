@@ -212,8 +212,8 @@ public class Member extends BaseEntity {
         this.highestTier = newHighestTier;
     }
 
-    public void receiveWeeklyReward() {
-        this.isReceivedWeeklyReward = true;
+    public void receiveWeeklyReward(boolean isReceivedWeeklyReward) {
+        this.isReceivedWeeklyReward = isReceivedWeeklyReward;
     }
 
     public void updateLastLoginDateTime(LocalDateTime lastLoginDateTime) {
