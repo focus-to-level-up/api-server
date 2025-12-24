@@ -1,6 +1,7 @@
 package com.studioedge.focus_to_levelup_server.global.exception;
 
 import com.studioedge.focus_to_levelup_server.domain.admin.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.advertisement.exception.AdvertisementNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
@@ -323,6 +324,8 @@ public class ExceptionMapper {
                 ExceptionSituation.of("받을 수 있는 주간보상이 존재하지 않습니다.", HttpStatus.NOT_FOUND));
         mapper.put(InsufficientBonusTicketException.class,
                 ExceptionSituation.of("보유한 보너스 티켓이 부족합니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(AdvertisementNotFoundException.class,
+                ExceptionSituation.of("해당 광고를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     }
 
     /**
