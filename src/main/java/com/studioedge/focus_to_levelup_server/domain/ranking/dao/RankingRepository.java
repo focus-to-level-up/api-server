@@ -8,6 +8,7 @@ import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -56,4 +57,8 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
     List<Ranking> findAllBySortedLeague(League league);
 
     void deleteByMemberId(Long memberId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("DELETE FROM Ranking r WHERE r.league.id IN :leagueIds")
+    void deleteByLeagueIdIn(@Param("leagueIds") List<Long> leagueIds);
 }

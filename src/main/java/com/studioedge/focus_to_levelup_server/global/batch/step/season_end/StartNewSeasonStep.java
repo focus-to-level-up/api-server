@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.global.batch.step.season_end;
 
+import com.google.common.collect.Lists;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
@@ -23,12 +24,18 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import java.time.Clock;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
+/**
+ * [Season End Job - Step 5] 새 시즌 생성 및 전원 브론즈 배치
+ *
+ * 동작 흐름:
+ * 1. 기존의 모든 Ranking, League 데이터를 물리적으로 삭제합니다.
+ * 2. 오늘 시작하는 새 시즌을 생성합니다.
+ * 3. 랭킹 참여 대상인 모든 활성 유저의 ID를 조회합니다.
+ * 4. 유저 ID 리스트를 랜덤으로 섞습니다.
+ * 5. 1000명 단위로 끊어서(Partitioning) 카테고리별 리그 배치 로직을 수행합니다.
+ */
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -43,7 +50,8 @@ public class StartNewSeasonStep {
 
     private final Clock clock;
 
-    private static final int TARGET_LEAGUE_SIZE = 100;
+    private static final int TARGET_LEAGUE_SIZE = 110;
+    private static final int CHUNK_SIZE = 1000; // 한 번에 처리할 유저 수
 
     @Bean
     public Step startNewSeason() {
@@ -51,76 +59,79 @@ public class StartNewSeasonStep {
                 .tasklet(startNewSeasonTasklet(), platformTransactionManager)
                 .build();
     }
-
     @Bean
     public Tasklet startNewSeasonTasklet() {
         return (contribution, chunkContext) -> {
-            log.info(">> Step 3: 새 시즌 생성 및 유저 재배치 시작");
+            log.info(">> Step 5: 새 시즌 생성 및 유저 재배치 시작");
 
             rankingRepository.deleteAllInBatch();
             leagueRepository.deleteAllInBatch();
-            log.info(">> 기존 시즌 데이터(League, Ranking) 삭제 완료");
+            log.info(">> 기존 시즌 데이터 초기화 완료");
 
             LocalDate today = LocalDate.now(clock);
+            Season newSeason = seasonRepository.findByStartDate(today)
+                    .orElseGet(() -> {
+                        long seasonCount = seasonRepository.count();
+                        Season season = Season.builder()
+                                .name("Season " + (seasonCount + 1))
+                                .startDate(today)
+                                .endDate(today.plusWeeks(6).minusDays(1))
+                                .build();
+                        return seasonRepository.save(season);
+                    });
 
-            // 1. 새 시즌 생성
-            // 이름 로직: "Season " + (count + 1) 등
-            long seasonCount = seasonRepository.count();
-            Season newSeason = Season.builder()
-                    .name("Season " + (seasonCount + 1))
-                    .startDate(today)
-                    .endDate(today.plusWeeks(6).minusDays(1))
-                    .build();
-            seasonRepository.save(newSeason);
+            log.info(">> 시즌 정보: {} ({} ~ {})", newSeason.getName(), newSeason.getStartDate(), newSeason.getEndDate());
 
-            // 2. 재배치 대상 유저 조회 (랭킹 정지된 유저 제외!)
-            // Status가 ACTIVE이고, MemberSetting에서 랭킹이 활성화된 유저만
-            List<Member> eligibleMembers = memberRepository.findAllActiveMembersForRanking();
+            List<Long> eligibleMemberIds = memberRepository.findAllActiveMemberIdsForRanking();
+            Collections.shuffle(eligibleMemberIds);
+            log.info(">> 총 대상 유저 수: {}명", eligibleMemberIds.size());
 
-            // 3. 카테고리별 그룹화
-            Map<CategoryMainType, List<Member>> membersByCategory = eligibleMembers.stream()
-                    .collect(Collectors.groupingBy(m -> m.getMemberInfo().getCategoryMain()));
+            // 4. [핵심] 상태 유지 변수 선언 (Chunk 루프 밖)
+            // 카테고리별로 "현재 채우고 있는 리그"를 기억함
+            Map<CategoryMainType, League> activeLeagues = new HashMap<>();
+            // 카테고리별로 "리그 번호"를 기억함
+            Map<CategoryMainType, Integer> leagueNumberCounters = new HashMap<>();
 
-            List<League> newLeagues = new ArrayList<>();
-            List<Ranking> newRankings = new ArrayList<>();
+            // 5. 파티셔닝 및 처리
+            List<List<Long>> partitions = Lists.partition(eligibleMemberIds, CHUNK_SIZE);
+            int totalProcessed = 0;
 
-            // 4. 카테고리별 리그 생성 및 분배 (라운드 로빈)
-            for (Map.Entry<CategoryMainType, List<Member>> entry : membersByCategory.entrySet()) {
-                CategoryMainType category = entry.getKey();
-                List<Member> members = entry.getValue();
+            for (List<Long> chunkIds : partitions) {
+                // 실제 엔티티 조회
+                List<Member> members = memberRepository.findAllById(chunkIds);
+                List<Ranking> rankingsToSave = new ArrayList<>();
 
-                // 셔플 (랜덤성을 위해)
-                Collections.shuffle(members);
+                for (Member member : members) {
+                    CategoryMainType category = member.getMemberInfo().getCategoryMain();
 
-                // 필요 리그 개수 (100명 기준)
-                int totalMembers = members.size();
-                int leagueCount = Math.max(1, (int) Math.round((double) totalMembers / TARGET_LEAGUE_SIZE));
+                    // 5-1. 해당 카테고리의 '현재 리그' 가져오기
+                    League targetLeague = activeLeagues.get(category);
 
-                // 리그 생성
-                List<League> categoryLeagues = new ArrayList<>();
-                for (int i = 0; i < leagueCount; i++) {
-                    League league = League.builder()
-                            .season(newSeason)
-                            .name(category.getCategoryName() + " " + (i + 1) + "리그")
-                            .categoryType(category)
-                            .tier(Tier.BRONZE) // 전원 브론즈 시작
-                            .startDate(today)
-                            .endDate(today.plusDays(6)) // 6주
-                            .currentWeek(1)
-                            .build();
-                    categoryLeagues.add(league);
-                    newLeagues.add(league);
-                }
+                    // 5-2. 리그가 없거나 꽉 찼으면(>=100) 새로 생성
+                    if (targetLeague == null || targetLeague.getCurrentMembers() >= TARGET_LEAGUE_SIZE) {
 
-                // 리그 저장 (ID 생성을 위해 먼저 저장)
-                leagueRepository.saveAll(categoryLeagues);
+                        int nextNum = leagueNumberCounters.getOrDefault(category, 0) + 1;
+                        leagueNumberCounters.put(category, nextNum);
 
-                // 유저 분배 (라운드 로빈)
-                for (int i = 0; i < totalMembers; i++) {
-                    Member member = members.get(i);
-                    League targetLeague = categoryLeagues.get(i % leagueCount);
+                        targetLeague = League.builder()
+                                .season(newSeason)
+                                .name(category.getCategoryName() + " " + nextNum + "리그")
+                                .categoryType(category)
+                                .tier(Tier.BRONZE)
+                                .startDate(today)
+                                .endDate(today.plusDays(6))
+                                .currentWeek(1)
+                                .build();
 
-                    newRankings.add(Ranking.builder()
+                        // 즉시 저장하여 ID 생성 (Ranking 매핑 위해 필수)
+                        leagueRepository.save(targetLeague);
+
+                        // 현재 활성 리그 업데이트
+                        activeLeagues.put(category, targetLeague);
+                    }
+
+                    // 5-3. 랭킹 생성 및 할당
+                    rankingsToSave.add(Ranking.builder()
                             .league(targetLeague)
                             .member(member)
                             .tier(Tier.BRONZE)
@@ -128,16 +139,11 @@ public class StartNewSeasonStep {
 
                     targetLeague.increaseCurrentMembers();
                 }
+
+                rankingRepository.saveAll(rankingsToSave);
+                totalProcessed += members.size();
+                log.info(">> 진행률: {} / {}", totalProcessed, eligibleMemberIds.size());
             }
-
-            // 5. 랭킹 일괄 저장
-            rankingRepository.saveAll(newRankings);
-
-            // (선택) 기존 시즌 랭킹 데이터를 백업 테이블로 이동하거나 flag 처리하는 로직이 필요할 수 있음
-            // 현재는 그냥 둠 (Ranking 테이블에 쌓임 -> 조회 시 SeasonId로 필터링 필수)
-
-            log.info(">> 시즌 재배치 완료. 참여 인원: {}, 생성 리그: {}", newRankings.size(), newLeagues.size());
-            log.info(String.valueOf(today));
 
             return RepeatStatus.FINISHED;
         };

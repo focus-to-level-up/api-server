@@ -2,9 +2,8 @@ package com.studioedge.focus_to_levelup_server.domain.system.dao;
 
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
 import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -33,11 +32,9 @@ public interface MailRepository extends JpaRepository<Mail, Long> {
     List<Mail> findAllMailsByMemberId(@Param("memberId") Long memberId,
                                        @Param("today") LocalDate today);
 
-    /**
-     * 만료된 우편 조회 (배치용)
-     */
-    @Query("SELECT m FROM Mail m WHERE m.expiredAt < CURRENT_DATE")
-    Page<Mail> findExpiredMails(Pageable pageable);
+    @Modifying(clearAutomatically = true)
+    @Query("DELETE FROM Mail m WHERE m.expiredAt < :now")
+    void deleteByExpirationDateBefore(@Param("now") LocalDate now);
 
     /**
      * 특정 결제 로그와 연결된 우편 조회 (환불 시 사용)

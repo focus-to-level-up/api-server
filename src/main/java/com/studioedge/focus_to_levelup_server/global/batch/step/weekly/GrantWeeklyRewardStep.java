@@ -5,13 +5,15 @@ import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharact
 import com.studioedge.focus_to_levelup_server.domain.character.entity.CharacterImage;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.enums.CharacterImageType;
+import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
+import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.WeeklyRewardRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.WeeklyReward;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.batch.core.SkipListener;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.repository.JobRepository;
@@ -25,13 +27,31 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
+import org.springframework.dao.TransientDataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.time.Clock;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 
+/**
+ * [Weekly Job - Step 2] 주간 보상 데이터 생성 (GrantWeeklyRewardStep)
+ *
+ * 동작 흐름:
+ * 1. Reader: 지난주 일요일에 종료된 랭킹 데이터(Ranking)를 페이지 단위(Chunk 100)로 조회합니다.
+ * 2. Processor:
+ * - 랭킹 데이터에서 멤버 정보를 추출합니다.
+ * - 멤버의 대표 캐릭터 및 IDLE 이미지를 조회합니다.
+ * - 멤버의 '주간 보상 수령 여부(isReceivedWeeklyReward)'를 false로 초기화합니다.
+ * - 멱등성 보장: 해당 주차(시작일 기준)에 이미 생성된 보상 데이터가 있는지 확인합니다.
+ * a. 존재할 경우: 기존 데이터를 업데이트합니다.
+ * b. 없을 경우: 새로운 보상 데이터를 생성합니다.
+ * 3. Writer: 처리된 WeeklyReward 엔티티를 DB에 저장(Save/Update)합니다.
+ * 4. Fault Tolerance:
+ * - DB 데드락 등 일시적 장애 시 3회 재시도(Retry)합니다.
+ * - 데이터 오류 발생 시 해당 건을 건너뛰고(Skip) 로그를 남겨 배치가 중단되지 않도록 합니다.
+ */
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -39,88 +59,85 @@ public class GrantWeeklyRewardStep {
     private final JobRepository jobRepository;
     private final PlatformTransactionManager platformTransactionManager;
 
-    private final RankingRepository rankingRepository;
+    private final MemberRepository memberRepository;
     private final MemberCharacterRepository memberCharacterRepository;
     private final CharacterImageRepository characterImageRepository;
     private final WeeklyRewardRepository weeklyRewardRepository;
 
     private final Clock clock;
+
     @Bean
     public Step grantWeeklyReward() {
         return new StepBuilder("grantWeeklyReward", jobRepository)
-                .<Ranking, WeeklyReward> chunk(100, platformTransactionManager) // Input 타입 Member -> Ranking 변경
+                .<Member, WeeklyReward> chunk(100, platformTransactionManager)
                 .reader(grantWeeklyRewardReader())
                 .processor(grantWeeklyRewardProcessor())
                 .writer(grantWeeklyRewardWriter())
                 .faultTolerant()
-                .skip(IllegalArgumentException.class) // 로직 에러
-                .skip(NullPointerException.class)     // 데이터 누락 에러
-                .skip(DataIntegrityViolationException.class) // DB 제약조건 에러
-                // 2. 최대 몇 개까지 건너뛸지 제한
+                .skip(IllegalArgumentException.class)
+                .skip(NullPointerException.class)
+                .skip(DataIntegrityViolationException.class)
                 .skipLimit(20)
-                // 3. 재시도 로직 (DB 연결 실패 등 일시적 장애용)
                 .retry(DeadlockLoserDataAccessException.class)
+                .retry(TransientDataAccessException.class)
                 .retryLimit(3)
+                .listener(new GrantWeeklyRewardSkipListener())
                 .build();
     }
 
     @Bean
-    @StepScope // 날짜 계산이 실행 시점에 이루어지도록 Scope 설정
-    public RepositoryItemReader<Ranking> grantWeeklyRewardReader() {
-        LocalDate lastLeagueEndDate = LocalDate.now(clock).minusDays(1);
-
-        log.info(">> 지난주 리그 종료일({}) 기준 랭킹 데이터를 조회합니다.", lastLeagueEndDate);
-
-        return new RepositoryItemReaderBuilder<Ranking>()
+    @StepScope
+    public RepositoryItemReader<Member> grantWeeklyRewardReader() {
+        return new RepositoryItemReaderBuilder<Member>()
                 .name("grantWeeklyRewardReader")
                 .pageSize(100)
-                .methodName("findAllByLeagueEndDate")
-                .repository(rankingRepository)
-                .arguments(lastLeagueEndDate)
+                .methodName("findAllByStatus")
+                .repository(memberRepository)
+                .arguments(MemberStatus.ACTIVE)
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
     }
 
     @Bean
-    public ItemProcessor<Ranking, WeeklyReward> grantWeeklyRewardProcessor() {
-        return ranking -> {
-            Member member = ranking.getMember();
-
-
-            // 2. 유저의 대표 캐릭터 정보 조회 (데이터 누락 대비 방어 로직 추가)
+    public ItemProcessor<Member, WeeklyReward> grantWeeklyRewardProcessor() {
+        return member -> {
             MemberCharacter memberCharacter = memberCharacterRepository
                     .findByMemberIdAndIsDefaultTrue(member.getId())
                     .orElse(null);
-
             if (memberCharacter == null) {
-                log.warn(">> [Skip] 주간 보상 지급 제외: 대표 캐릭터가 설정되지 않음 (Member ID: {})", member.getId());
-                return null; // null을 반환하면 Writer로 넘어가지 않고 해당 건만 건너뜁니다.
+                log.warn(">> [Filter] 보상 지급 제외: 대표 캐릭터 미설정 (Member ID: {})", member.getId());
+                return null;
             }
 
-            // 3. 캐릭터 이미지 조회 (IDLE 타입)
             CharacterImage characterImage = characterImageRepository.findByCharacterIdAndEvolutionAndImageType(
                     memberCharacter.getCharacter().getId(),
                     memberCharacter.getDefaultEvolution(),
                     CharacterImageType.IDLE
             ).orElse(null);
-
             if (characterImage == null) {
-                log.warn(">> [Skip] 주간 보상 지급 제외: 캐릭터 이미지 데이터 누락 (Char ID: {}, Evolution: {})",
-                        memberCharacter.getCharacter().getId(), memberCharacter.getDefaultEvolution());
-                return null; // 이미지가 없으면 보상 생성을 건너뜁니다.
+                log.warn(">> [Filter] 보상 지급 제외: 이미지 누락 (Char ID: {})", memberCharacter.getCharacter().getId());
+                return null;
             }
 
-            // 1. memberInfo 에서 isReceivedWeeklyReward false 변경
             member.receiveWeeklyReward(false);
-
-            // 4. WeeklyReward 생성
-            return WeeklyReward.builder()
-                    .member(member)
-                    .lastCharacter(memberCharacter.getCharacter())
-                    .lastLevel(member.getCurrentLevel())
-                    .evolution(memberCharacter.getEvolution())
-                    .lastCharacterImageUrl(characterImage.getImageUrl())
-                    .build();
+            return weeklyRewardRepository.findByMemberIdAndSameDate(member.getId(), LocalDateTime.now(clock))
+                    .map(existingReward -> {
+                        return existingReward.updateInfo(
+                                memberCharacter.getCharacter(),
+                                characterImage.getImageUrl(),
+                                member.getCurrentLevel(),
+                                memberCharacter.getEvolution()
+                        );
+                    })
+                    .orElseGet(() ->
+                            WeeklyReward.builder()
+                                    .member(member)
+                                    .lastCharacter(memberCharacter.getCharacter())
+                                    .lastLevel(member.getCurrentLevel())
+                                    .evolution(memberCharacter.getEvolution())
+                                    .lastCharacterImageUrl(characterImage.getImageUrl())
+                                    .build()
+                    );
         };
     }
 
@@ -128,6 +145,24 @@ public class GrantWeeklyRewardStep {
     public RepositoryItemWriter<WeeklyReward> grantWeeklyRewardWriter() {
         return new RepositoryItemWriterBuilder<WeeklyReward>()
                 .repository(weeklyRewardRepository)
+                .methodName("save")
                 .build();
+    }
+
+    public static class GrantWeeklyRewardSkipListener implements SkipListener<Ranking, WeeklyReward> {
+        @Override
+        public void onSkipInRead(Throwable t) {
+            log.error(">> [Skip] 읽기 중 에러: {}", t.getMessage());
+        }
+
+        @Override
+        public void onSkipInProcess(Ranking ranking, Throwable t) {
+            log.error(">> [Skip] 처리 중 에러 (Member ID: {}): {}", ranking.getMember().getId(), t.getMessage());
+        }
+
+        @Override
+        public void onSkipInWrite(WeeklyReward item, Throwable t) {
+            log.error(">> [Skip] 쓰기 중 에러 (Member ID: {}): {}", item.getMember().getId(), t.getMessage());
+        }
     }
 }

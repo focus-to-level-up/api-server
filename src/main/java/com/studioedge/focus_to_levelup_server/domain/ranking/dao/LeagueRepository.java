@@ -7,6 +7,7 @@ import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainTy
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -32,6 +33,7 @@ public interface LeagueRepository extends JpaRepository<League, Long> {
     @Query("SELECT DISTINCT l FROM League l " +
             "LEFT JOIN FETCH l.rankings r " +
             "WHERE l.season = :season " +
+            "AND l.isActive IS TRUE " +
             "AND l.categoryType = :categoryType")
     List<League> findAllBySeasonAndCategoryTypeWithRankings(
             @Param("season") Season season,
@@ -43,5 +45,9 @@ public interface LeagueRepository extends JpaRepository<League, Long> {
             "LEFT JOIN FETCH l.rankings r " +
             "LEFT JOIN FETCH r.member m " +
             "WHERE s.endDate = :endDate")
-    Page<League> findAllBySeasonEndDateWithRankings(@Param("endDate") LocalDate endDate, Pageable pageable);
+    Page<League> findAllBySeasonEndDateWithRankings(LocalDate endDate, Pageable pageable);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("DELETE FROM League l WHERE l.id IN :ids")
+    void deleteByIdIn(@Param("ids") List<Long> ids);
 }

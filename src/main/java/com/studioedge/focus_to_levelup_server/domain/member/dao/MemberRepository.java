@@ -35,13 +35,13 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "LEFT JOIN Ranking r ON r.member = m " +
             "WHERE r.id IS NULL " +
             "AND m.status = 'ACTIVE'")
-    List<Member> findActiveMembersWithoutRanking();
+    List<Member> findActiveMembersWithoutRanking(Pageable pageable);
 
     // Status가 ACTIVE이고, MemberSetting에서 랭킹이 활성화된 유저들만 조회
-    @Query("SELECT m FROM Member m LEFT JOIN FETCH m.memberSetting ms " +
+    @Query("SELECT m.id FROM Member m LEFT JOIN m.memberSetting ms " +
             "WHERE ms.isRankingActive = true " +
             "AND m.status = 'ACTIVE'")
-    List<Member> findAllActiveMembersForRanking();
+    List<Long> findAllActiveMemberIdsForRanking();
 
     // FCM 관련 쿼리 메서드
     List<Member> findAllByIsReceivedWeeklyRewardIsFalseAndFcmTokenIsNotNull();

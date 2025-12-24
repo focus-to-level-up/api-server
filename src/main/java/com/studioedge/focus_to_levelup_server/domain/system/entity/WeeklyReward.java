@@ -49,4 +49,13 @@ public class WeeklyReward extends BaseEntity {
         this.evolution = evolution;
         this.lastCharacterImageUrl = lastCharacterImageUrl;
     }
+
+    public WeeklyReward updateInfo(Character lastCharacter, String lastCharacterImageUrl,
+                                   Integer lastLevel, Integer evolution) {
+        this.lastCharacter = lastCharacter;
+        this.lastLevel = lastLevel;
+        this.evolution = evolution;
+        this.lastCharacterImageUrl = lastCharacterImageUrl;
+        return this;
+    }
 }

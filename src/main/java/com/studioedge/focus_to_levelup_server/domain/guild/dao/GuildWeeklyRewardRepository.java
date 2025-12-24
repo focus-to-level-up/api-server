@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,4 +19,9 @@ public interface GuildWeeklyRewardRepository extends JpaRepository<GuildWeeklyRe
             "    WHERE sub.guild.id = gwr.guild.id" +
             ")")
     List<GuildWeeklyReward> findLatestRewardsByGuildIds(@Param("guildIds") List<Long> guildIds);
+
+    @Query("SELECT r FROM GuildWeeklyReward r " +
+            "WHERE r.guild.id IN :guildIds " +
+            "AND FUNCTION('DATE', r.createdAt) = FUNCTION('DATE', :createdAt)")
+    List<GuildWeeklyReward> findAllByGuildIdInAndCreatedAtBetween(List<Long> guildIds, LocalDateTime createdAt);
 }

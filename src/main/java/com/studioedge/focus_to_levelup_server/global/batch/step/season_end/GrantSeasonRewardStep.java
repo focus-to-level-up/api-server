@@ -42,10 +42,10 @@ public class GrantSeasonRewardStep {
 
     @Bean
     public Step grantSeasonReward() {
-        return new StepBuilder("grantSeasonRewardStep", jobRepository)
+        return new StepBuilder("grantSeasonReward", jobRepository)
                 .<League, List<Mail>>chunk(20, platformTransactionManager)
                 .reader(grantSeasonRewardReader())
-                .processor(grantSeasonRewardProcessor()) // @StepScope 주입
+                .processor(grantSeasonRewardProcessor())
                 .writer(grantSeasonRewardWriter())
                 .build();
     }
@@ -83,7 +83,6 @@ public class GrantSeasonRewardStep {
 
                 Tier finalTier = Tier.determineNextTier(currentLeagueTier, (double) (i + 1) / totalMembers, true);
 
-                // 최종 티어에 맞는 메일 생성
                 mails.add(createSeasonEndMail(member, finalTier));
                 mails.add(createProfileBorderMail(member, finalTier));
             }

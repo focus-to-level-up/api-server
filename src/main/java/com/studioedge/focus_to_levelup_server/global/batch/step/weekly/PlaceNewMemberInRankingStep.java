@@ -19,13 +19,26 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-
+/**
+ * [Weekly Job - Step 5] 신규 유저 랭킹 배치
+ *
+ * 동작 흐름:
+ * 1. 현재 진행 중인 시즌을 조회합니다.
+ * 2. 랭킹에 등록되지 않은 신규(또는 복귀) 유저를 조회합니다. (메모리 보호를 위해 최대 5000명 제한)
+ * 3. 유저들을 '메인 카테고리' 별로 그룹화합니다.
+ * 4. 각 카테고리별로 브론즈 리그 배치를 시작합니다:
+ * a. 현재 시즌의 해당 카테고리 브론즈 리그들을 모두 조회합니다.
+ * b. 'PriorityQueue'를 사용하여 인원이 가장 적은 리그부터 유저를 채워 넣습니다 (Load Balancing).
+ * c. 모든 리그가 꽉 찼거나 리그가 없다면, 새로운 리그를 생성합니다.
+ * 5. 생성된 Ranking 정보들을 DB에 일괄 저장합니다.
+ */
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -41,6 +54,7 @@ public class PlaceNewMemberInRankingStep {
     private final Clock clock;
 
     private static final int MAX_LEAGUE_CAPACITY = 110;
+    private static final int BATCH_SIZE_LIMIT = 5000;
 
     @Bean
     public Step placeNewMemberInRanking() {
@@ -54,35 +68,30 @@ public class PlaceNewMemberInRankingStep {
         return (contribution, chunkContext) -> {
             log.info(">> Step: 신규 유저 브론즈 리그 배치 시작");
 
-            // 1. 진행 중인 시즌 조회
             Season currentSeason = seasonRepository.findFirstByEndDateGreaterThanEqualOrderByStartDateDesc(LocalDate.now(clock))
                     .orElseThrow(() -> new IllegalStateException("진행 중인 시즌이 없습니다."));
 
-            // 2. 랭킹이 없는 유저 조회
-            List<Member> newMembers = memberRepository.findActiveMembersWithoutRanking();
+            List<Member> newMembers = memberRepository.findActiveMembersWithoutRanking(PageRequest.of(0, BATCH_SIZE_LIMIT));
             if (newMembers.isEmpty()) {
-                log.info(">> 배치할 신규 유저가 없습니다.");
                 return RepeatStatus.FINISHED;
             }
 
-            // 3. 유저를 카테고리별로 그룹화
+            log.info(">> 배치 대상 유저 수: {}명", newMembers.size());
+
             Map<CategoryMainType, List<Member>> membersByCategory = newMembers.stream()
                     .collect(Collectors.groupingBy(m -> m.getMemberInfo().getCategoryMain()));
 
             List<Ranking> newRankingsToSave = new ArrayList<>();
-            List<League> leaguesToUpdate = new ArrayList<>();
-
-            // 4. 카테고리별 리그 배치
             for (Map.Entry<CategoryMainType, List<Member>> entry : membersByCategory.entrySet()) {
                 CategoryMainType category = entry.getKey();
                 List<Member> membersToPlace = entry.getValue();
 
-                distributeToBronzeLeagues(currentSeason, category, membersToPlace, newRankingsToSave, leaguesToUpdate);
+                distributeToBronzeLeagues(currentSeason, category, membersToPlace, newRankingsToSave);
             }
 
-            // 5. 저장
-            leagueRepository.saveAll(leaguesToUpdate);
-            rankingRepository.saveAll(newRankingsToSave);
+            if (!newRankingsToSave.isEmpty()) {
+                rankingRepository.saveAll(newRankingsToSave);
+            }
 
             log.info(">> 총 {}명의 신규 유저를 배치 완료했습니다.", newRankingsToSave.size());
 
@@ -90,42 +99,31 @@ public class PlaceNewMemberInRankingStep {
         };
     }
 
-    /**
-     * 특정 카테고리의 신규 유저들을 브론즈 리그에 균등 분배
-     */
+    //-------------------------------------------- PRIVATE METHOD --------------------------------------------
+
     private void distributeToBronzeLeagues(Season season, CategoryMainType category,
                                            List<Member> members,
-                                           List<Ranking> rankingsAccumulator,
-                                           List<League> leaguesAccumulator) {
+                                           List<Ranking> rankingsAccumulator) {
 
-        // 4-1. 해당 시즌, 카테고리의 '브론즈' 리그 모두 조회
         List<League> bronzeLeagues = leagueRepository.findAllBySeasonAndCategoryTypeAndTier(season, category, Tier.BRONZE);
 
-        // 4-2. 우선순위 큐 생성 (인원수가 적은 리그가 우선)
         PriorityQueue<League> leagueQueue = new PriorityQueue<>(Comparator.comparingInt(League::getCurrentMembers));
         leagueQueue.addAll(bronzeLeagues);
 
-        // (새로 생성된 리그의 이름 번호를 매기기 위해 기존 리그 개수 파악)
         int nextLeagueNumber = bronzeLeagues.size() + 1;
 
         for (Member member : members) {
             League targetLeague = null;
-
-            // 4-3. 큐에서 가용 리그 찾기
             while (!leagueQueue.isEmpty()) {
-                League candidate = leagueQueue.poll(); // 가장 인원 적은 리그 꺼냄
+                League candidate = leagueQueue.peek();
 
                 if (candidate.getCurrentMembers() < MAX_LEAGUE_CAPACITY) {
-                    targetLeague = candidate;
-                    break; // 찾음!
+                    targetLeague = leagueQueue.poll();
+                    break;
                 }
-                // 110명 이상이면 큐에서 영구 제거 (더 이상 이 리그엔 배정 안 함)
-                if (!leaguesAccumulator.contains(candidate)) {
-                    leaguesAccumulator.add(candidate);
-                }
+                leagueQueue.poll();
             }
 
-            // 4-4. 가용 리그가 없으면(모두 꽉 참 or 처음임) -> 새 리그 생성
             if (targetLeague == null) {
                 String leagueName = String.format("%s 브론즈 %d리그", category.getCategoryName(), nextLeagueNumber++);
                 targetLeague = League.builder()
@@ -138,10 +136,8 @@ public class PlaceNewMemberInRankingStep {
                         .build();
 
                 leagueRepository.save(targetLeague);
-                leaguesAccumulator.add(targetLeague);
             }
 
-            // 4-5. 랭킹 생성 및 리그 인원 증가
             Ranking newRanking = Ranking.builder()
                     .league(targetLeague)
                     .member(member)
@@ -149,14 +145,9 @@ public class PlaceNewMemberInRankingStep {
                     .build();
 
             rankingsAccumulator.add(newRanking);
+
             targetLeague.increaseCurrentMembers();
-
-            // 4-6. 리그를 다시 큐에 넣음 (인원수가 늘어난 상태로 재정렬됨)
             leagueQueue.add(targetLeague);
-
-            if (!leaguesAccumulator.contains(targetLeague)) {
-                leaguesAccumulator.add(targetLeague);
-            }
         }
     }
 }

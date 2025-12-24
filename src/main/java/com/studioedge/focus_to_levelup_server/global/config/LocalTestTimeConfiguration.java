@@ -3,7 +3,6 @@ package com.studioedge.focus_to_levelup_server.global.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -11,7 +10,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 @Configuration
-@Profile("local")
+//@Profile("local")
 public class LocalTestTimeConfiguration {
     @Value("${server.mock-date:}") // 설정 파일에 값이 없으면 비어있는 상태("")로 둠
     private String mockDateString;

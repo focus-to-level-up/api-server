@@ -14,12 +14,12 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class WeeklyJobBatch {
     /**
-     * 1. 주간 목표 / 주간 과목 시간 통계 집계
+     * 1. 주간 통계 / 주간 과목 시간 통계 집계
      * 2. 주간 보상 지급
      * 3. 길드 보상 지급
      * 4. 승강제 결정
      * 5. 신규 유저 랭크 진입
-     * 6. 레벨 / 아이템 초기화
+     * 6. 주간 데이터 초기화 (멤버 레벨 1 고정, 멤버 아이템 삭제, 길드 멤버 주간 집중 시간 및 부스트 초기화)
      * */
 
     private final JobRepository jobRepository;
@@ -30,14 +30,14 @@ public class WeeklyJobBatch {
                          Step grantGuildWeeklyReward,
                          Step processLeaguePlacement,
                          Step placeNewMemberInRanking,
-                         Step resetMemberLevelAndItem) {
+                         Step resetWeeklyAllData) {
         return new JobBuilder("weeklyJob", jobRepository)
                 .start(updateWeeklyStat)
                 .next(grantWeeklyReward)
                 .next(grantGuildWeeklyReward)
                 .next(processLeaguePlacement)
                 .next(placeNewMemberInRanking)
-                .next(resetMemberLevelAndItem)
+                .next(resetWeeklyAllData)
                 .build();
     }
 }

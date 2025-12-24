@@ -15,6 +15,9 @@ public interface DailyGoalRepository extends JpaRepository<DailyGoal, Long> {
         Integer getTotalSeconds();
     }
 
+    /**
+     * 특정 유저의 특정 날짜 DailyGoal 조회
+     */
     @Query("SELECT dg FROM DailyGoal dg WHERE dg.member.id = :memberId AND dg.dailyGoalDate = :dailyGoalDate")
     Optional<DailyGoal> findByMemberIdAndDailyGoalDate(@Param("memberId") Long memberId,
                                                        @Param("dailyGoalDate") LocalDate dailyGoalDate);

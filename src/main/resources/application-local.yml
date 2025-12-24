@@ -17,7 +17,7 @@ spring:
     properties:
       hibernate:
         hbm2ddl:
-          auto: update
+          auto: create
 
   batch:
     jdbc:
@@ -40,4 +40,4 @@ logging:
 
 # change local server time
 server:
-  mock-date: "2025-12-29T04:00:00"
+  mock-date: "2025-12-25T04:00:00"

@@ -40,7 +40,6 @@ public class RestoreExcludeRankingStep {
     private final RankingRepository rankingRepository;
     private final LeagueRepository leagueRepository;
 
-
     @Bean
     public Step restoreExcludeRanking() {
         return new StepBuilder("restoreExcludeRanking", jobRepository)

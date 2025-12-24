@@ -20,11 +20,10 @@ public class KstDeserializer extends StdDeserializer<LocalDateTime> {
 
     @Override
     public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        String dateString = p.getText(); // 프론트에서 보낸 시간 문자열
+        String dateString = p.getText();
 
-        // 데이터가 없거나 비어있는 경우 처리
         if (dateString == null || dateString.trim().isEmpty()) {
-            return null; // 혹은 LocalDateTime.now() 등 정책에 따라 변경
+            return null;
         }
 
         try {
@@ -44,7 +43,6 @@ public class KstDeserializer extends StdDeserializer<LocalDateTime> {
 
         } catch (Exception e) {
             log.error(">> [TimeConv] 날짜 파싱 실패: {}", dateString, e);
-            // Jackson이 알 수 있는 예외로 감싸서 던짐
             throw ctxt.weirdStringException(dateString, LocalDateTime.class, "날짜 형식이 올바르지 않습니다.");
         }
     }
