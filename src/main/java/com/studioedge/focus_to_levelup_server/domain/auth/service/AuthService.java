@@ -9,6 +9,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository
 import com.studioedge.focus_to_levelup_server.global.jwt.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,8 +22,11 @@ import java.util.Collections;
 @Transactional(readOnly = true)
 public class AuthService {
     // 토큰 만료 시간 (밀리초)
-    private static final long ACCESS_TOKEN_EXPIRATION = 1209600000L; // 2주
-    private static final long REFRESH_TOKEN_EXPIRATION = 2592000000L; // 1달
+    @Value("${jwt.access-token-expiration}")
+    private long accessTokenExpiration;
+
+    @Value("${jwt.refresh-token-expiration}")
+    private long refreshTokenExpiration;
 
     private final AppleService appleService;
     private final KakaoService kakaoService;
@@ -328,13 +332,13 @@ public class AuthService {
 
         String accessToken = jwtTokenProvider.generateToken(
                 authentication,
-                ACCESS_TOKEN_EXPIRATION,
+                accessTokenExpiration,
                 TokenType.ACCESS
         );
 
         String refreshToken = jwtTokenProvider.generateToken(
                 authentication,
-                REFRESH_TOKEN_EXPIRATION,
+                refreshTokenExpiration,
                 TokenType.REFRESH
         );
 
