@@ -23,11 +23,22 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
-
+/**
+ * [Weekly Job - Step 4] 승강제 심사 및 리그 재배치
+ *
+ * 동작 흐름:
+ * 1. 현재 진행 중인 시즌을 조회합니다.
+ * 2. 각 카테고리별로 '진행 중(IN_PROGRESS)'인 리그들을 조회합니다. (멱등성 보장)
+ * 3. 각 리그의 유저들의 순위를 기반으로 다음 티어를 결정합니다 (승격/잔류/강등).
+ * 4. 승격된 유저에게는 축하 메일(보상)을 생성합니다.
+ * 5. 처리가 완료된 기존 리그는 '종료(CLOSED)' 상태로 변경합니다. (데이터 삭제 X)
+ * 6. 결정된 다음 티어 풀(Pool)을 기반으로 새로운 리그들을 생성합니다 (인원 균등 분배 - Round Robin).
+ * 7. 새로운 리그와 랭킹 정보를 DB에 저장합니다.
+ */
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -39,6 +50,8 @@ public class ProcessLeaguePlacementStep {
     private final LeagueRepository leagueRepository;
     private final SeasonRepository seasonRepository;
     private final MailRepository mailRepository;
+
+    private final Clock clock;
 
     private static final int TARGET_LEAGUE_SIZE = 100;
 
@@ -54,11 +67,9 @@ public class ProcessLeaguePlacementStep {
         return (contribution, chunkContext) -> {
             log.info(">> Step: 승강제 심사 및 리그 재배치 시작");
 
-            // 1. 현재 진행 중인 시즌 조회
-            Season currentSeason = seasonRepository.findFirstByEndDateGreaterThanEqualOrderByStartDateDesc(LocalDate.now())
+            Season currentSeason = seasonRepository.findFirstByEndDateGreaterThanEqualOrderByStartDateDesc(LocalDate.now(clock))
                     .orElseThrow(() -> new IllegalStateException("진행 중인 시즌이 없습니다."));
 
-            // 2. 카테고리별의 리그를 순회하면서 처리
             for (CategoryMainType category : CategoryMainType.values()) {
                 processCategory(currentSeason, category);
             }
@@ -67,105 +78,81 @@ public class ProcessLeaguePlacementStep {
         };
     }
 
-    /**
-     * 특정 카테고리에 대한 승강제 및 재배치 로직 수행
-     */
     private void processCategory(Season season, CategoryMainType category) {
-        // 2-1. 해당 시즌, 해당 카테고리의 모든 리그 조회 (fetch join Ranking)
         List<League> currentLeagues = leagueRepository.findAllBySeasonAndCategoryTypeWithRankings(season, category);
+
         if (currentLeagues.isEmpty()) {
+            log.info(">> 처리할 리그가 없습니다. (Category: {})", category);
             return;
         }
 
-        // 다음 주차에 배정될 티어별 유저 목록
-        Map<Tier, List<Member>> nextSeasonPool = new HashMap<>();
-        for (Tier t : Tier.values()) {
-            nextSeasonPool.put(t, new ArrayList<>());
-        }
+        int currentWeek = currentLeagues.get(0).getCurrentWeek();
+        int nextWeek = currentWeek + 1;
+        boolean isEnteringFinalWeek = (currentWeek == 5);
+
+        log.info(">> Category [{}]: {}주차 -> {}주차 승강제 진행", category, currentWeek, nextWeek);
+
+        Map<Tier, List<Member>> nextWeekPool = new EnumMap<>(Tier.class);
+        for (Tier t : Tier.values()) nextWeekPool.put(t, new ArrayList<>());
 
         List<Mail> mailsToSend = new ArrayList<>();
 
-        // 2-2. 각 리그별로 유저들의 다음 티어 결정 (승격/잔류/강등)
         for (League league : currentLeagues) {
-            // 점수순으로 정렬됨.
             List<Ranking> rankings = rankingRepository.findAllBySortedLeague(league);
 
             int totalMembers = rankings.size();
-            Tier leagueTier = league.getTier();
-            int currentWeek = league.getCurrentWeek();
-
-            boolean isEnteringFinalWeek = (currentWeek == 5);
+            Tier currentTier = league.getTier();
 
             for (int i = 0; i < totalMembers; i++) {
                 Ranking ranking = rankings.get(i);
                 Member member = ranking.getMember();
 
-                // 다음 티어 결정
-                Tier nextTier = Tier.determineNextTier(leagueTier, (double) (i + 1) / totalMembers, isEnteringFinalWeek);
-
-                // 승급 보상 처리 (최초 달성 시)
-                if (isPromotion(leagueTier, nextTier)) {
+                Tier nextTier = Tier.determineNextTier(currentTier, (double) (i + 1) / totalMembers, isEnteringFinalWeek);
+                if (isPromotion(currentTier, nextTier)) {
                     if (member.isNewRecordTier(nextTier)) {
                         mailsToSend.add(createPromotionRewardMail(member, nextTier));
                         member.updateHighestTier(nextTier);
                     }
                 }
-
-                nextSeasonPool.get(nextTier).add(member);
+                nextWeekPool.get(nextTier).add(member);
             }
         }
 
-        // 2-3. 기존 데이터 정리 (이번 주차 랭킹/리그 삭제 or 상태 변경)
-        rankingRepository.deleteAll(
-                currentLeagues.stream()
-                        .flatMap(l -> l.getRankings().stream())
-                        .collect(Collectors.toList())
-        );
-        leagueRepository.deleteAll(currentLeagues);
+        if (!currentLeagues.isEmpty()) {
+            List<Long> leagueIds = currentLeagues.stream()
+                    .map(League::getId)
+                    .toList();
 
-        rankingRepository.flush();
-        leagueRepository.flush();
+            rankingRepository.deleteByLeagueIdIn(leagueIds);
+            leagueRepository.deleteByIdIn(leagueIds);
+        }
 
         mailRepository.saveAll(mailsToSend);
 
-        // 2-4. 티어별 풀(Pool)을 이용하여 새로운 리그 생성 및 균등 분배
-        List<League> newLeagues = new ArrayList<>();
-        List<Ranking> newRankings = new ArrayList<>();
+        List<League> newLeaguesToSave = new ArrayList<>();
+        List<Ranking> newRankingsToSave = new ArrayList<>();
 
         for (Tier tier : Tier.values()) {
-            List<Member> membersInTier = nextSeasonPool.get(tier);
+            List<Member> membersInTier = nextWeekPool.get(tier);
             if (membersInTier.isEmpty()) continue;
 
-            // 랜덤 배정
             Collections.shuffle(membersInTier);
-            // 다음주차 계산
-            int nextWeek = currentLeagues.get(0).getCurrentWeek() + 1;
-            distributeMembersToNewLeagues(season, category, tier, nextWeek, membersInTier, newLeagues, newRankings);
+            distributeMembersToNewLeagues(season, category, tier, nextWeek, membersInTier, newLeaguesToSave, newRankingsToSave);
         }
 
-        // 일괄 저장
-        leagueRepository.saveAll(newLeagues);
-        rankingRepository.saveAll(newRankings);
+        leagueRepository.saveAll(newLeaguesToSave);
+        rankingRepository.saveAll(newRankingsToSave);
 
-        log.info(">> Category [{}] processed. Created {} leagues.", category, newLeagues.size());
+        log.info(">> Category [{}] 완료. 삭제된 리그: {}, 생성된 리그: {}", category, currentLeagues.size(), newLeaguesToSave.size());
     }
 
-    /**
-     * 핵심 로직: 유저 리스트를 적절한 수의 리그로 균등 분배
-     */
     private void distributeMembersToNewLeagues(Season season, CategoryMainType category, Tier tier,
-                                               int currentWeek, List<Member> members,
+                                               int nextWeek, List<Member> members,
                                                List<League> newLeagues, List<Ranking> newRankings) {
         int totalMembers = members.size();
-
-        // 1. 필요한 리그 개수 계산 (100명 기준)
-        // ex) 250명 -> 3개 리그 (83, 83, 84명)
         int leagueCount = Math.max(1, (int) Math.round((double) totalMembers / TARGET_LEAGUE_SIZE));
 
-        // 2. 리그 생성
         List<League> createdLeagues = new ArrayList<>();
-        LocalDate today = LocalDate.now();
-
         for (int i = 0; i < leagueCount; i++) {
             String leagueName = String.format("%s %s %d리그", category.getCategoryName(), tier.name(), i + 1);
             League league = League.builder()
@@ -173,15 +160,14 @@ public class ProcessLeaguePlacementStep {
                     .name(leagueName)
                     .categoryType(category)
                     .tier(tier)
-                    .startDate(today)
-                    .endDate(today.plusDays(6))
-                    .currentWeek(currentWeek)
+                    .startDate(LocalDate.now(clock))
+                    .endDate(LocalDate.now(clock).plusDays(6))
+                    .currentWeek(nextWeek)
                     .build();
             createdLeagues.add(league);
             newLeagues.add(league);
         }
 
-        // 3. 멤버를 라운드 로빈 방식으로 리그에 할당
         for (int i = 0; i < totalMembers; i++) {
             Member member = members.get(i);
             League targetLeague = createdLeagues.get(i % leagueCount);
@@ -192,12 +178,12 @@ public class ProcessLeaguePlacementStep {
                     .tier(tier)
                     .build());
 
-            targetLeague.increaseCurrentMembers(); // 현재 인원 수 증가
+            targetLeague.increaseCurrentMembers();
         }
     }
 
     private boolean isPromotion(Tier current, Tier next) {
-        return next.ordinal() > current.ordinal(); // BRONZE(0) < SILVER(1)
+        return next.ordinal() > current.ordinal();
     }
 
     private Mail createPromotionRewardMail(Member member, Tier nextTier) {
@@ -218,8 +204,7 @@ public class ProcessLeaguePlacementStep {
                 .popupTitle(nextTier.name() + " 승급 보상")
                 .popupContent(nextTier.name() + "로 승급한걸 축하합니다!")
                 .reward(diamonds)
-                .expiredAt(LocalDate.now().plusDays(7))
+                .expiredAt(LocalDate.now(clock).plusDays(7))
                 .build();
     }
-
 }

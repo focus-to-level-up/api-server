@@ -2,6 +2,7 @@ package com.studioedge.focus_to_levelup_server.global.batch.step.weekly;
 
 
 import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.store.dao.MemberItemRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,35 +19,34 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-public class ResetMemberLevelAndItemStep {
+public class ResetWeeklyAllDataStep {
     private final JobRepository jobRepository;
     private final PlatformTransactionManager platformTransactionManager;
 
     private final MemberRepository memberRepository;
     private final MemberItemRepository memberItemRepository;
+    private final GuildRepository guildRepository;
     private final GuildMemberRepository guildMemberRepository;
 
     @Bean
-    public Step resetMemberLevelAndItem() {
-        return new StepBuilder("resetMemberLevelAndItem", jobRepository)
-                .tasklet(resetMemberLevelAndItemTasklet(), platformTransactionManager)
+    public Step resetWeeklyAllData() {
+        return new StepBuilder("resetWeeklyAllDataStep", jobRepository)
+                .tasklet(resetWeeklyAllDataTasklet(), platformTransactionManager)
                 .build();
     }
 
     @Bean
-    public Tasklet resetMemberLevelAndItemTasklet() {
+    public Tasklet resetWeeklyAllDataTasklet() {
         return (contribution, chunkContext) -> {
-            log.info(">> Step: resetMemberLevelAndItemStep started.");
+            log.info(">> Step: resetWeeklyAllDataTasklet started.");
 
-            // 1. member 레벨 모두 초기화
             int updatedCount = memberRepository.resetAllMemberLevels();
             log.info(">> Reset levels for {} members.", updatedCount);
 
-            // 2. [MemberItem] 아이템 삭제 (Bulk Delete)
             memberItemRepository.deleteAllInBatch();
             log.info(">> Deleted all member items.");
 
-            // 3. [GuildMember] 주간 집중 시간 및 부스트 초기화 (Bulk Update) [추가됨]
+            guildRepository.resetGuildFocusTime();
             int updatedGuildMemberCount = guildMemberRepository.resetAllWeeklyFocusTimeAndBoost();
             log.info(">> Reset weekly focus time & boost for {} guild members.", updatedGuildMemberCount);
 

@@ -81,4 +81,8 @@ public class League extends BaseEntity {
     public void increaseCurrentMembers() {
         this.currentMembers += 1;
     }
+
+    public void close() {
+        this.isActive = false;
+    }
 }

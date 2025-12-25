@@ -5,8 +5,10 @@ import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubTyp
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -48,4 +50,9 @@ public interface GuildRepository extends JpaRepository<Guild, Long> {
     // 카테고리별 조회 - 정원 미달 길드만 (페이징)
     @Query("SELECT g FROM Guild g WHERE g.category = :category AND g.currentMembers < g.maxMembers")
     Page<Guild> findAllByCategoryAvailable(@Param("category") CategorySubType category, Pageable pageable);
+
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query("UPDATE Guild g SET g.averageFocusTime = 0")
+    void resetGuildFocusTime();
 }

@@ -50,4 +50,12 @@ public class GuildWeeklyReward extends BaseEntity {
         this.boostReward = boostReward;
         this.totalReward = totalReward;
     }
+
+    public void updateInfo(Integer avgFocusTime, Integer boostReward,
+                           Integer focusTimeReward, Integer totalReward) {
+        this.avgFocusTime = avgFocusTime;
+        this.focusTimeReward = focusTimeReward;
+        this.boostReward = boostReward;
+        this.totalReward = totalReward;
+    }
 }

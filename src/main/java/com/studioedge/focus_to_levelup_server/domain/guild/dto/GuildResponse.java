@@ -64,7 +64,7 @@ public record GuildResponse(
                 guild.getIsPublic(),
                 guildWeeklyReward == null ? 0 : guildWeeklyReward.getFocusTimeReward(),
                 guildWeeklyReward == null ? 0 : guildWeeklyReward.getBoostReward(),
-                guild.getLastWeekDiamondReward(),
+                guildWeeklyReward == null ? 0 : guildWeeklyReward.getTotalReward(),
                 !guild.isFull(),
                 memberStatus
         );

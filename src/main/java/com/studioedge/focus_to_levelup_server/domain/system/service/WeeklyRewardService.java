@@ -110,9 +110,12 @@ public class WeeklyRewardService {
     @Transactional
     public void receiveWeeklyReward(Long memberId, ReceiveWeeklyRewardRequest request) {
         Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
-        member.receiveWeeklyReward();
-        member.getMemberInfo().addDiamond(request.rewardDiamond());
+        MemberInfo memberInfo = member.getMemberInfo();
+        member.receiveWeeklyReward(true);
+        memberInfo.addDiamond(request.rewardDiamond());
+        if (memberInfo.getBonusTicketCount() > 0) {
+            member.getMemberInfo().useBonusTicket();
+        }
         weeklyRewardRepository.deleteById(request.weeklyRewardId());
-        // @TODO: memberInfo 보너스 티켓 차감
     }
 }

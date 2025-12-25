@@ -13,6 +13,11 @@ spring:
     username: focus
     password: focus
     driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: create
 
   batch:
     jdbc:
@@ -32,3 +37,7 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.hibernate.orm.jdbc.bind: TRACE
+
+# change local server time
+server:
+  mock-date: "2025-12-25T04:00:00"
