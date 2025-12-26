@@ -29,6 +29,7 @@ public class DailyGoalService {
     private final DailyGoalRepository dailyGoalRepository;
     private final MemberCharacterRepository memberCharacterRepository;
     private final ItemAchievementService itemAchievementService;
+
     /**
      * 목표 시간 설정
      * */
@@ -76,5 +77,61 @@ public class DailyGoalService {
 
         // "휴식은 사치" 미션 성공 판정 (오늘의 학습 종료 시점에 판정)
         itemAchievementService.checkRestIsLuxuryOnStudyEnd(m.getId(), dailyGoal.getDailyGoalDate(), dailyGoal);
+    }
+
+    @Transactional
+    public void receiveDailyGoalV2(Member m, Long dailyGoalId) {
+        DailyGoal dailyGoal = dailyGoalRepository.findById(dailyGoalId)
+                .orElseThrow(DailyGoalNotFoundException::new);
+        Member member = memberRepository.findById(m.getId())
+                .orElseThrow(MemberNotFoundException::new);
+        MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefaultTrue(member.getId())
+                .orElseThrow(CharacterDefaultNotFoundException::new);
+
+        if (!dailyGoal.receiveReward()) {
+            throw new AlreadyReceivedDailyGoalException();
+        }
+
+        int rewardExp = calculateBonusExp(dailyGoal);
+        if (rewardExp > 0) {
+            member.expUp(rewardExp);
+            member.getMemberInfo().totalExpUp(rewardExp);
+            memberCharacter.expUp(rewardExp);
+        }
+
+        // 5. "휴식은 사치" 미션 성공 판정
+        itemAchievementService.checkRestIsLuxuryOnStudyEnd(m.getId(), dailyGoal.getDailyGoalDate(), dailyGoal);
+    }
+
+    /**
+     * 보상(보너스) 경험치 계산 로직
+     * (GetDailyGoalResponse에 있던 로직을 서버 내부로 가져옴)
+     */
+    private int calculateBonusExp(DailyGoal dailyGoal) {
+        int currentMinutes = dailyGoal.getCurrentSeconds() / 60;
+        int targetMinutes = dailyGoal.getTargetMinutes();
+
+        // 1. 계산 기준 시간(x) 산정
+        int x;
+        if (currentMinutes >= targetMinutes) {
+            // 목표 달성 시: x = 목표 시간(시간 단위)
+            x = targetMinutes / 60;
+        } else {
+            // 목표 미달 시: x = (현재 시간 / 60) - 1
+            x = (currentMinutes / 60) - 1;
+        }
+
+        // 2. 보상 배율 계산 (f(x) = 1.1^(x-2))
+        float rewardMultiplier = 1.0f;
+        if (x >= 2) {
+            double rawMultiplier = Math.pow(1.1, x - 2);
+            rewardMultiplier = (float) (Math.round(rawMultiplier * 100.0) / 100.0);
+        }
+
+        // 3. 보너스 경험치 계산
+        int baseExp = currentMinutes * 10;
+
+        // 추가로 줄 보너스 경험치 = 기본 * (배율 - 1)
+        return (int) (baseExp * (rewardMultiplier - 1.0f));
     }
 }

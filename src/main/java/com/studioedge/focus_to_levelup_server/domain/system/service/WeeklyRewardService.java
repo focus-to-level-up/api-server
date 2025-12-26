@@ -12,6 +12,7 @@ import com.studioedge.focus_to_levelup_server.domain.system.dao.WeeklyRewardRepo
 import com.studioedge.focus_to_levelup_server.domain.system.dto.request.ReceiveWeeklyRewardRequest;
 import com.studioedge.focus_to_levelup_server.domain.system.dto.response.WeeklyRewardInfoResponse;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.WeeklyReward;
+import com.studioedge.focus_to_levelup_server.domain.system.exception.WeeklyRewardAlreadyReceivedException;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.WeeklyRewardNotFoundException;
 import com.studioedge.focus_to_levelup_server.global.common.enums.Rarity;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class WeeklyRewardService {
                 .orElseThrow(WeeklyRewardNotFoundException::new);
 
         // 이미 수령 여부 확인 (예외 대신 플래그로 전달)
-        boolean alreadyReceived = !member.getIsReceivedWeeklyReward();
+        boolean alreadyReceived = weeklyReward.getIsReceived();
 
         // 현재 구독 상태 조회
         SubscriptionType subscriptionType = subscriptionRepository.findByMemberIdAndIsActiveTrue(member.getId())
@@ -110,12 +111,18 @@ public class WeeklyRewardService {
     @Transactional
     public void receiveWeeklyReward(Long memberId, ReceiveWeeklyRewardRequest request) {
         Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
+        WeeklyReward weeklyReward = weeklyRewardRepository.findById(request.weeklyRewardId())
+                .orElseThrow(WeeklyRewardNotFoundException::new);
         MemberInfo memberInfo = member.getMemberInfo();
+
+        if (weeklyReward.getIsReceived() || member.getIsReceivedWeeklyReward()) {
+            throw new WeeklyRewardAlreadyReceivedException();
+        }
         member.receiveWeeklyReward(true);
+        weeklyReward.receive();
         memberInfo.addDiamond(request.rewardDiamond());
         if (memberInfo.getBonusTicketCount() > 0) {
             member.getMemberInfo().useBonusTicket();
         }
-        weeklyRewardRepository.deleteById(request.weeklyRewardId());
     }
 }

@@ -53,13 +53,18 @@ public final class AppConstants {
             CategoryMainType.HIGH_SCHOOL
     );
 
-
-
     public static LocalDate getServiceDate() {
         LocalDateTime now = LocalDateTime.now();
         if (now.getHour() < 4) {
             return now.toLocalDate().minusDays(1);
         }
         return now.toLocalDate();
+    }
+
+    public static LocalDate getServiceDate(LocalDateTime dateTime) {
+        if (dateTime.getHour() < 4) {
+            return dateTime.toLocalDate().minusDays(1);
+        }
+        return dateTime.toLocalDate();
     }
 }

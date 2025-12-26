@@ -53,11 +53,22 @@ public class SubjectService {
 
     @Transactional
     public void createSubject(Member member, CreateSubjectRequest request) {
-        Subject subject = subjectRepository.findByMemberAndName(member, request.name())
+        List<Subject> subjects = subjectRepository.findAllByMemberAndName(member, request.name());
+        Subject targetSubject = subjects.stream()
+                .filter(s -> s.getDeleteAt() == null) // 활성화된 과목
+                .findFirst()
                 .orElseGet(() -> {
-                    return subjectRepository.save(CreateSubjectRequest.from(member, request));
+                    return subjects.stream()
+                            .max((s1, s2) -> s1.getId().compareTo(s2.getId()))
+                            .orElse(null);
                 });
-        subject.update(request);
+
+        if (targetSubject == null) {
+            Subject newSubject = CreateSubjectRequest.from(member, request);
+            subjectRepository.save(newSubject);
+        } else {
+            targetSubject.update(request);
+        }
     }
 
     @Transactional

@@ -30,7 +30,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -59,16 +61,37 @@ public class FocusServiceV2 {
          * 대표 캐릭터 친밀도 누적
          * 현재 집중중 상태 해제
          * */
-        int focusMinutes = request.focusSeconds() / 60;
-        int remainSeconds = request.focusSeconds() % 60;
-        LocalDate serviceDate = getServiceDate();
+        /*
+         * 4시 경계 체크 및 시간 보정 로직 (추가된 부분)
+         * - 시작 시간을 기준으로 '다음 4시'를 구합니다.
+         * - 종료 시간이 4시를 넘어가면, '시작~4시'까지의 시간만 저장하도록 focusSeconds를 조정합니다.
+         */
+        LocalDateTime startTime = request.startTime();
+        LocalDateTime endTime = startTime.plusSeconds(request.focusSeconds());
+
+        LocalDateTime limitTime;
+        if (startTime.getHour() < 4) {
+            limitTime = startTime.toLocalDate().atTime(4, 0);
+        } else {
+            limitTime = startTime.toLocalDate().plusDays(1).atTime(4, 0);
+        }
+
+        int savedFocusSeconds = request.focusSeconds();
+        if (endTime.isAfter(limitTime)) {
+            long durationUntilLimit = Duration.between(startTime, limitTime).getSeconds();
+            savedFocusSeconds = (int) Math.max(0, durationUntilLimit);
+        }
+
+        int focusMinutes = savedFocusSeconds / 60;
+        int remainSeconds = savedFocusSeconds % 60;
+        LocalDate serviceDate = getServiceDate(startTime);
 
         Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(m.getId())
                 .orElseThrow(InvalidMemberException::new);
 
-        DailyGoal dailyGoal = dailyGoalRepository.findById(request.dailyGoalId())
+        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(member.getId(), serviceDate)
                 .orElseThrow(DailyGoalNotFoundException::new);
         Subject subject = this.subjectRepository.findByIdAndDeleteAtIsNull(subjectId)
                 .orElseThrow(SubjectNotFoundException::new);
