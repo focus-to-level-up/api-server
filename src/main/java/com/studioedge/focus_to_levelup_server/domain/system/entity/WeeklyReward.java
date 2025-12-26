@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Table(
@@ -40,6 +41,10 @@ public class WeeklyReward extends BaseEntity {
     @Column(nullable = false)
     private Integer lastLevel;
 
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private Boolean isReceived = false;
+
     @Builder
     public WeeklyReward(Member member, Character lastCharacter, String lastCharacterImageUrl,
                         Integer lastLevel,  Integer evolution) {
@@ -57,5 +62,9 @@ public class WeeklyReward extends BaseEntity {
         this.evolution = evolution;
         this.lastCharacterImageUrl = lastCharacterImageUrl;
         return this;
+    }
+
+    public void receive() {
+        this.isReceived = true;
     }
 }

@@ -12,7 +12,7 @@ public interface SubjectRepository extends JpaRepository<Subject, Long> {
 
     Optional<Subject> findByIdAndDeleteAtIsNull(Long id);
 
-    Optional<Subject> findByMemberAndName(Member member, String name);
+    List<Subject> findAllByMemberAndName(Member member, String name);
 
     List<Subject> findAllByMemberAndDeleteAtIsNull(Member member);
 

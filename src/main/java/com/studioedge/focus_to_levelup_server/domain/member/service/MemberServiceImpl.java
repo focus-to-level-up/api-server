@@ -130,12 +130,12 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void updateNickname(Member member, UpdateNicknameRequest request) {
-        if (memberRepository.existsByNickname(request.nickname())) {
-            throw new IllegalArgumentException("해당 닉네임은 이미 존재합니다.");
-        }
         LocalDateTime updatedAt = member.getNicknameUpdatedAt();
         if (updatedAt != null && updatedAt.isAfter(LocalDateTime.now().minusMonths(1))) {
             throw new NicknameUpdateException();
+        }
+        if (memberRepository.existsByNickname(request.nickname())) {
+            throw new IllegalArgumentException("해당 닉네임은 이미 존재합니다.");
         }
         Member me = memberRepository.findById(member.getId())
                 .orElseThrow(MemberNotFoundException::new);

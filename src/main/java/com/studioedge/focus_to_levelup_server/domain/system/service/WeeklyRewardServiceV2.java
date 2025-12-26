@@ -37,17 +37,14 @@ public class WeeklyRewardServiceV2 {
                 .orElseThrow(MemberNotFoundException::new);
         MemberInfo memberInfo = member.getMemberInfo();
 
-        // 2. 이미 수령했는지 MemberInfo 플래그로 확인 (중복 수령 방지)
-        // 주의: getIsReceivedWeeklyReward()는 '받을 수 있는 상태(false)'인지 '이미 받은 상태(true)'인지 정의에 따라 다름
-        if (member.getIsReceivedWeeklyReward()) {
-            throw new WeeklyRewardAlreadyReceivedException();
-        }
-
         // 3. 주간 보상 데이터 조회 (본인 소유 확인)
         WeeklyReward weeklyReward = weeklyRewardRepository.findFirstByMemberIdOrderByCreatedAtDesc(memberId)
                 .orElseThrow(WeeklyRewardNotFoundException::new);
         if (!weeklyReward.getMember().getId().equals(memberId)) {
             throw new WeeklyRewardNotFoundException();
+        }
+        if (member.getIsReceivedWeeklyReward() || weeklyReward.getIsReceived()) {
+            throw new WeeklyRewardAlreadyReceivedException();
         }
 
         // 4. [보안 핵심] 보상량 서버 재계산
@@ -64,8 +61,8 @@ public class WeeklyRewardServiceV2 {
             memberInfo.useBonusTicket();
         }
 
-        // 7. 주간 보상 데이터 삭제 (요청하신 로직 유지)
-        weeklyRewardRepository.delete(weeklyReward);
+        // 7. 주간 보상 수령
+        weeklyReward.receive();
     }
 
     // ================== 내부 계산 로직 (공통 사용) ==================

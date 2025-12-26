@@ -25,7 +25,6 @@ import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberSettingRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
@@ -43,14 +42,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.RANKING_WARNING_FOCUS_MINUTES;
 import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
 
 @Service
@@ -80,23 +80,44 @@ public class FocusService {
          * 대표 캐릭터 친밀도 누적
          * 현재 집중중 상태 해제
          * */
-        int focusMinutes = request.focusSeconds() / 60;
-        int remainSeconds = request.focusSeconds() % 60;
-        LocalDate serviceDate = getServiceDate();
+        /*
+         * 4시 경계 체크 및 시간 보정 로직 (추가된 부분)
+         * - 시작 시간을 기준으로 '다음 4시'를 구합니다.
+         * - 종료 시간이 4시를 넘어가면, '시작~4시'까지의 시간만 저장하도록 focusSeconds를 조정합니다.
+         */
+        LocalDateTime startTime = request.startTime();
+        LocalDateTime endTime = startTime.plusSeconds(request.focusSeconds());
+
+        LocalDateTime limitTime;
+        if (startTime.getHour() < 4) {
+            limitTime = startTime.toLocalDate().atTime(4, 0);
+        } else {
+            limitTime = startTime.toLocalDate().plusDays(1).atTime(4, 0);
+        }
+
+        int savedFocusSeconds = request.focusSeconds();
+        if (endTime.isAfter(limitTime)) {
+            long durationUntilLimit = Duration.between(startTime, limitTime).getSeconds();
+            savedFocusSeconds = (int) Math.max(0, durationUntilLimit);
+        }
+
+        int focusMinutes = savedFocusSeconds / 60;
+        int remainSeconds = savedFocusSeconds % 60;
+        LocalDate serviceDate = getServiceDate(startTime);
 
         Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(m.getId())
                 .orElseThrow(InvalidMemberException::new);
-        MemberSetting memberSetting = memberSettingRepository.findByMemberId(m.getId())
-                .orElseThrow(InvalidMemberException::new);
-        if (focusMinutes >= RANKING_WARNING_FOCUS_MINUTES) {
-            boolean isBanned = memberSetting.warning();
-            if (isBanned) {
-                member.banRanking();
-                rankingRepository.deleteByMemberId(m.getId());
-            }
-        }
+//        MemberSetting memberSetting = memberSettingRepository.findByMemberId(m.getId())
+//                .orElseThrow(InvalidMemberException::new);
+//        if (focusMinutes >= RANKING_WARNING_FOCUS_MINUTES) {
+//            boolean isBanned = memberSetting.warning();
+//            if (isBanned) {
+//                member.banRanking();
+//                rankingRepository.deleteByMemberId(m.getId());
+//            }
+//        }
 
         DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), serviceDate)
                 .orElseThrow(DailyGoalNotFoundException::new);
@@ -106,7 +127,6 @@ public class FocusService {
                 .orElseThrow(CharacterDefaultNotFoundException::new);
         DailySubject dailySubject = dailySubjectRepository.findByMemberAndSubjectAndDate(member, subject, serviceDate)
                 .orElseGet(() -> {
-                    // 오늘 해당 과목으로 공부한 기록이 없으면, 새로 생성
                     return DailySubject.builder()
                             .member(member)
                             .subject(subject)

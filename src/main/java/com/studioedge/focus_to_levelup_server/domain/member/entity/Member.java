@@ -54,8 +54,8 @@ public class Member extends BaseEntity {
     private Boolean isSubscriptionRewarded = false; // 첫 구독시 받는 보상 수령 여부
 
     @Column(nullable = false)
-    @ColumnDefault("false")
-    private Boolean isReceivedWeeklyReward = false; // 주간 보상 수령 여부
+    @ColumnDefault("true")
+    private Boolean isReceivedWeeklyReward = true; // 주간 보상 수령 여부
 
     @Column(nullable = false)
     @ColumnDefault("1")
@@ -149,7 +149,6 @@ public class Member extends BaseEntity {
 
     public void completeSignUp(String nickname, MemberInfo memberInfo, MemberSetting memberSetting) {
         this.nickname = nickname;
-        this.nicknameUpdatedAt = LocalDateTime.now();
         this.memberInfo = memberInfo;
         this.memberSetting = memberSetting;
         this.status = MemberStatus.ACTIVE;

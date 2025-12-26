@@ -54,7 +54,6 @@ public class DailyGoalController {
             @AuthenticationPrincipal Member member,
             @Parameter(description = "날짜")
             @RequestParam(defaultValue = "2025-12-18") LocalDate date
-
     ) {
         return HttpResponseUtil.ok(dailyGoalService.getTodayDailyGoal(member, date));
     }
@@ -120,6 +119,38 @@ public class DailyGoalController {
             @Valid @RequestBody ReceiveDailyGoalRequest request
     ) {
         dailyGoalService.receiveDailyGoal(member, dailyGoalId, request);
+        return HttpResponseUtil.ok(null);
+    }
+
+    /**
+     * 목표 보상 수령
+     * */
+    @PostMapping("/v2/daily-goal/{dailyGoalId}")
+    @Operation(summary = "일일 목표 보상 수령", description = """
+            ### 기능
+            - `dailyGoalId`에 해당하는 목표의 달성/실패 여부를 정산하고, '추가 보상'을 수령합니다.
+            - (목표 달성 시 f(n) 배율 적용, 실패 시 패널티 적용)
+            """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "보상 수령 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "해당 일일 목표/유저를 찾을 수 없습니다."
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "이미 보상을 수령한 목표입니다."
+            )
+    })
+    public ResponseEntity<CommonResponse<Void>> receiveDailyGoalV2(
+            @AuthenticationPrincipal Member member,
+            @PathVariable Long dailyGoalId
+    ) {
+        dailyGoalService.receiveDailyGoalV2(member, dailyGoalId);
         return HttpResponseUtil.ok(null);
     }
 }
