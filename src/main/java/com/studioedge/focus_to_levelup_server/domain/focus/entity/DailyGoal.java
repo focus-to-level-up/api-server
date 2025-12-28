@@ -1,6 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.entity;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -104,14 +105,26 @@ public class DailyGoal extends BaseEntity {
         this.startTime = startTime;
     }
 
+    /**
+     * 가장 빠른 시작 시간 업데이트 (자정 넘김 고려)
+     *
+     * 서비스 날짜는 새벽 4시 기준이므로, 04:00이 하루의 시작입니다.
+     * 예: 23:00에 시작 후 01:00에 다시 시작하면, 23:00이 더 빠른 시간입니다.
+     */
     public void updateEarliestStartTime(LocalTime startTime) {
-        if (this.earliestStartTime == null || startTime.isBefore(this.earliestStartTime)) {
+        if (this.earliestStartTime == null || AppConstants.toServiceMinutes(startTime) < AppConstants.toServiceMinutes(this.earliestStartTime)) {
             this.earliestStartTime = startTime;
         }
     }
 
+    /**
+     * 가장 늦은 종료 시간 업데이트 (자정 넘김 고려)
+     *
+     * 서비스 날짜는 새벽 4시 기준이므로, 00:00~03:59는 실제로 "가장 늦은 시간"입니다.
+     * 예: 23:30에 종료 후 01:30에 다시 종료하면, 01:30이 더 늦은 시간입니다.
+     */
     public void updateLatestEndTime(LocalTime endTime) {
-        if (this.latestEndTime == null || endTime.isAfter(this.latestEndTime)) {
+        if (this.latestEndTime == null || AppConstants.isServiceTimeAfter(endTime, this.latestEndTime)) {
             this.latestEndTime = endTime;
         }
     }
