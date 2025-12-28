@@ -22,6 +22,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
+import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.isServiceTimeAfter;
+import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.toServiceMinutes;
 
 @Slf4j
 @Service
@@ -377,14 +379,11 @@ public class ItemAchievementService {
                 .mapToInt(DailySubject::getFocusSeconds)
                 .sum();
 
-        // 활동 시간대 계산 (종료 - 시작)
-        long activitySeconds;
-        if (latestEndTime.isBefore(earliestStartTime)) {
-            // 자정을 넘긴 경우 (예: 시작 22:00, 종료 02:00)
-            activitySeconds = (24 * 3600) - earliestStartTime.toSecondOfDay() + latestEndTime.toSecondOfDay();
-        } else {
-            activitySeconds = latestEndTime.toSecondOfDay() - earliestStartTime.toSecondOfDay();
-        }
+        // 활동 시간대 계산 (종료 - 시작, 서비스 시간 기준)
+        // 서비스 시간 기준으로 분 단위로 변환하여 계산 (자정 넘김 자동 처리)
+        int startMinutes = toServiceMinutes(earliestStartTime);
+        int endMinutes = toServiceMinutes(latestEndTime);
+        long activitySeconds = (endMinutes - startMinutes) * 60L;
 
         // 쉬는 시간 = 활동 시간대 - 총 집중 시간 (음수면 0으로 처리)
         long restSeconds = Math.max(0, activitySeconds - totalFocusSeconds);
@@ -762,12 +761,10 @@ public class ItemAchievementService {
                 .mapToInt(DailySubject::getFocusSeconds)
                 .sum();
 
-        long activitySeconds;
-        if (latestEndTime.isBefore(earliestStartTime)) {
-            activitySeconds = (24 * 3600) - earliestStartTime.toSecondOfDay() + latestEndTime.toSecondOfDay();
-        } else {
-            activitySeconds = latestEndTime.toSecondOfDay() - earliestStartTime.toSecondOfDay();
-        }
+        // 활동 시간대 계산 (서비스 시간 기준, 자정 넘김 자동 처리)
+        int startMinutes = toServiceMinutes(earliestStartTime);
+        int endMinutes = toServiceMinutes(latestEndTime);
+        long activitySeconds = (endMinutes - startMinutes) * 60L;
 
         long restSeconds = Math.max(0, activitySeconds - totalFocusSeconds);
         double restHours = restSeconds / 3600.0;
@@ -1084,12 +1081,10 @@ public class ItemAchievementService {
                         .mapToInt(DailySubject::getFocusSeconds)
                         .sum();
 
-                long activitySeconds;
-                if (latestEndTime.isBefore(earliestStartTime)) {
-                    activitySeconds = (24 * 3600) - earliestStartTime.toSecondOfDay() + latestEndTime.toSecondOfDay();
-                } else {
-                    activitySeconds = latestEndTime.toSecondOfDay() - earliestStartTime.toSecondOfDay();
-                }
+                // 활동 시간대 계산 (서비스 시간 기준, 자정 넘김 자동 처리)
+                int startMinutes = toServiceMinutes(earliestStartTime);
+                int endMinutes = toServiceMinutes(latestEndTime);
+                long activitySeconds = (endMinutes - startMinutes) * 60L;
 
                 long restSeconds = Math.max(0, activitySeconds - totalFocusSeconds);
                 restHours = restSeconds / 3600.0;

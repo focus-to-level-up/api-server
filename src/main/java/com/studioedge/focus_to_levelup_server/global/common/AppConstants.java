@@ -4,6 +4,7 @@ import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainTy
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
 
@@ -66,5 +67,33 @@ public final class AppConstants {
             return dateTime.toLocalDate().minusDays(1);
         }
         return dateTime.toLocalDate();
+    }
+
+    /**
+     * LocalTime을 서비스 시간 기준 분(minute)으로 변환
+     * 서비스 날짜는 새벽 4시 기준이므로, 00:00~03:59는 24:00~27:59로 취급
+     *
+     * 예: 23:30 → 1410분, 00:30 → 1470분 (24*60 + 30)
+     * 이렇게 하면 00:30이 23:30보다 "늦은" 시간으로 올바르게 비교됨
+     */
+    public static int toServiceMinutes(LocalTime time) {
+        int hour = time.getHour();
+        int minute = time.getMinute();
+
+        // 새벽 4시 이전(00:00~03:59)은 24시간을 더해서 계산
+        if (hour < 4) {
+            return (hour + 24) * 60 + minute;
+        }
+        return hour * 60 + minute;
+    }
+
+    /**
+     * 두 LocalTime을 서비스 시간 기준으로 비교
+     * 자정을 넘기는 경우를 올바르게 처리
+     *
+     * @return time1이 time2보다 늦으면 true
+     */
+    public static boolean isServiceTimeAfter(LocalTime time1, LocalTime time2) {
+        return toServiceMinutes(time1) > toServiceMinutes(time2);
     }
 }

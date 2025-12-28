@@ -17,7 +17,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
+import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
+import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.toServiceMinutes;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -67,7 +68,7 @@ public class CheckRestIsLuxuryStep {
                     log.info(">> Step: checkRestIsLuxury started.");
 
                     // 전날 서비스 날짜 (새벽 4시 기준)
-                    LocalDate yesterday = AppConstants.getServiceDate().minusDays(1);
+                    LocalDate yesterday = getServiceDate().minusDays(1);
                     log.info(">> Checking REST_IS_LUXURY for date: {}", yesterday);
 
                     // "휴식은 사치" 미완료 아이템을 가진 모든 MemberItem 조회
@@ -122,14 +123,10 @@ public class CheckRestIsLuxuryStep {
                                     .mapToInt(DailySubject::getFocusSeconds)
                                     .sum();
 
-                            // 활동 시간대 계산 (종료 - 시작)
-                            long activitySeconds;
-                            if (latestEndTime.isBefore(earliestStartTime)) {
-                                // 자정을 넘긴 경우 (예: 시작 22:00, 종료 02:00)
-                                activitySeconds = (24 * 3600) - earliestStartTime.toSecondOfDay() + latestEndTime.toSecondOfDay();
-                            } else {
-                                activitySeconds = latestEndTime.toSecondOfDay() - earliestStartTime.toSecondOfDay();
-                            }
+                            // 활동 시간대 계산 (서비스 시간 기준, 자정 넘김 자동 처리)
+                            int startMinutes = toServiceMinutes(earliestStartTime);
+                            int endMinutes = toServiceMinutes(latestEndTime);
+                            long activitySeconds = (endMinutes - startMinutes) * 60L;
 
                             // 쉬는 시간 = 활동 시간대 - 총 집중 시간 (음수면 0으로 처리)
                             long restSeconds = Math.max(0, activitySeconds - totalFocusSeconds);
