@@ -26,6 +26,9 @@ public class SecurityConfig {
     private final CustomJwtAuthenticationEntryPoint customJwtAuthenticationEntryPoint;
 
     private static final String[] PERMIT_URL_ARRAY = {
+            // health check (for ALB, ECS)
+            "/health",
+
             // test endpoint
             "/test/**",
             "/api/test/**",

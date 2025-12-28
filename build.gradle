@@ -57,6 +57,10 @@ dependencies {
 	// spring batch
 	implementation 'org.springframework.boot:spring-boot-starter-batch'
 
+	// shedlock (distributed lock for batch jobs)
+	implementation 'net.javacrumbs.shedlock:shedlock-spring:5.10.0'
+	implementation 'net.javacrumbs.shedlock:shedlock-provider-redis-spring:5.10.0'
+
 	// google oauth (for Google Sign In) - using WebClient instead of Google API Client
 	// We'll verify Google ID Token using our existing JWT library
 

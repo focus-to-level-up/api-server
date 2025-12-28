@@ -4,6 +4,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,6 +25,7 @@ public class FcmScheduler {
      * 월요일 오전 10시: 주간 보상 알림
      */
     @Scheduled(cron = "0 0 10 ? * MON", zone = "Asia/Seoul")
+    @SchedulerLock(name = "sendWeeklyRewardNotification", lockAtMostFor = "PT10M")
     public void sendWeeklyRewardNotification() {
         log.info(">>> FCM Scheduler: Weekly Reward Notification Started");
 
@@ -48,6 +50,7 @@ public class FcmScheduler {
      * 매일 오전 10시: 미접속 알림 (24시간/72시간)
      */
     @Scheduled(cron = "0 0 10 * * ?", zone = "Asia/Seoul")
+    @SchedulerLock(name = "sendInactiveUserNotification", lockAtMostFor = "PT10M")
     public void sendInactiveUserNotification() {
         log.info(">>> FCM Scheduler: Inactive User Notification Started");
 
