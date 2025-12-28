@@ -67,10 +67,10 @@ public class WeeklyRewardService {
     }
 
     /**
-     * 레벨 보너스 계산 (1레벨당 1다이아)
+     * 레벨 보너스 계산 (1레벨당 10다이아)
      */
     private int calculateLevelBonus(int level) {
-        return level;
+        return level * 10;
     }
 
     /**

@@ -107,7 +107,7 @@ public class WeeklyRewardServiceV2 {
     }
 
     private int calculateLevelBonus(int level) {
-        return level; // 1레벨당 1다이아 (예시)
+        return level * 10; // 1레벨당 10다이아 (예시)
     }
 
     private int calculateCharacterBonus(Rarity rarity, int evolution) {
