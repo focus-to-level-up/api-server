@@ -49,7 +49,10 @@ public class WeeklyRewardService {
 
         // 보상 계산
         int levelBonus = calculateLevelBonus(weeklyReward.getLastLevel());
-        int characterBonus = calculateCharacterBonus(weeklyReward.getLastCharacter().getRarity(), weeklyReward.getEvolution());
+        int characterBonus = calculateCharacterBonus(
+                weeklyReward.getLastCharacter().getRarity(),
+                weeklyReward.getEvolution(),
+                levelBonus);
         int subscriptionBonus = calculateSubscriptionBonus(subscriptionType, levelBonus + characterBonus);
         int baseReward = levelBonus + characterBonus + subscriptionBonus;
         int ticketBonus = calculateTicketBonus(bonusTicketCount, baseReward);
@@ -77,26 +80,28 @@ public class WeeklyRewardService {
      * 캐릭터 보너스 계산 (등급 + 진화 단계별 퍼센트)
      * CharacterSpecResponse의 weeklyBonusPercents 참조
      */
-    private int calculateCharacterBonus(Rarity rarity, int evolution) {
+    private int calculateCharacterBonus(Rarity rarity, int evolution, int baseLevel) {
         CharacterSpecResponse spec = CharacterSpecResponse.from(rarity);
         List<Integer> bonusPercents = spec.weeklyBonusPercents();
 
         // evolution은 1~3, 인덱스는 0~2
         int evolutionIndex = Math.max(0, Math.min(evolution - 1, bonusPercents.size() - 1));
-        return bonusPercents.get(evolutionIndex);
+        int percent = bonusPercents.get(evolutionIndex);
+
+        return (int) (baseLevel * (percent / 100.0));
     }
 
     /**
      * 구독 보너스 계산
      * - NONE: 0%
-     * - NORMAL: 5%
-     * - PREMIUM: 10%
+     * - NORMAL: 50%
+     * - PREMIUM: 100%
      */
     private int calculateSubscriptionBonus(SubscriptionType subscriptionType, int baseAmount) {
         return switch (subscriptionType) {
             case NONE -> 0;
-            case NORMAL -> (int) (baseAmount * 0.05);
-            case PREMIUM -> (int) (baseAmount * 0.10);
+            case NORMAL -> (int) (baseAmount * 0.5);
+            case PREMIUM -> baseAmount;
         };
     }
 
@@ -105,7 +110,7 @@ public class WeeklyRewardService {
      */
     private int calculateTicketBonus(int ticketCount, int baseAmount) {
         if (ticketCount <= 0) return 0;
-        return (int) (baseAmount * 0.10 * ticketCount);
+        return (int) (baseAmount * 0.10);
     }
 
     @Transactional
