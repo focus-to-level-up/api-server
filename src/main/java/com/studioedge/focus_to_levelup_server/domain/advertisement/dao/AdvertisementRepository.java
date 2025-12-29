@@ -15,7 +15,7 @@ public interface AdvertisementRepository extends JpaRepository<Advertisement, Lo
      * 해당 카테고리(Sub)의 광고 중 '활성화' 상태인 것을 찾되,
      * '조회수(viewCount)'가 가장 낮은 순서로 정렬하여 1개만 가져옴.
      */
-    Optional<Advertisement> findFirstByCategorySubAndIsActiveTrueOrderByViewCountAsc(CategorySubType categorySub);
+    Optional<Advertisement> findFirstByCategorySubsContainsAndIsActiveTrueOrderByViewCountAsc(CategorySubType category);
 
     /**
      * 조회수 증가 (Atomic Update)

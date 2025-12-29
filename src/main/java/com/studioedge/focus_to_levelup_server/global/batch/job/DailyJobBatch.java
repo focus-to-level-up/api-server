@@ -29,14 +29,18 @@ public class DailyJobBatch {
                         Step restoreRankingWarning,
                         Step checkFocusingIsOn,
                         Step restoreExcludeRanking,
-                        Step checkRestIsLuxury) {
+                        Step checkRestIsLuxury,
+                        Step missingWeeklyReward,
+                        Step missingRanking) {
         return new JobBuilder("dailyJob", jobRepository)
-                .start(clearPlanner)
-                .next(deleteExpiredMail)
+                .start(deleteExpiredMail)
+//                .next(clearPlanner)
                 .next(restoreRankingWarning)
                 .next(checkFocusingIsOn)
                 .next(restoreExcludeRanking)
                 .next(checkRestIsLuxury)
+                .next(missingWeeklyReward)
+                .next(missingRanking)
                 .build();
     }
 }

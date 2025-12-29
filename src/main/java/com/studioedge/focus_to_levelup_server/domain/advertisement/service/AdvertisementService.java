@@ -32,7 +32,7 @@ public class AdvertisementService {
 
         // 2. 해당 카테고리에서 노출 횟수가 가장 적은 광고 조회 (균등 노출)
         Optional<Advertisement> adOptional = advertisementRepository
-                .findFirstByCategorySubAndIsActiveTrueOrderByViewCountAsc(subCategory);
+                .findFirstByCategorySubsContainsAndIsActiveTrueOrderByViewCountAsc(subCategory);
 
         // 3. 광고가 없으면 null 반환 (클라이언트에서 노출 안 함 처리)
         if (adOptional.isEmpty()) {

@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "advertisements")
 @Getter
@@ -17,9 +20,14 @@ public class Advertisement {
     @Column(name = "advertisement_id")
     private Long id;
 
+    @ElementCollection(targetClass = CategorySubType.class)
+    @CollectionTable(
+            name = "advertisement_categories",
+            joinColumns = @JoinColumn(name = "advertisement_id")
+    )
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private CategorySubType categorySub;
+    @Column(name = "category_sub")
+    private List<CategorySubType> categorySubs = new ArrayList<>();
 
     @Column(nullable = false)
     private String imageUrl;
