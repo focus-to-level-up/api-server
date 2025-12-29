@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface WeeklyStatRepository extends JpaRepository<WeeklyStat, Long> {
     @Query("SELECT ws FROM WeeklyStat ws " +
@@ -28,4 +29,6 @@ public interface WeeklyStatRepository extends JpaRepository<WeeklyStat, Long> {
             @Param("endDate") LocalDate endDate,
             Pageable pageable
     );
+
+    Optional<WeeklyStat> findFirstByMemberId(Long memberId);
 }
