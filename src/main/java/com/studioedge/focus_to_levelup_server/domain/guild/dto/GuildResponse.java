@@ -34,7 +34,7 @@ public record GuildResponse(
                 guild.getName(),
                 guild.getDescription(),
                 guild.getTargetFocusTime(),
-                guild.getAverageFocusTime(),
+                guild.getAverageFocusTime() / guild.getCurrentMembers(),
                 guild.getCurrentMembers(),
                 guild.getMaxMembers(),
                 guild.getCategory(),

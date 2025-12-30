@@ -1,15 +1,15 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.entity;
 
+import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import java.sql.Time;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "planners")
@@ -22,13 +22,15 @@ public class Planner extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "daily_goal_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private DailyGoal dailyGoal;
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id")
     private Subject subject;
+
+    @Column(nullable = false)
+    private LocalDate date;
 
     @Column(nullable = false)
     private Time startTime;
@@ -37,8 +39,10 @@ public class Planner extends BaseEntity {
     private Time endTime;
 
     @Builder
-    public Planner(DailyGoal dailyGoal, Subject subject, Time startTime, Time endTime) {
-        this.dailyGoal = dailyGoal;
+    public Planner(Member member, LocalDate date,
+                   Subject subject, Time startTime, Time endTime) {
+        this.member = member;
+        this.date = date;
         this.subject = subject;
         this.startTime = startTime;
         this.endTime = endTime;
