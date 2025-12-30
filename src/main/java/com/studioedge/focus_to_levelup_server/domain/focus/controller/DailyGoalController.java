@@ -53,7 +53,7 @@ public class DailyGoalController {
     public ResponseEntity<CommonResponse<GetDailyGoalResponse>> getDailyGoal(
             @AuthenticationPrincipal Member member,
             @Parameter(description = "날짜")
-            @RequestParam(defaultValue = "2025-12-18") LocalDate date
+            @RequestParam(defaultValue = "2025-12-18", required = false) LocalDate date
     ) {
         return HttpResponseUtil.ok(dailyGoalService.getTodayDailyGoal(member, date));
     }

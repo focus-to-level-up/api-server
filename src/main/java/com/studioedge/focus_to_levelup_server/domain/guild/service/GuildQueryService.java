@@ -49,6 +49,7 @@ public class GuildQueryService {
         Map<Long, GuildWeeklyReward> rewardMap = getRewardMap(guildPage.getContent());
         return GuildListResponse.of(guildPage, rewardMap);
     }
+
     /**
      * 카테고리별 길드 목록 조회 (페이징)
      * @param excludeFull true이면 정원이 찬 길드(currentMembers == maxMembers) 제외

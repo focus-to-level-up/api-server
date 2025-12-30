@@ -39,8 +39,8 @@ public class DailyJobBatch {
                 .next(checkFocusingIsOn)
                 .next(restoreExcludeRanking)
                 .next(checkRestIsLuxury)
-                .next(missingWeeklyReward)
-                .next(missingRanking)
+//                .next(missingWeeklyReward)
+//                .next(missingRanking)
                 .build();
     }
 }
