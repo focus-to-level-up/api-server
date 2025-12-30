@@ -8,8 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.sql.Time;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "planners")
@@ -33,14 +33,14 @@ public class Planner extends BaseEntity {
     private LocalDate date;
 
     @Column(nullable = false)
-    private Time startTime;
+    private LocalTime startTime;
 
     @Column(nullable = false)
-    private Time endTime;
+    private LocalTime endTime;
 
     @Builder
     public Planner(Member member, LocalDate date,
-                   Subject subject, Time startTime, Time endTime) {
+                   Subject subject, LocalTime startTime, LocalTime endTime) {
         this.member = member;
         this.date = date;
         this.subject = subject;

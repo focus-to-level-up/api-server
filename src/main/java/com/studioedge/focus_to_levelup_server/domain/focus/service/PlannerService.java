@@ -4,6 +4,7 @@ import com.studioedge.focus_to_levelup_server.domain.focus.dao.PlannerRepository
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.PlannerListResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.PlannerResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Planner;
+import com.studioedge.focus_to_levelup_server.domain.focus.exception.PlannerNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,9 @@ public class PlannerService {
     public PlannerListResponse getTodayPlanner(Member member, LocalDate date) {
         LocalDate serviceDate = date == null ? AppConstants.getServiceDate() : date;
         List<Planner> planners = plannerRepository.findAllWithMemberAndSubjectByMemberIdAndDate(member.getId(), serviceDate);
+        if (planners.isEmpty()) {
+            throw new PlannerNotFoundException();
+        }
         List<PlannerResponse> responses = planners.stream()
                 .map(PlannerResponse::of)
                 .collect(Collectors.toList());

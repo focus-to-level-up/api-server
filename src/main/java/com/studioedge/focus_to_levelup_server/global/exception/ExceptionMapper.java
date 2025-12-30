@@ -212,6 +212,8 @@ public class ExceptionMapper {
                 ExceptionSituation.of("해당 할일을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         mapper.put(TodoUnAuthorizedException.class,
                 ExceptionSituation.of("해당 할일에 접근할 권한이 없습니다.", HttpStatus.FORBIDDEN));
+        mapper.put(PlannerNotFoundException.class,
+                ExceptionSituation.of("해당 날짜의 플래너를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
         mapper.put(AllowedAppNotFoundException.class,
                 ExceptionSituation.of("해당 허용가능 앱을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
