@@ -110,7 +110,7 @@ public class ProcessLeaguePlacementStep {
                 Tier nextTier = Tier.determineNextTier(currentTier, (double) (i + 1) / totalMembers, isEnteringFinalWeek);
                 if (isPromotion(currentTier, nextTier)) {
                     if (member.isNewRecordTier(nextTier)) {
-                        mailsToSend.add(createPromotionRewardMail(member, nextTier));
+                        mailsToSend.add(createPromotionRewardMail(member, nextTier, i + 1));
                         member.updateHighestTier(nextTier);
                     }
                 }
@@ -186,21 +186,23 @@ public class ProcessLeaguePlacementStep {
         return next.ordinal() > current.ordinal();
     }
 
-    private Mail createPromotionRewardMail(Member member, Tier nextTier) {
+    private Mail createPromotionRewardMail(Member member, Tier nextTier, int finalRank) {
         int diamonds = Tier.getRewardDiamonds(nextTier);
         String title = nextTier.name() + " 승급 보상을 수령하세요";
-        String description = nextTier.name() + "로 승급한걸 축하합니다!\n보상을 수령하세요.";
+        StringBuilder descriptionBuilder = new StringBuilder();
+        descriptionBuilder.append(nextTier.name()).append("로 승급한걸 축하합니다!\n");
+        descriptionBuilder.append("보상을 수령하세요.\n");
 
         if (nextTier == Tier.MASTER) {
-            title = nextTier.name() + " 승급 보상을 수령하세요";
-            description = nextTier.name() + "로 승급한걸 축하합니다!\n보상을 수령하세요." +
-                    "시즌 종료까지 유지한다면 구독권을 획득할 수 있습니다!";
+            descriptionBuilder.append("시즌 종료까지 유지한다면 구독권을 획득할 수 있습니다!\n");
         }
+        descriptionBuilder.append("\n최종 등수: ").append(finalRank).append("위");
+
         return Mail.builder()
                 .receiver(member)
                 .type(MailType.TIER_PROMOTION)
                 .title(title)
-                .description(description)
+                .description(descriptionBuilder.toString())
                 .popupTitle(nextTier.name() + " 승급 보상")
                 .popupContent(nextTier.name() + "로 승급한걸 축하합니다!")
                 .reward(diamonds)
