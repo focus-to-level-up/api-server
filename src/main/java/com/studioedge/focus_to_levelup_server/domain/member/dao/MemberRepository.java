@@ -19,6 +19,8 @@ import java.util.Optional;
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
+    long countByStatus(MemberStatus status);
+
     Optional<Member> findBySocialTypeAndSocialId(SocialType socialType, String socialId);
 
     boolean existsByNickname(String nickname);

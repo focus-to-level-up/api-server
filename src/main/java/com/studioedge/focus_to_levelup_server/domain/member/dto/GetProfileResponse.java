@@ -51,10 +51,12 @@ public record GetProfileResponse(
         @Schema(description = "다이아 갯수", example = "400")
         Integer diamond,
         @Schema(description = "골드 갯수", example = "1500")
-        Integer gold
+        Integer gold,
+        @Schema(description = "오늘 공부 시간 상위 %", example = "0.2")
+        Float topPercent
 ) {
     public static GetProfileResponse of(Member member, MemberInfo memberInfo, String ranking,
-                                        SubscriptionType subscriptionType, boolean boosted) {
+                                        SubscriptionType subscriptionType, boolean boosted, float topPercent) {
         return GetProfileResponse.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
@@ -77,6 +79,7 @@ public record GetProfileResponse(
                 .bonusTicketCount(memberInfo.getBonusTicketCount())
                 .diamond(memberInfo.getDiamond())
                 .gold(memberInfo.getGold())
+                .topPercent(topPercent)
                 .build();
     }
 }

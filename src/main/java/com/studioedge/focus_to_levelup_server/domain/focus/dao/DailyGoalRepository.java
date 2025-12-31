@@ -42,6 +42,15 @@ public interface DailyGoalRepository extends JpaRepository<DailyGoal, Long> {
             @Param("endDate") LocalDate endDate
     );
 
+    // 1. 내 오늘 공부 시간 조회 (없을 수도 있음 -> Optional)
+    @Query("SELECT d.currentSeconds FROM DailyGoal d WHERE d.member.id = :memberId AND d.dailyGoalDate = :date")
+    Optional<Integer> findFocusTimeByMemberIdAndDate(@Param("memberId") Long memberId, @Param("date") LocalDate date);
+
+    // 2. 나보다 공부 시간이 많은 '기록'의 개수 조회
+    // (DailyGoal이 없는 유저는 0초이므로 이 카운트에 포함되지 않음 -> 정확함)
+    @Query("SELECT COUNT(d) FROM DailyGoal d WHERE d.dailyGoalDate = :date AND d.currentSeconds > :myFocusTime")
+    long countByDateAndFocusTimeGreaterThan(@Param("date") LocalDate date, @Param("myFocusTime") Integer myFocusTime);
+
     // === Admin 통계용 쿼리 ===
 
     /**
