@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
+import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
+
 @Tag(name = "Admin - Stats", description = "관리자 통계 API")
 @RestController
 @RequestMapping("/api/v1/admin/stats")
@@ -36,7 +38,7 @@ public class AdminStatsController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
         adminAuthService.validateAdminAccess(member.getId());
-        LocalDate targetDate = date != null ? date : LocalDate.now();
+        LocalDate targetDate = date != null ? date : getServiceDate();
         return HttpResponseUtil.ok(adminStatsService.getDailyFocusTimeDistribution(targetDate));
     }
 
@@ -48,7 +50,7 @@ public class AdminStatsController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
         adminAuthService.validateAdminAccess(member.getId());
-        LocalDate targetDate = date != null ? date : LocalDate.now();
+        LocalDate targetDate = date != null ? date : getServiceDate();
         return HttpResponseUtil.ok(adminStatsService.getWeeklyFocusTimeDistribution(targetDate));
     }
 

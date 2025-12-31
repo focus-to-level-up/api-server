@@ -2,22 +2,20 @@ package com.studioedge.focus_to_levelup_server.domain.admin.entity;
 
 import com.studioedge.focus_to_levelup_server.domain.admin.enums.AdminRole;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "admin_whitelist")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class AdminWhitelist {
+public class AdminWhitelist extends BaseEntity {
 
     @Id
     @Column(name = "member_id")
@@ -31,10 +29,6 @@ public class AdminWhitelist {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AdminRole role;
-
-    @CreatedDate
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
 
     @Builder
     public AdminWhitelist(Member member, AdminRole role) {

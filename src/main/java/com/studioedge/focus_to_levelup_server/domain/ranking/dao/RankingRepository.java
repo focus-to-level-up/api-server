@@ -21,6 +21,8 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
 
     Optional<Ranking> findByMemberId(Long memberId);
 
+    List<Ranking> findAllByLeague(League league);
+
     @Query("SELECT r FROM Ranking r JOIN FETCH r.member JOIN FETCH r.league WHERE r.league.endDate = :endDate")
     Page<Ranking> findAllByLeagueEndDate(@Param("endDate") LocalDate endDate, Pageable pageable);
 
