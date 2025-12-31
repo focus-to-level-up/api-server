@@ -93,4 +93,10 @@ public class MemberSetting {
         this.rankingWarningAt = LocalDate.now();
         return true;
     }
+
+    public void banRanking() {
+        this.isRankingActive = false;
+        this.rankingDeactivatedCount++;
+        this.rankingWarningAt = LocalDate.now();
+    }
 }

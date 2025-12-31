@@ -7,6 +7,7 @@ import com.studioedge.focus_to_levelup_server.domain.character.service.TrainingR
 import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
+import com.studioedge.focus_to_levelup_server.domain.focus.dao.PlannerRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.StartFocusRequest;
@@ -14,6 +15,7 @@ import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.FocusMod
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.MonsterAnimationResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailySubject;
+import com.studioedge.focus_to_levelup_server.domain.focus.entity.Planner;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;
@@ -70,6 +72,7 @@ public class FocusService {
     private final RankingRepository rankingRepository;
     private final ItemAchievementService itemAchievementService;
     private final TrainingRewardService trainingRewardService;
+    private final PlannerRepository plannerRepository;
 
     @Transactional
     public void saveFocus(Member m, Long subjectId, SaveFocusRequest request) {
@@ -194,6 +197,17 @@ public class FocusService {
 
         // 훈련 보상 적립
         trainingRewardService.accumulateTrainingReward(m.getId(), request.focusSeconds());
+
+        // 플래너 저장
+        plannerRepository.save(
+                Planner.builder()
+                        .member(member)
+                        .subject(subject)
+                        .date(serviceDate)
+                        .startTime(startTime.toLocalTime())
+                        .endTime(endTime.toLocalTime())
+                        .build()
+        );
     }
 
     @Transactional
@@ -207,7 +221,6 @@ public class FocusService {
         dailyGoal.updateStartTime(request.startTime());
     }
 
-    // @TODO: 향후 리팩토링 필요함. 몬스터 종류 많아지고, 맵마다 다른 몬스터가 나온다면
     @Transactional(readOnly = true)
     public FocusModeImageResponse getFocusAnimation(Member member) {
         List<MonsterImage> monsterImages = monsterImageRepository.findAllWithMonster();

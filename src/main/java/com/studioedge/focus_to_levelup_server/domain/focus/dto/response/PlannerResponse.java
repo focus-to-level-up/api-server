@@ -4,7 +4,7 @@ import com.studioedge.focus_to_levelup_server.domain.focus.entity.Planner;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
-import java.sql.Time;
+import java.time.LocalTime;
 
 @Builder
 public record PlannerResponse(
@@ -13,9 +13,9 @@ public record PlannerResponse(
         @Schema(description = "과목 색상", example = "#FF5733")
         String subjectColor,
         @Schema(description = "시작 시간", example = "09:00:00")
-        Time startTime,
+        LocalTime startTime,
         @Schema(description = "종료 시간", example = "10:30:00")
-        Time endTime
+        LocalTime endTime
 ) {
     public static PlannerResponse of(Planner planner) {
         return PlannerResponse.builder()

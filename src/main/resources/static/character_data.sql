@@ -26,7 +26,7 @@ SET @s3_base_url = 'https://focus-to-levelup-s3.s3.ap-northeast-2.amazonaws.com/
 -- 1. 기본 캐릭터 - 양동동 (S3: yangdongdong)
 -- -----------------------------------------------------
 INSERT INTO characters (name, rarity, price, description, background_image_url)
-VALUES ('양동동', 'RARE', 0, '실수로 양동이가 머리에 끼는 바람에 그냥 이렇게 살기로 결심했다. 아무도 진짜 얼굴은 모르는다…', '');
+VALUES ('양동동', 'RARE', 0, '실수로 양동이가 머리에 끼는 바람에 그냥 이렇게 살기로 결심했다. 아무도 진짜 얼굴은 모른다…', '');
 
 SET @character_id = LAST_INSERT_ID();
 SET @folder = 'yangdongdong/';
@@ -223,7 +223,7 @@ VALUES
 -- 7. 유니크 - 밤톨냥 (S3: bamtolnyang)
 -- -----------------------------------------------------
 INSERT IGNORE INTO characters (name, rarity, price, description, background_image_url)
-VALUES ('밤톨냥', 'UNIQUE', 40000, '도둑 고양이로 살다가 우연히 표창을 길거리에서 주운 뒤로 뛰어난 암살자가 되었다… 목격자가 없으면 암살이다고 주장하는 편….', '');
+VALUES ('밤톨냥', 'UNIQUE', 40000, '도둑 고양이로 살다가 우연히 표창을 길거리에서 주운 뒤로 뛰어난 암살자가 되었다… 목격자가 없으면 암살이라고 주장하는 편….', '');
 
 SET @character_id = LAST_INSERT_ID();
 SET @folder = 'bamtolnyang/';

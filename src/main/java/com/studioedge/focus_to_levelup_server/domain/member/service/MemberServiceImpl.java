@@ -7,6 +7,7 @@ import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberChar
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
 import com.studioedge.focus_to_levelup_server.domain.event.entity.School;
+import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
@@ -20,6 +21,7 @@ import com.studioedge.focus_to_levelup_server.domain.member.dto.*;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
+import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
@@ -39,6 +41,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +49,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.INITIAL_SUBJECT_COLORS;
+import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
 
 @Service
 @RequiredArgsConstructor
@@ -64,6 +68,7 @@ public class MemberServiceImpl implements MemberService {
     private final RankingRepository rankingRepository;
     private final GuildMemberRepository guildMemberRepository;
     private final SubjectRepository subjectRepository;
+    private final DailyGoalRepository dailyGoalRepository;
 
     @Override
     @Transactional
@@ -114,16 +119,42 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public GetProfileResponse getMemberProfile(Long memberId) {
+        LocalDate today = getServiceDate();
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
                 .orElseThrow(InvalidMemberException::new);
         SubscriptionState state = getSubscriptionState(memberId);
         String ranking = getMemberRanking(memberId);
+
+        // 1. 전체 활성 유저 수 조회 (분모) - DB에서 숫자 하나만 가져옴 (매우 빠름)
+        long totalUsers = memberRepository.countByStatus(MemberStatus.ACTIVE);
+
+        // 2. 나의 오늘 공부 시간 조회 (기록 없으면 0초)
+        int mySeconds = dailyGoalRepository.findFocusTimeByMemberIdAndDate(memberId, today)
+                .orElse(0);
+        float topPercent;
+
+        if (mySeconds == 0) {
+            // 공부 시간이 0초면 무조건 하위 100%로 고정
+            topPercent = 100.0f;
+        } else {
+            // 3. 나보다 공부를 더 많이 한 사람 수 조회 (DB Count)
+            long betterCount = dailyGoalRepository.countByDateAndFocusTimeGreaterThan(today, mySeconds);
+
+            // 4. 내 등수 계산
+            long myRank = betterCount + 1;
+
+            // 5. 퍼센트 계산
+            // 예: 100명 중 1등 -> 1.0%
+            topPercent = (float) myRank / (float) totalUsers * 100;
+        }
+
         return GetProfileResponse.of(
                 memberInfo.getMember(),
                 memberInfo,
                 ranking,
                 state.type(),
-                state.isBoosted()
+                state.isBoosted(),
+                topPercent
         );
     }
 

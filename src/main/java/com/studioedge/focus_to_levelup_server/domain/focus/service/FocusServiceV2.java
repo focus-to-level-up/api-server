@@ -7,10 +7,12 @@ import com.studioedge.focus_to_levelup_server.domain.character.service.TrainingR
 import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
+import com.studioedge.focus_to_levelup_server.domain.focus.dao.PlannerRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequestV2;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailySubject;
+import com.studioedge.focus_to_levelup_server.domain.focus.entity.Planner;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;
@@ -51,6 +53,7 @@ public class FocusServiceV2 {
     private final GuildMemberRepository guildMemberRepository;
     private final ItemAchievementService itemAchievementService;
     private final TrainingRewardService trainingRewardService;
+    private final PlannerRepository plannerRepository;
 
     @Transactional
     public void saveFocus(Member m, Long subjectId, SaveFocusRequestV2 request) {
@@ -167,6 +170,17 @@ public class FocusServiceV2 {
 
         // 훈련 보상 적립
         trainingRewardService.accumulateTrainingReward(m.getId(), request.focusSeconds());
+
+        // 플래너 저장
+        plannerRepository.save(
+                Planner.builder()
+                        .member(member)
+                        .subject(subject)
+                        .date(serviceDate)
+                        .startTime(startTime.toLocalTime())
+                        .endTime(endTime.toLocalTime())
+                        .build()
+        );
     }
 
 }
