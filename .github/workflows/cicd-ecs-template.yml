@@ -65,21 +65,24 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_ECS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Write env file
+        env:
+          ENV_CONTENT: ${{ inputs.environment == 'prod' && secrets.ENV_FILE_PROD || secrets.ENV_FILE_DEV }}
+        run: |
+          echo "$ENV_CONTENT" > .env.tmp
+
       - name: Parse environment variables to JSON
         id: parse-env
         run: |
-          if [ "${{ inputs.environment }}" = "prod" ]; then
-            ENV_CONTENT="${{ secrets.ENV_FILE_PROD }}"
-          else
-            ENV_CONTENT="${{ secrets.ENV_FILE_DEV }}"
-          fi
-
           # .env 파일을 JSON 배열로 변환
           ENV_JSON="["
           FIRST=true
           while IFS= read -r line || [ -n "$line" ]; do
             # 빈 줄이나 주석 제외
             [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+
+            # 공백만 있는 줄 제외
+            [[ "$line" =~ ^[[:space:]]*$ ]] && continue
 
             # key=value 분리
             key=$(echo "$line" | cut -d'=' -f1)
@@ -97,11 +100,14 @@ jobs:
               ENV_JSON="$ENV_JSON,"
             fi
             ENV_JSON="$ENV_JSON{\"name\":\"$key\",\"value\":\"$value\"}"
-          done <<< "$ENV_CONTENT"
+          done < .env.tmp
           ENV_JSON="$ENV_JSON]"
 
-          # 멀티라인 출력을 위해 파일에 저장
+          # 파일에 저장
           echo "$ENV_JSON" > env.json
+
+          # 임시 파일 삭제
+          rm -f .env.tmp
 
       - name: Generate Task Definition
         run: |
