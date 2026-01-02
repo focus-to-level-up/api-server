@@ -1,0 +1,145 @@
+name: CI/CD ECS Template
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'dev/prod'
+        required: true
+        type: string
+
+env:
+  IMAGE_TAG: ${{ inputs.environment == 'prod' && github.ref_name || github.sha }}
+  ECS_CLUSTER: ${{ inputs.environment == 'prod' && 'focus-cluster-prod' || 'focus-cluster-dev' }}
+  ECS_SERVICE: focus-service
+
+jobs:
+  build-and-release:
+    name: Build and Release for ${{ inputs.environment }}
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}:${{ env.IMAGE_TAG }}
+            ${{ inputs.environment == 'prod' && format('{0}/{1}:latest', secrets.DOCKER_USERNAME, secrets.DOCKER_REPO) || '' }}
+          platforms: linux/amd64
+
+  deploy:
+    needs: build-and-release
+    runs-on: ubuntu-24.04
+    name: Deploy to ECS for ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ECS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ECS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Parse environment variables to JSON
+        id: parse-env
+        run: |
+          if [ "${{ inputs.environment }}" = "prod" ]; then
+            ENV_CONTENT="${{ secrets.ENV_FILE_PROD }}"
+          else
+            ENV_CONTENT="${{ secrets.ENV_FILE_DEV }}"
+          fi
+
+          # .env 파일을 JSON 배열로 변환
+          ENV_JSON="["
+          FIRST=true
+          while IFS= read -r line || [ -n "$line" ]; do
+            # 빈 줄이나 주석 제외
+            [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+
+            # key=value 분리
+            key=$(echo "$line" | cut -d'=' -f1)
+            value=$(echo "$line" | cut -d'=' -f2-)
+
+            # 값에서 따옴표 제거
+            value=$(echo "$value" | sed 's/^["'"'"']//;s/["'"'"']$//')
+
+            # JSON 특수문자 escape
+            value=$(echo "$value" | sed 's/\\/\\\\/g; s/"/\\"/g')
+
+            if [ "$FIRST" = true ]; then
+              FIRST=false
+            else
+              ENV_JSON="$ENV_JSON,"
+            fi
+            ENV_JSON="$ENV_JSON{\"name\":\"$key\",\"value\":\"$value\"}"
+          done <<< "$ENV_CONTENT"
+          ENV_JSON="$ENV_JSON]"
+
+          # 멀티라인 출력을 위해 파일에 저장
+          echo "$ENV_JSON" > env.json
+
+      - name: Generate Task Definition
+        run: |
+          DOCKER_IMAGE="${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}:${{ env.IMAGE_TAG }}"
+
+          # 템플릿에서 Task Definition 생성
+          jq --arg image "$DOCKER_IMAGE" \
+             --slurpfile env env.json \
+             '.containerDefinitions[0].image = $image | .containerDefinitions[0].environment = $env[0]' \
+             ecs/task-definition.json > task-definition-final.json
+
+          echo "Generated Task Definition:"
+          cat task-definition-final.json
+
+      - name: Register Task Definition
+        id: task-def
+        run: |
+          TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://task-definition-final.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+          echo "task_def_arn=$TASK_DEF_ARN" >> $GITHUB_OUTPUT
+          echo "Registered Task Definition: $TASK_DEF_ARN"
+
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --task-definition ${{ steps.task-def.outputs.task_def_arn }} \
+            --force-new-deployment
+
+          echo "Deployment triggered for ${{ env.ECS_CLUSTER }}/${{ env.ECS_SERVICE }}"
+
+      - name: Wait for deployment to stabilize
+        run: |
+          echo "Waiting for ECS service to stabilize..."
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }}
+          echo "Deployment completed successfully!"

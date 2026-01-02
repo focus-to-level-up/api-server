@@ -1,0 +1,17 @@
+name: CI/CD ECS for Production
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: read
+
+jobs:
+  call-cicd-template:
+    name: Call CI/CD ECS Template for Production
+    uses: ./.github/workflows/cicd-ecs-template.yml
+    secrets: inherit
+    with:
+      environment: 'prod'
