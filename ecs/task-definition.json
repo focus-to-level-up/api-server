@@ -1,12 +1,17 @@
 {
   "family": "focus-app",
   "networkMode": "bridge",
+  "executionRoleArn": "arn:aws:iam::910148610676:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
       "name": "app",
       "image": "IMAGE_PLACEHOLDER",
-      "cpu": 512,
-      "memory": 1024,
+      "repositoryCredentials": {
+        "credentialsParameter": "arn:aws:secretsmanager:ap-northeast-2:910148610676:secret:dockerhub/credentials-jfPAUb"
+      },
+      "cpu": 256,
+      "memory": 512,
+      "memoryReservation": 384,
       "portMappings": [
         {
           "containerPort": 8080,
@@ -28,12 +33,12 @@
         "interval": 30,
         "timeout": 5,
         "retries": 3,
-        "startPeriod": 60
+        "startPeriod": 120
       },
       "essential": true
     }
   ],
   "requiresCompatibilities": ["EC2"],
-  "cpu": "512",
-  "memory": "1024"
+  "cpu": "256",
+  "memory": "512"
 }
