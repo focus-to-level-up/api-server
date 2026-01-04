@@ -1,6 +1,7 @@
 package com.studioedge.focus_to_levelup_server.global.batch.step.weekly;
 
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.SeasonRepository;
@@ -106,6 +107,10 @@ public class ProcessLeaguePlacementStep {
             for (int i = 0; i < totalMembers; i++) {
                 Ranking ranking = rankings.get(i);
                 Member member = ranking.getMember();
+
+                if (member.getStatus() != MemberStatus.ACTIVE) {
+                    continue;
+                }
 
                 Tier nextTier = Tier.determineNextTier(currentTier, (double) (i + 1) / totalMembers, isEnteringFinalWeek);
                 if (isPromotion(currentTier, nextTier)) {
