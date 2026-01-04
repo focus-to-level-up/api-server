@@ -22,7 +22,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
-import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.isServiceTimeAfter;
 import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.toServiceMinutes;
 
 @Slf4j
@@ -69,7 +68,6 @@ public class ItemAchievementService {
     public void checkAchievements(Long memberId, Integer focusSeconds,
                                   LocalDateTime sessionStartTime, DailyGoal dailyGoal) {
         log.info("=== checkAchievements called: memberId={}, focusSeconds={}, startTime={}", memberId, focusSeconds, sessionStartTime);
-        LocalDateTime sessionEndTime = LocalDateTime.now();
         LocalDate serviceDate = getServiceDate();
 
         // 모든 아이템 조회 (progressData 업데이트용)
@@ -92,8 +90,8 @@ public class ItemAchievementService {
         Map<Long, List<MemberItem>> memberItemsByItemId = allMemberItems.stream()
                 .collect(Collectors.groupingBy(mi -> mi.getItem().getId()));
 
-        // 1단계: 모든 미완료 아이템의 progressData를 먼저 업데이트 (오늘의 값으로)
-        for (MemberItem memberItem : incompleteMemberItems) {
+        // 1단계: 모든 아이템의 progressData를 먼저 업데이트 (오늘의 값으로)
+        for (MemberItem memberItem : allMemberItems) {
             String itemName = memberItem.getItem().getName();
             try {
                 switch (itemName) {
