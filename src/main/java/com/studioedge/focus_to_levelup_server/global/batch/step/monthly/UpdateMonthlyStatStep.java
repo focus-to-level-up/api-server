@@ -21,6 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.CollectionUtils;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
@@ -38,6 +39,8 @@ public class UpdateMonthlyStatStep {
     private final MemberRepository memberRepository;
     private final MonthlyStatRepository monthlyStatRepository;
     private final DailyGoalRepository dailyGoalRepository;
+
+    private final Clock clock;
 
     @Bean
     public Step updateMonthlyStat(ItemProcessor<Member, Member> passThroughMemberProcessor) {
@@ -62,10 +65,11 @@ public class UpdateMonthlyStatStep {
 
     @Bean
     public ItemWriter<Member> updateMonthStatWriter() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
         LocalDate firstDayOfLastMonth = today.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
         LocalDate lastDayOfLastMonth = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
-        Integer lastMonthValue = firstDayOfLastMonth.getMonthValue();
+        int targetYear = firstDayOfLastMonth.getYear();
+        int targetMonth = firstDayOfLastMonth.getMonthValue();
 
         return chunk -> {
             List<Member> members = (List<Member>) chunk.getItems();
@@ -94,8 +98,8 @@ public class UpdateMonthlyStatStep {
 
                 MonthlyStat monthlyStat = MonthlyStat.builder()
                         .member(member)
-                        .year(LocalDate.now().getYear())
-                        .month(lastMonthValue)
+                        .year(targetYear)
+                        .month(targetMonth)
                         .totalFocusMinutes(totalSeconds / 60) // 초 -> 분 변환
                         .build();
 

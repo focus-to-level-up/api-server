@@ -80,15 +80,19 @@ public class WeeklyRewardService {
      * 캐릭터 보너스 계산 (등급 + 진화 단계별 퍼센트)
      * CharacterSpecResponse의 weeklyBonusPercents 참조
      */
-    private int calculateCharacterBonus(Rarity rarity, int evolution, int baseLevel) {
+    private int calculateCharacterBonus(Rarity rarity, int evolution, int levelBonus) {
         CharacterSpecResponse spec = CharacterSpecResponse.from(rarity);
         List<Integer> bonusPercents = spec.weeklyBonusPercents();
 
-        // evolution은 1~3, 인덱스는 0~2
+        // evolution index 안전하게 처리 (0-based)
         int evolutionIndex = Math.max(0, Math.min(evolution - 1, bonusPercents.size() - 1));
         int percent = bonusPercents.get(evolutionIndex);
 
-        return (int) (baseLevel * (percent / 100.0));
+        return calculateRoundedUp(levelBonus * (percent / 100.0));
+    }
+
+    private int calculateRoundedUp(double value) {
+        return (int) Math.ceil(value);
     }
 
     /**

@@ -27,7 +27,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Page<Member> findAllByIsFocusingIsTrue(Pageable pageable);
 
-    Page<Member> findAllByStatus(MemberStatus status, Pageable pageable);
+    Page<Member> findAllByStatusIn(List<MemberStatus> statuses, Pageable pageable);
 
     Optional<Member> findByNickname(String nickname);
 

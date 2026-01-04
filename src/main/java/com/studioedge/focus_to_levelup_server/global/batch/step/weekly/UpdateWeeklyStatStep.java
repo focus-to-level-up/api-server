@@ -39,6 +39,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -104,9 +105,9 @@ public class UpdateWeeklyStatStep {private final JobRepository jobRepository;
         return new RepositoryItemReaderBuilder<Member>()
                 .name("updateWeeklyStatReader")
                 .pageSize(100)
-                .methodName("findAllByStatus")
+                .methodName("findAllByStatusIn")
                 .repository(memberRepository)
-                .arguments(MemberStatus.ACTIVE)
+                .arguments(Collections.singletonList(List.of(MemberStatus.ACTIVE, MemberStatus.RANKING_BANNED)))
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
     }

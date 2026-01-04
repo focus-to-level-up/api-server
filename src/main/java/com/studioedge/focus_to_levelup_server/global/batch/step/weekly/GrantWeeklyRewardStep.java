@@ -33,6 +33,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -91,9 +93,9 @@ public class GrantWeeklyRewardStep {
         return new RepositoryItemReaderBuilder<Member>()
                 .name("grantWeeklyRewardReader")
                 .pageSize(100)
-                .methodName("findAllByStatus")
+                .methodName("findAllByStatusIn")
                 .repository(memberRepository)
-                .arguments(MemberStatus.ACTIVE)
+                .arguments(Collections.singletonList(List.of(MemberStatus.ACTIVE, MemberStatus.RANKING_BANNED)))
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
     }

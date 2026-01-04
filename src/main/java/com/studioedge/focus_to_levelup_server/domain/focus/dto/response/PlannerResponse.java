@@ -10,7 +10,7 @@ import java.time.LocalTime;
 public record PlannerResponse(
         @Schema(description = "과목명", example = "수학")
         String subjectName,
-        @Schema(description = "과목 색상", example = "#FF5733")
+        @Schema(description = "과목 색상", example = "FF5733")
         String subjectColor,
         @Schema(description = "시작 시간", example = "09:00:00")
         LocalTime startTime,
@@ -18,8 +18,12 @@ public record PlannerResponse(
         LocalTime endTime
 ) {
     public static PlannerResponse of(Planner planner) {
+        String subjectName = planner.getSubject().getName();
+        if (subjectName.startsWith("#")) {
+            subjectName = subjectName.substring(1);
+        }
         return PlannerResponse.builder()
-                .subjectName(planner.getSubject().getName())
+                .subjectName(subjectName)
                 .subjectColor(planner.getSubject().getColor())
                 .startTime(planner.getStartTime())
                 .endTime(planner.getEndTime())

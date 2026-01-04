@@ -21,6 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.CollectionUtils;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
@@ -38,6 +39,8 @@ public class UpdateMonthlySubjectStatStep {
     private final MemberRepository memberRepository;
     private final MonthlySubjectStatRepository monthlySubjectStatRepository;
     private final DailySubjectRepository dailySubjectRepository;
+
+    private final Clock clock;
 
     @Bean
     public Step updateMonthlySubjectStat() {
@@ -67,15 +70,16 @@ public class UpdateMonthlySubjectStatStep {
 
     @Bean
     public ItemWriter<Member> updateMonthlySubjectStatWriter() {
-        LocalDate today = LocalDate.now();
-        LocalDate firstDayOfLastMonth = today.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
-        LocalDate lastDayOfLastMonth = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
-        Integer lastYearValue = firstDayOfLastMonth.getYear(); // MonthlySubjectStat은 year 필드가 있음
-        Integer lastMonthValue = firstDayOfLastMonth.getMonthValue();
-
-        log.info("MonthlySubjectStat Writer: 집계 대상 월 = {}-{} ({} ~ {})", lastYearValue, lastMonthValue, firstDayOfLastMonth, lastDayOfLastMonth);
-
         return chunk -> {
+
+            LocalDate today = LocalDate.now(clock);
+            LocalDate firstDayOfLastMonth = today.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
+            LocalDate lastDayOfLastMonth = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
+            Integer lastYearValue = firstDayOfLastMonth.getYear(); // MonthlySubjectStat은 year 필드가 있음
+            Integer lastMonthValue = firstDayOfLastMonth.getMonthValue();
+
+            log.info("MonthlySubjectStat Writer: 집계 대상 월 = {}-{} ({} ~ {})", lastYearValue, lastMonthValue, firstDayOfLastMonth, lastDayOfLastMonth);
+
             List<Member> members = (List<Member>) chunk.getItems();
             List<Long> memberIds = members.stream().map(Member::getId).collect(Collectors.toList());
 

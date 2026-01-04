@@ -110,6 +110,10 @@ public class PlaceNewMemberInRankingStep {
         PriorityQueue<League> leagueQueue = new PriorityQueue<>(Comparator.comparingInt(League::getCurrentMembers));
         leagueQueue.addAll(bronzeLeagues);
 
+        int targetWeek = bronzeLeagues.stream()
+                .mapToInt(League::getCurrentWeek)
+                .max()
+                .orElse(1);
         int nextLeagueNumber = bronzeLeagues.size() + 1;
 
         for (Member member : members) {
@@ -129,10 +133,11 @@ public class PlaceNewMemberInRankingStep {
                 targetLeague = League.builder()
                         .season(season)
                         .name(leagueName)
+                        .currentWeek(targetWeek)
                         .categoryType(category)
                         .tier(Tier.BRONZE)
                         .startDate(LocalDate.now(clock))
-                        .endDate(season.getEndDate())
+                        .endDate(LocalDate.now(clock).plusDays(6))
                         .build();
 
                 leagueRepository.save(targetLeague);

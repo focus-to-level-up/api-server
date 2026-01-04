@@ -2,14 +2,12 @@ package com.studioedge.focus_to_levelup_server.domain.ranking.service;
 
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dto.RankingResponse;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
 import com.studioedge.focus_to_levelup_server.domain.ranking.exception.LeagueNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingExcludeException;
 import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,10 +28,9 @@ public class RankingService {
 
     @Transactional(readOnly = true)
     public RankingResponse getRankingList(Member member) {
-        if (member.getStatus().equals(MemberStatus.RANKING_BANNED)) {
-            throw new RankingExcludeException();
-        }
-
+//        if (member.getStatus().equals(MemberStatus.RANKING_BANNED)) {
+//            throw new RankingExcludeException();
+//        }
         League targetLeague;
         Optional<Ranking> myRanking = rankingRepository.findByMember(member);
         if (myRanking.isPresent()) {

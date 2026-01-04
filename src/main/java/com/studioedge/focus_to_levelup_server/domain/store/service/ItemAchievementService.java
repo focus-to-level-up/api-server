@@ -22,7 +22,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
-import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.isServiceTimeAfter;
 import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.toServiceMinutes;
 
 @Slf4j
@@ -69,7 +68,6 @@ public class ItemAchievementService {
     public void checkAchievements(Long memberId, Integer focusSeconds,
                                   LocalDateTime sessionStartTime, DailyGoal dailyGoal) {
         log.info("=== checkAchievements called: memberId={}, focusSeconds={}, startTime={}", memberId, focusSeconds, sessionStartTime);
-        LocalDateTime sessionEndTime = LocalDateTime.now();
         LocalDate serviceDate = getServiceDate();
 
         // 모든 아이템 조회 (progressData 업데이트용)
@@ -92,8 +90,8 @@ public class ItemAchievementService {
         Map<Long, List<MemberItem>> memberItemsByItemId = allMemberItems.stream()
                 .collect(Collectors.groupingBy(mi -> mi.getItem().getId()));
 
-        // 1단계: 모든 미완료 아이템의 progressData를 먼저 업데이트 (오늘의 값으로)
-        for (MemberItem memberItem : incompleteMemberItems) {
+        // 1단계: 모든 아이템의 progressData를 먼저 업데이트 (오늘의 값으로)
+        for (MemberItem memberItem : allMemberItems) {
             String itemName = memberItem.getItem().getName();
             try {
                 switch (itemName) {
@@ -303,12 +301,15 @@ public class ItemAchievementService {
             progressData.put("latestEndTime", "--:--");
         }
 
-        // 달성 조건: 자정(0시)의 경우 0-4시 사이도 인정
         boolean isAchieved = false;
         if (latestEndTime != null) {
             int latestHour = latestEndTime.getHour();
-            isAchieved = (requiredHour == 0 && latestHour >= 0 && latestHour < 4) ||
-                         (requiredHour > 0 && latestHour >= requiredHour);
+            // 비교를 위해 시간을 보정 (0~3시는 24를 더함)
+            int adjustedLatestHour = (latestHour < 4) ? latestHour + 24 : latestHour;
+            int adjustedRequiredHour = (requiredHour == 0) ? 24 : requiredHour;
+
+            // 이제 단순히 크기 비교 가능 (예: 종료 01시(25) >= 목표 23시(23) -> True)
+            isAchieved = adjustedLatestHour >= adjustedRequiredHour;
         }
 
         // 달성 여부와 관계없이 키 유지 (달성 시 값 설정, 미달성 시 null)
@@ -514,8 +515,14 @@ public class ItemAchievementService {
         progressData.put("lastWeekAverageMinutes", (int) (lastWeekAverageSeconds / 60));
         progressData.put("thisWeekTargetDayMinutes", thisWeekTargetDayMinutes);
 
-        boolean isAchieved = lastWeekAverageSeconds > 0 && thisWeekTargetDaySeconds >= lastWeekAverageSeconds;
-
+        boolean isAchieved;
+        if (lastWeekAverageSeconds == 0) {
+            // 지난 주 기록이 없으면, 이번 주에 조금이라도(0초 초과) 하면 달성
+            isAchieved = thisWeekTargetDaySeconds > 0;
+        } else {
+            // 이번 주 >= 지난 주 평균
+            isAchieved = thisWeekTargetDaySeconds >= lastWeekAverageSeconds;
+        }
         // 달성 여부와 관계없이 키 유지 (달성 시 값 설정, 미달성 시 null)
         progressData.put("achievedDate", isAchieved ? serviceDate.format(DATE_FORMATTER) : null);
         progressData.put("achievedDay", isAchieved ? DAY_OF_WEEK_KR.get(serviceDate.getDayOfWeek()) : null);
@@ -895,11 +902,15 @@ public class ItemAchievementService {
         // 30분 이상 집중한 요일 없으면 "--", 있으면 가장 늦은 요일 하나만
         if (achievedDays.isEmpty()) {
             progressData.put("displayText", "--");
+        } else if (achievedDays.size() == 1) {
+            // 1개일 때는 "월요일" 처럼 전체 표기
+            progressData.put("displayText", DAY_OF_WEEK_KR.get(achievedDays.get(0)));
         } else {
-            DayOfWeek latestDay = achievedDays.stream()
-                    .max(Comparator.comparingInt(DayOfWeek::getValue))
-                    .orElse(DayOfWeek.MONDAY);
-            progressData.put("displayText", DAY_OF_WEEK_KR.get(latestDay));
+            // 2개 이상일 때는 "월, 화, 수" 처럼 짧은 표기
+            String daysStr = achievedDays.stream()
+                    .map(DAY_OF_WEEK_SHORT::get)
+                    .collect(Collectors.joining(", "));
+            progressData.put("displayText", daysStr);
         }
 
         try {
