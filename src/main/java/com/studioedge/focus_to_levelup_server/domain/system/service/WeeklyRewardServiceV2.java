@@ -9,6 +9,7 @@ import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRep
 import com.studioedge.focus_to_levelup_server.domain.payment.entity.Subscription;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.WeeklyRewardRepository;
+import com.studioedge.focus_to_levelup_server.domain.system.dto.response.WeeklyRewardInfoResponseV2;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.WeeklyReward;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.WeeklyRewardAlreadyReceivedException;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.WeeklyRewardNotFoundException;
@@ -26,20 +27,39 @@ public class WeeklyRewardServiceV2 {
     private final MemberRepository memberRepository;
     private final WeeklyRewardRepository weeklyRewardRepository;
     private final SubscriptionRepository subscriptionRepository;
-    /**
-     * [V2] 주간 보상 수령 (서버 사이드 계산 검증 포함)
-     * MemberInfo의 상태를 체크하고, 지급 후 WeeklyReward 데이터를 삭제합니다.
-     */
+
+    @Transactional(readOnly = true)
+    public WeeklyRewardInfoResponseV2 getWeeklyRewardInfo(Member member) {
+        // WeeklyReward 조회
+        WeeklyReward weeklyReward = weeklyRewardRepository.findFirstByMemberIdOrderByCreatedAtDesc(member.getId())
+                .orElseThrow(WeeklyRewardNotFoundException::new); // or return null handling based on requirement
+
+        boolean alreadyReceived = weeklyReward.getIsReceived();
+
+        // [수정] 모든 계산을 Service 내부 로직에서 처리
+        RewardCalculationResult calculation = calculateRewardDetails(member, weeklyReward);
+
+        return WeeklyRewardInfoResponseV2.of(
+                weeklyReward,
+                alreadyReceived,
+                calculation.subscriptionType(),
+                calculation.bonusTicketCount(),
+                calculation.levelBonus(),
+                calculation.characterBonus(),
+                calculation.subscriptionBonusDisplay(), // 화면 표시용 (미구독이어도 값 존재)
+                calculation.ticketBonusDisplay(),       // 화면 표시용 (티켓없어도 값 존재)
+                calculation.totalExpectedDiamond()      // 실제 총합
+        );
+    }
+
     @Transactional
     public void receiveWeeklyReward(Long memberId) {
-        // 1. 유저 조회
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(MemberNotFoundException::new);
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
         MemberInfo memberInfo = member.getMemberInfo();
 
-        // 3. 주간 보상 데이터 조회 (본인 소유 확인)
         WeeklyReward weeklyReward = weeklyRewardRepository.findFirstByMemberIdOrderByCreatedAtDesc(memberId)
                 .orElseThrow(WeeklyRewardNotFoundException::new);
+
         if (!weeklyReward.getMember().getId().equals(memberId)) {
             throw new WeeklyRewardNotFoundException();
         }
@@ -47,91 +67,111 @@ public class WeeklyRewardServiceV2 {
             throw new WeeklyRewardAlreadyReceivedException();
         }
 
-        // 4. [보안 핵심] 보상량 서버 재계산
-        // 클라이언트가 보낸 request.rewardDiamond()는 무시하고 서버가 직접 계산합니다.
-        RewardCalculationResult calculation = calculateTotalReward(member, weeklyReward);
-        int finalRewardDiamond = calculation.totalAmount();
+        // [동일한 계산 로직 사용
+        RewardCalculationResult calculation = calculateRewardDetails(member, weeklyReward);
+        int finalRewardDiamond = calculation.totalExpectedDiamond();
 
-        // 5. 상태 업데이트 및 보상 지급
         memberInfo.addDiamond(finalRewardDiamond);
-        member.receiveWeeklyReward(true); // 플래그를 '받음(true)'으로 변경
+        member.receiveWeeklyReward(true);
 
-        // 6. 보너스 티켓 소모 처리 (계산에 사용되었다면 차감)
-        if (calculation.ticketBonus() > 0) {
+        // 실제 합계에 티켓 보너스가 포함된 경우에만 소모
+        if (memberInfo.getBonusTicketCount() > 0) {
             memberInfo.useBonusTicket();
         }
 
-        // 7. 주간 보상 수령
         weeklyReward.receive();
     }
 
-    // ================== 내부 계산 로직 (공통 사용) ==================
+    // ================== 내부 계산 로직 ==================
 
-    // 계산 결과를 담을 내부 Record
     private record RewardCalculationResult(
             SubscriptionType subscriptionType,
             int bonusTicketCount,
             int levelBonus,
             int characterBonus,
-            int subscriptionBonus,
-            int ticketBonus,
-            int totalAmount
+            int subscriptionBonusDisplay, // 화면 표시용
+            int ticketBonusDisplay,       // 화면 표시용
+            int totalExpectedDiamond      // 실제 지급 총액
     ) {}
 
-    private RewardCalculationResult calculateTotalReward(Member member, WeeklyReward weeklyReward) {
-        // 1. 구독 상태 조회
+    private RewardCalculationResult calculateRewardDetails(Member member, WeeklyReward weeklyReward) {
+        // 1. 상태 조회
         SubscriptionType subscriptionType = subscriptionRepository.findByMemberIdAndIsActiveTrue(member.getId())
                 .map(Subscription::getType)
                 .orElse(SubscriptionType.NONE);
 
-        // 2. 티켓 보유량 조회
         int bonusTicketCount = member.getMemberInfo().getBonusTicketCount();
 
-        // 3. 각 항목별 보너스 계산
+        // 2. 기본 보상 계산
         int levelBonus = calculateLevelBonus(weeklyReward.getLastLevel());
+
+        // [수정] 캐릭터 보상 계산 (올림 처리 적용)
         int characterBonus = calculateCharacterBonus(
                 weeklyReward.getLastCharacter().getRarity(),
                 weeklyReward.getEvolution(),
-                levelBonus);
+                levelBonus
+        );
+
         int baseReward = levelBonus + characterBonus;
-        int subscriptionBonus = calculateSubscriptionBonus(subscriptionType, baseReward);
-        int ticketBonus = calculateTicketBonus(bonusTicketCount, baseReward);
-        int totalAmount = baseReward + subscriptionBonus + ticketBonus;
+
+        // 3. 구독 보너스 계산
+        int subscriptionBonusDisplay;
+        int subscriptionBonusForTotal = 0;
+
+        if (subscriptionType == SubscriptionType.PREMIUM) {
+            // 프리미엄: 100%
+            subscriptionBonusDisplay = baseReward; // 100%니까 그대로
+            subscriptionBonusForTotal = subscriptionBonusDisplay;
+        } else {
+            // NONE(미구독) 또는 NORMAL(베이직)
+            // [요구사항] 미구독이어도 베이직(50%) 기준으로 표시값 반환 (올림 처리)
+            subscriptionBonusDisplay = calculateRoundedUp(baseReward * 0.5);
+
+            if (subscriptionType == SubscriptionType.NORMAL) {
+                subscriptionBonusForTotal = subscriptionBonusDisplay;
+            }
+            // NONE이면 subscriptionBonusForTotal은 0
+        }
+
+        // 4. 티켓 보너스 계산
+        // [요구사항] 티켓이 없어도 10% 기준으로 표시값 반환 (올림 처리)
+        int ticketBonusDisplay = calculateRoundedUp(baseReward * 0.1);
+        int ticketBonusForTotal = 0;
+
+        if (bonusTicketCount > 0) {
+            ticketBonusForTotal = ticketBonusDisplay;
+        }
+
+        // 5. 총합 계산
+        int totalExpectedDiamond = baseReward + subscriptionBonusForTotal + ticketBonusForTotal;
 
         return new RewardCalculationResult(
                 subscriptionType,
                 bonusTicketCount,
                 levelBonus,
                 characterBonus,
-                subscriptionBonus,
-                ticketBonus,
-                totalAmount
+                subscriptionBonusDisplay,
+                ticketBonusDisplay,
+                totalExpectedDiamond
         );
     }
 
     private int calculateLevelBonus(int level) {
-        return level * 10; // 1레벨당 10다이아 (예시)
+        return level * 10;
     }
 
-    private int calculateCharacterBonus(Rarity rarity, int evolution, int baseLevel) {
+    private int calculateCharacterBonus(Rarity rarity, int evolution, int levelBonus) {
         CharacterSpecResponse spec = CharacterSpecResponse.from(rarity);
         List<Integer> bonusPercents = spec.weeklyBonusPercents();
         int evolutionIndex = Math.max(0, Math.min(evolution - 1, bonusPercents.size() - 1));
         int percent = bonusPercents.get(evolutionIndex);
 
-        return (int) (baseLevel * (percent / 100.0));
+        // [수정] 올림 처리 적용
+        return calculateRoundedUp(levelBonus * (percent / 100.0));
     }
 
-    private int calculateSubscriptionBonus(SubscriptionType subscriptionType, int baseAmount) {
-        return switch (subscriptionType) {
-            case NONE -> 0;
-            case NORMAL -> (int) (baseAmount * 0.5);
-            case PREMIUM -> baseAmount;
-        };
-    }
-
-    private int calculateTicketBonus(int ticketCount, int baseAmount) {
-        if (ticketCount <= 0) return 0;
-        return (int) (baseAmount * 0.10);
+    // [추가] 소수점 올림 유틸 메서드
+    private int calculateRoundedUp(double value) {
+        return (int) Math.ceil(value);
     }
 }
