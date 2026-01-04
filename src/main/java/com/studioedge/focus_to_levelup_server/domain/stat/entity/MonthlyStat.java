@@ -22,7 +22,7 @@ import org.hibernate.annotations.OnDeleteAction;
 public class MonthlyStat extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "weekly_stat_id")
+    @Column(name = "monthly_stat_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
