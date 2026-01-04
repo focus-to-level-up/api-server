@@ -1,12 +1,8 @@
 name: CI/CD for Development (Docker Compose)
 
-# Disabled: Using ECS deployment (cicd-ecs-dev.yml)
-# on:
-#   push:
-#     branches: [ main ]
-
 on:
-  workflow_dispatch:  # Manual trigger only
+  push:
+    branches: [ main ]
 
 permissions:
   contents: read

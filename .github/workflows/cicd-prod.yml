@@ -1,13 +1,9 @@
 name: CI/CD for Production (Docker Compose)
 
-# Disabled: Using ECS deployment (cicd-ecs-prod.yml)
-# on:
-#   push:
-#     tags:
-#       - '*'
-
 on:
-  workflow_dispatch:  # Manual trigger only
+  push:
+    tags:
+      - '*'
 
 permissions:
   contents: read
