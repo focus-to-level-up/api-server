@@ -46,19 +46,7 @@ public class AdminRankingController {
     }
 
     @PostMapping("/rankings/{memberId}/exclude")
-    @Operation(summary = "랭킹 제외 처리", description = """
-            ### 기능
-            - 특정 멤버를 랭킹에서 제외 처리합니다.
-            - 관리자는 부정 집중, 규칙 위반 등의 사유로 멤버를 랭킹에서 제외할 수 있습니다.
-            
-            ### 요청 경로 변수
-            - `memberId`: 랭킹에서 제외할 멤버의 ID
-            
-            ### 동작
-            - 해당 멤버를 랭킹 시스템에서 제외 처리합니다.
-            - 유저의 status를 `RANKING_BANNED`로 변경합니다.
-            - 제외된 멤버는 일정 기간 후에 자동으로 랭킹에 복귀될 수 있습니다.
-    """)
+    @Operation(summary = "랭킹 제외 처리", description = "특정 회원을 랭킹에서 제외 처리합니다.")
     public ResponseEntity<CommonResponse<AdminMemberResponse>> excludeMemberFromRanking(
             @AuthenticationPrincipal Member member,
             @Parameter(description = "제외할 맴버 ID") @PathVariable Long memberId

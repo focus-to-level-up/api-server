@@ -67,7 +67,7 @@ public record GuildResponse(
                 .name(guild.getName())
                 .description(guild.getDescription())
                 .targetFocusTime(guild.getTargetFocusTime())
-                .averageFocusTime(guild.getAverageFocusTime())
+                .averageFocusTime(guild.getAverageFocusTime() / guild.getCurrentMembers())
                 .lastAverageFocusTime(lastAvgFocusTime)
                 .currentMembers(guild.getCurrentMembers())
                 .maxMembers(guild.getMaxMembers())

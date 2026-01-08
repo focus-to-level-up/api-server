@@ -67,6 +67,6 @@ public interface GuildMemberRepository extends JpaRepository<GuildMember, Long> 
      */
     @Modifying(clearAutomatically = true) // 영속성 컨텍스트 초기화 필수
     @Transactional
-    @Query("UPDATE GuildMember gm SET gm.weeklyFocusTime = 0, gm.isBoosted = false")
+    @Query("UPDATE GuildMember gm SET gm.weeklyFocusTime = 0")
     int resetAllWeeklyFocusTimeAndBoost();
 }
