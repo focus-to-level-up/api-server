@@ -312,6 +312,8 @@ public class ExceptionMapper {
                 ExceptionSituation.of("길드장은 먼저 권한을 위임해야 탈퇴할 수 있습니다.", HttpStatus.FORBIDDEN));
         mapper.put(FocusRequestCooldownException.class,
                 ExceptionSituation.of("같은 길드원에게 1시간 내 재요청할 수 없습니다.", HttpStatus.TOO_MANY_REQUESTS));
+        mapper.put(GuildRoleUnAuthorizedException.class,
+                ExceptionSituation.of("길드장을 위임할 권리가 없습니다.", HttpStatus.TOO_MANY_REQUESTS));
     }
 
     /**

@@ -6,6 +6,7 @@ import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
 import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
 import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
 import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
+import com.studioedge.focus_to_levelup_server.domain.guild.exception.GuildRoleUnAuthorizedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,13 +51,17 @@ public class GuildMemberCommandService {
         GuildMember targetGuildMember = guildMemberQueryService.findGuildMember(guildId, targetMemberId);
         GuildMember requesterGuildMember = guildMemberQueryService.findGuildMember(guildId, requesterId);
 
+        if (requesterGuildMember.getRole() != GuildRole.LEADER) {
+            throw new GuildRoleUnAuthorizedException();
+        }
+
         // LEADER 위임인 경우
         if (request.role() == GuildRole.LEADER) {
             // 요청자를 SUB_LEADER로 강등
             requesterGuildMember.updateRole(GuildRole.SUB_LEADER);
             // 대상자를 LEADER로 승격
             targetGuildMember.updateRole(GuildRole.LEADER);
-            targetGuildMember.getGuild().updateCategory(requesterGuildMember.getMember().getMemberInfo().getCategorySub());
+            targetGuildMember.getGuild().updateCategory(targetGuildMember.getMember().getMemberInfo().getCategorySub());
         } else {
             // 일반 역할 변경 (SUB_LEADER ↔ MEMBER)
             targetGuildMember.updateRole(request.role());

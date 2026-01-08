@@ -1,14 +1,25 @@
 package com.studioedge.focus_to_levelup_server.domain.admin.service;
 
+import com.studioedge.focus_to_levelup_server.domain.admin.dto.request.AdminMemberStatsResponse;
+import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminDailyStatResponse;
 import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminMemberResponse;
+import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
+import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -17,16 +28,67 @@ public class AdminMemberService {
 
     private final MemberRepository memberRepository;
     private final MemberInfoRepository memberInfoRepository;
+    private final DailyGoalRepository dailyGoalRepository;
 
     /**
-     * 닉네임으로 회원 검색
+     * 회원 검색 (ID 또는 닉네임 부분 일치)
      */
-    public AdminMemberResponse searchMemberByNickname(String nickname) {
-        Member member = memberRepository.findByNickname(nickname)
-                .orElseThrow(MemberNotFoundException::new);
-        MemberInfo memberInfo = memberInfoRepository.findByMemberId(member.getId())
-                .orElse(null);
-        return AdminMemberResponse.from(member, memberInfo);
+    public List<AdminMemberResponse> searchMembers(String type, String keyword) {
+        List<Member> members;
+
+        if ("ID".equalsIgnoreCase(type)) {
+            try {
+                Long memberId = Long.parseLong(keyword);
+                members = memberRepository.findById(memberId)
+                        .map(List::of)
+                        .orElse(List.of());
+            } catch (NumberFormatException e) {
+                return List.of();
+            }
+        } else if (type.equals("STATUS")) {
+            try {
+                MemberStatus status = MemberStatus.valueOf(keyword.toUpperCase()); // 대소문자 무시 처리
+                members = memberRepository.findAllByStatus(status);
+            } catch (IllegalArgumentException e) {
+                return List.of(); // 잘못된 상태 값이면 빈 리스트 반환
+            }
+        } else {
+            members = memberRepository.findByNicknameContaining(keyword);
+        }
+
+        return members.stream()
+                .map(m -> AdminMemberResponse.from(m, m.getMemberInfo()))
+                .toList();
+    }
+
+    /**
+     * 회원 통계 조회 (기간 지정)
+     */
+    public AdminMemberStatsResponse getMemberStats(Long memberId, LocalDate startDate, LocalDate endDate) {
+        // 1. 전체 누적 평균 (변경 없음)
+        Double avgFocusTime = dailyGoalRepository.getAverageFocusTimeByMemberId(memberId);
+        Double avgMaxConsecutiveTime = dailyGoalRepository.getAverageMaxConsecutiveFocusTimeByMemberId(memberId);
+
+        // 2. DB에서 해당 기간 데이터 조회
+        List<AdminDailyStatResponse> dbStats = dailyGoalRepository.findDailyStatsByMemberIdAndDateRange(memberId, startDate, endDate);
+
+        // 3. 빈 날짜 채우기 (Map으로 변환하여 빠른 조회)
+        Map<LocalDate, AdminDailyStatResponse> statMap = dbStats.stream()
+                .collect(Collectors.toMap(AdminDailyStatResponse::date, Function.identity()));
+
+        List<AdminDailyStatResponse> resultStats = new ArrayList<>();
+
+        // startDate부터 endDate까지 하루씩 증가하며 리스트 생성
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            if (statMap.containsKey(date)) {
+                resultStats.add(statMap.get(date));
+            } else {
+                // 데이터가 없는 날은 0으로 채움
+                resultStats.add(new AdminDailyStatResponse(date, 0, 0));
+            }
+        }
+
+        return AdminMemberStatsResponse.of(avgFocusTime, avgMaxConsecutiveTime, resultStats);
     }
 
     /**
@@ -84,5 +146,16 @@ public class AdminMemberService {
         memberInfo.updateSchool(school, schoolAddress);
 
         return AdminMemberResponse.from(member, memberInfo);
+    }
+
+    /**
+     * 맴버 ACTIVE 상태로 복구
+     */
+    @Transactional
+    public void restoreMember(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(MemberNotFoundException::new);
+        member.reactivate();
+        member.getMemberSetting().clearRankingWarning();
     }
 }

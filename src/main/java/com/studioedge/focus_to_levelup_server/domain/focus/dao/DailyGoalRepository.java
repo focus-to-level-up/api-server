@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.dao;
 
+import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminDailyStatResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -66,4 +67,24 @@ public interface DailyGoalRepository extends JpaRepository<DailyGoal, Long> {
             "WHERE dg.dailyGoalDate BETWEEN :startDate AND :endDate " +
             "GROUP BY dg.member.id")
     List<Long> findAllWeeklySecondsBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT AVG(d.currentSeconds) FROM DailyGoal d WHERE d.member.id = :memberId")
+    Double getAverageFocusTimeByMemberId(@Param("memberId") Long memberId);
+
+    @Query("SELECT AVG(d.maxConsecutiveSeconds) FROM DailyGoal d WHERE d.member.id = :memberId")
+    Double getAverageMaxConsecutiveFocusTimeByMemberId(@Param("memberId") Long memberId);
+
+    @Query("SELECT new com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminDailyStatResponse(" +
+            "d.dailyGoalDate, " +
+            "d.currentSeconds, " +
+            "d.maxConsecutiveSeconds) " +
+            "FROM DailyGoal d " +
+            "WHERE d.member.id = :memberId " +
+            "AND d.dailyGoalDate BETWEEN :startDate AND :endDate " +
+            "ORDER BY d.dailyGoalDate ASC")
+    List<AdminDailyStatResponse> findDailyStatsByMemberIdAndDateRange(
+            @Param("memberId") Long memberId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }
