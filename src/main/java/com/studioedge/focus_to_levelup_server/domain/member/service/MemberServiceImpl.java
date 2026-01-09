@@ -25,8 +25,12 @@ import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
 import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
+import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
+import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
+import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
+import com.studioedge.focus_to_levelup_server.domain.ranking.exception.LeagueNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.AssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.ReportLogRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
@@ -69,6 +73,7 @@ public class MemberServiceImpl implements MemberService {
     private final GuildMemberRepository guildMemberRepository;
     private final SubjectRepository subjectRepository;
     private final DailyGoalRepository dailyGoalRepository;
+    private final LeagueRepository leagueRepository;
 
     @Override
     @Transactional
@@ -83,6 +88,7 @@ public class MemberServiceImpl implements MemberService {
         memberRepository.findById(member.getId())
                 .orElseThrow(MemberNotFoundException::new)
                 .completeSignUp(request.nickname(), memberInfo, memberSetting);
+        registerRanking(member, request.categoryMain());
     }
 
     @Override
@@ -333,6 +339,17 @@ public class MemberServiceImpl implements MemberService {
         subjectRepository.saveAll(subjects);
     }
 
+    private void registerRanking(Member member, CategoryMainType mainType) {
+        League league = leagueRepository.findSmallestBronzeLeagueForCategory(mainType)
+                .orElseThrow(LeagueNotFoundException::new);
+        Ranking ranking = Ranking.builder()
+                .league(league)
+                .member(member)
+                .tier(Tier.BRONZE)
+                .build();
+        rankingRepository.save(ranking);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public MemberCurrencyResponse getMemberCurrency(Member member) {
@@ -344,20 +361,6 @@ public class MemberServiceImpl implements MemberService {
                 .gold(memberInfo.getGold())
                 .diamond(memberInfo.getDiamond())
                 .build();
-    }
-
-    @Override
-    @Transactional
-    public void updateCurrency(Long memberId, Integer gold, Integer diamond) {
-        MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElseThrow(InvalidMemberException::new);
-
-        if (gold != null) {
-            memberInfo.setGold(gold);
-        }
-        if (diamond != null) {
-            memberInfo.setDiamond(diamond);
-        }
     }
 
     // ----------------------------- PRIVATE CLASS ---------------------------------

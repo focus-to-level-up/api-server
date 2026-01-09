@@ -8,8 +8,14 @@ import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoReposi
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
+import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
+import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
+import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
+import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
+import com.studioedge.focus_to_levelup_server.domain.ranking.exception.LeagueNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +35,8 @@ public class AdminMemberService {
     private final MemberRepository memberRepository;
     private final MemberInfoRepository memberInfoRepository;
     private final DailyGoalRepository dailyGoalRepository;
+    private final LeagueRepository leagueRepository;
+    private final RankingRepository rankingRepository;
 
     /**
      * 회원 검색 (ID 또는 닉네임 부분 일치)
@@ -113,8 +121,7 @@ public class AdminMemberService {
         // Admin은 1달 제한 없이 변경 가능
         member.updateNickname(newNickname);
 
-        MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElse(null);
+        MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId).orElse(null);
         return AdminMemberResponse.from(member, memberInfo);
     }
 
@@ -155,7 +162,20 @@ public class AdminMemberService {
     public void restoreMember(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
+        MemberSetting memberSetting = member.getMemberSetting();
+        League league = leagueRepository.findSmallestLeagueForCategoryAndTier(
+                member.getMemberInfo().getCategoryMain(),
+                memberSetting.getBannedTier()
+        ).orElseThrow(LeagueNotFoundException::new);
+
         member.reactivate();
-        member.getMemberSetting().clearRankingWarning();
+        memberSetting.clearRankingWarning();
+        rankingRepository.save(
+                Ranking.builder()
+                        .league(league)
+                        .tier(league.getTier())
+                        .member(member)
+                        .build()
+        );
     }
 }
