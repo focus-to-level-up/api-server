@@ -277,6 +277,39 @@ public class MemberController {
         return HttpResponseUtil.updated(null);
     }
 
+    @PutMapping("/v1/member/school")
+    @Operation(summary = "유저 학교 업데이트", description = """
+            ### 기능
+            - 유저의 학교를 업데이트합니다.
+            - 유저는 변경일 기준으로 한달이 지난 이후에 학교를 업데이트 가능합니다.
+            
+            ### 요청
+            - `categoryMain`: 업데이트할 메인 카테고리
+            - `categorySub`: 업데이트할 서브 카테고리
+            """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "유저 카테고리 업데이트 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "해당 카테고리는 변경일 기준으로 1달이 지나야 합니다."
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "해당 카테고리의 상하관계가 일치하지 않습니다."
+            )
+    })
+    public ResponseEntity<CommonResponse<Void>> updateSchool(
+            @AuthenticationPrincipal Member member,
+            @RequestBody @Valid UpdateSchoolRequest request
+    ) {
+        memberService.updateSchool(member, request);
+        return HttpResponseUtil.updated(null);
+    }
+
     @PutMapping("/v1/member/setting")
     @Operation(summary = "유저 세팅 업데이트", description = """
             ### 기능

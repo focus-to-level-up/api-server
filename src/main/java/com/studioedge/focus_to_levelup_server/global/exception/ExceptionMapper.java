@@ -115,6 +115,8 @@ public class ExceptionMapper {
                 ExceptionSituation.of("회원님의 정보가 존재하지 않습니다. 탈퇴후 계정을 새로 생성해야합니다.", HttpStatus.NOT_FOUND));
         mapper.put(CategoryUpdateException.class,
                 ExceptionSituation.of("카테고리는 변경일을 기준으로 1달 이후에 변경 가능합니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(SchoolUpdateException.class,
+                ExceptionSituation.of("학교정보는 변경일을 기준으로 1달 이후에 변경 가능합니다.", HttpStatus.BAD_REQUEST));
         mapper.put(AssetUnauthorizedException.class,
                 ExceptionSituation.of("현재 에셋을 사용할 수 있는 권한이 없습니다.", HttpStatus.FORBIDDEN));
         mapper.put(InvalidSignUpException.class,

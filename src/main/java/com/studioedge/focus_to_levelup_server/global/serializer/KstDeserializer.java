@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
@@ -27,23 +26,21 @@ public class KstDeserializer extends StdDeserializer<LocalDateTime> {
         }
 
         try {
-            // Case 1: UTC 포맷 ('Z'로 끝나는 경우) -> KST로 변환
-            if (dateString.endsWith("Z")) {
-                LocalDateTime kstTime = Instant.parse(dateString)
-                        .atZone(KST_ZONE_ID)
-                        .toLocalDateTime();
+            // 1. 먼저 Offset 정보(Z, +09:00 등)가 있는 형태로 파싱 시도
+            // 이렇게 하면 'Z' 뿐만 아니라 '+00:00', '+09:00' 등도 모두 처리 가능
+            return java.time.OffsetDateTime.parse(dateString)
+                    .atZoneSameInstant(KST_ZONE_ID) // 타임존이 뭐든 KST로 변환
+                    .toLocalDateTime(); // LocalDateTime으로 추출
 
-                log.debug(">> [TimeConv] UTC({}) -> KST 변환됨: {}", dateString, kstTime);
-                return kstTime;
+        } catch (java.time.format.DateTimeParseException e1) {
+            try {
+                // 2. 오프셋 정보가 없는 단순 날짜 문자열인 경우 (예: "2026-01-01T12:00:00")
+                // 이 경우 "이미 KST 로컬 시간"이라고 가정하고 그대로 파싱
+                return LocalDateTime.parse(dateString);
+            } catch (Exception e2) {
+                log.error(">> [TimeConv] 날짜 파싱 실패: {}", dateString, e2);
+                throw ctxt.weirdStringException(dateString, LocalDateTime.class, "날짜 형식이 올바르지 않습니다.");
             }
-
-            // Case 2: KST 포맷 ('Z'가 없는 경우) -> 그대로 파싱
-            // 예: "2025-12-23T13:00:00"
-            return LocalDateTime.parse(dateString);
-
-        } catch (Exception e) {
-            log.error(">> [TimeConv] 날짜 파싱 실패: {}", dateString, e);
-            throw ctxt.weirdStringException(dateString, LocalDateTime.class, "날짜 형식이 올바르지 않습니다.");
         }
     }
 }

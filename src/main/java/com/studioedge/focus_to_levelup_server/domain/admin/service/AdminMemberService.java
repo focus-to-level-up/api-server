@@ -152,7 +152,7 @@ public class AdminMemberService {
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
                 .orElseThrow(MemberNotFoundException::new);
 
-        memberInfo.updateSchool(school, schoolAddress);
+        memberInfo.updateSchoolByAdmin(school, schoolAddress);
 
         return AdminMemberResponse.from(member, memberInfo);
     }

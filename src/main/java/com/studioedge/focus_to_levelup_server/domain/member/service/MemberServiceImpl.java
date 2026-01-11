@@ -203,6 +203,37 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
+    public void updateSchool(Member member, UpdateSchoolRequest request) {
+        MemberInfo memberInfo = memberInfoRepository.findByMember(member)
+                .orElseThrow(InvalidMemberException::new);
+        CategoryMainType mainType = memberInfo.getCategoryMain();
+        CategorySubType subType = memberInfo.getCategorySub();
+        LocalDateTime updatedAt = memberInfo.getSchoolUpdatedAt();
+
+        if (!subType.getMainType().equals(mainType)) {
+            throw new InvalidSignUpException();
+        }
+        if (updatedAt != null && updatedAt.isAfter(LocalDateTime.now().minusMonths(1))) {
+            throw new CategoryUpdateException();
+        }
+
+        memberInfo.updateSchool(request);
+        if (AppConstants.SCHOOL_CATEGORIES.contains(mainType) &&
+                !subType.equals(CategorySubType.N_SU) &&
+                request.schoolName() != null) {
+            schoolRepository.findByName(request.schoolName())
+                    .orElseGet(() -> {
+                        School newSchool = School.builder()
+                                .name(request.schoolName())
+                                .categoryMain(mainType)
+                                .build();
+                        return schoolRepository.save(newSchool);
+                    });
+        }
+    }
+
+    @Override
+    @Transactional
     public void updateMemberSetting(Member member, MemberSettingDto request) {
         MemberSetting memberSetting = memberSettingRepository.findByMemberId(member.getId())
                 .orElseThrow(InvalidMemberException::new);

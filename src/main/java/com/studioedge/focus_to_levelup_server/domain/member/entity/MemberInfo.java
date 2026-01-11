@@ -2,6 +2,7 @@ package com.studioedge.focus_to_levelup_server.domain.member.entity;
 
 import com.studioedge.focus_to_levelup_server.domain.character.exception.InsufficientDiamondException;
 import com.studioedge.focus_to_levelup_server.domain.member.dto.UpdateCategoryRequest;
+import com.studioedge.focus_to_levelup_server.domain.member.dto.UpdateSchoolRequest;
 import com.studioedge.focus_to_levelup_server.domain.member.enums.Gender;
 import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
@@ -77,6 +78,8 @@ public class MemberInfo {
     @Column(nullable = false)
     @ColumnDefault("'없음'")
     private String schoolAddress;
+
+    private LocalDateTime schoolUpdatedAt;
 
     private String profileMessage;
 
@@ -275,8 +278,14 @@ public class MemberInfo {
     /**
      * 학교 정보 변경 (Admin 전용)
      */
-    public void updateSchool(String school, String schoolAddress) {
+    public void updateSchoolByAdmin(String school, String schoolAddress) {
         this.school = school;
         this.schoolAddress = schoolAddress != null ? schoolAddress : "없음";
+    }
+
+    public void updateSchool(UpdateSchoolRequest request) {
+        this.school = request.schoolName();
+        this.schoolAddress = request.schoolRegion();
+        this.schoolUpdatedAt = LocalDateTime.now();
     }
 }

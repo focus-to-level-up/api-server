@@ -20,6 +20,8 @@ public interface MemberService {
 
     void updateCategory(Member member, UpdateCategoryRequest request);
 
+    void updateSchool(Member member, UpdateSchoolRequest request);
+
     void updateMemberSetting(Member member, MemberSettingDto request);
 
     MemberSettingDto getMemberSetting(Member member);
