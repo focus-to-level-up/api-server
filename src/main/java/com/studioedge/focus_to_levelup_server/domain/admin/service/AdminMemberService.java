@@ -15,6 +15,7 @@ import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepositor
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
+import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
 import com.studioedge.focus_to_levelup_server.domain.ranking.exception.LeagueNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -163,9 +164,9 @@ public class AdminMemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
         MemberSetting memberSetting = member.getMemberSetting();
+        Tier tier = memberSetting.getBannedTier() == null ? Tier.BRONZE : memberSetting.getBannedTier();
         League league = leagueRepository.findSmallestLeagueForCategoryAndTier(
-                member.getMemberInfo().getCategoryMain(),
-                memberSetting.getBannedTier()
+                member.getMemberInfo().getCategoryMain(), tier
         ).orElseThrow(LeagueNotFoundException::new);
 
         member.reactivate();
