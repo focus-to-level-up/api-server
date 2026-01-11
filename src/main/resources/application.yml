@@ -97,3 +97,11 @@ cloud:
       static: ${AWS_REGION}
     stack:
       auto: false
+
+sentry:
+  dsn: ${SENTRY_DSN}
+  send-default-pii: true
+  traces-sample-rate: 1.0
+  environment: local
+  release: focus-to-levelup-v1
+  exception-resolver-order: -2147483647
