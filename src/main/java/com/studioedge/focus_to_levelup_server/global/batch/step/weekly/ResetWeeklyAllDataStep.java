@@ -47,7 +47,7 @@ public class ResetWeeklyAllDataStep {
             log.info(">> Deleted all member items.");
 
             guildRepository.resetGuildFocusTime();
-            int updatedGuildMemberCount = guildMemberRepository.resetAllWeeklyFocusTimeAndBoost();
+            int updatedGuildMemberCount = guildMemberRepository.resetAllWeeklyFocusTime();
             log.info(">> Reset weekly focus time & boost for {} guild members.", updatedGuildMemberCount);
 
             return RepeatStatus.FINISHED;
