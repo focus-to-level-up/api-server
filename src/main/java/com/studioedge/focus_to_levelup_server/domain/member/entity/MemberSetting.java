@@ -1,6 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.member.entity;
 
 import com.studioedge.focus_to_levelup_server.domain.member.dto.MemberSettingDto;
+import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -57,6 +58,10 @@ public class MemberSetting {
     @ColumnDefault("0")
     private Integer rankingDeactivatedCount = 0; // 랭킹에서 비활성화 횟수
 
+    @ColumnDefault("'BRONZE'")
+    @Enumerated(EnumType.STRING)
+    private Tier bannedTier; // 강제 밴 당한 티어
+
     @Column(nullable = false)
     @ColumnDefault("'FFFF00'")
     private String totalStatColor = "FFFF00"; // 노란색 초기값
@@ -94,9 +99,10 @@ public class MemberSetting {
         return true;
     }
 
-    public void banRanking() {
+    public void banRanking(Tier tier) {
         this.isRankingActive = false;
         this.rankingDeactivatedCount++;
         this.rankingWarningAt = LocalDate.now();
+        this.bannedTier = tier;
     }
 }

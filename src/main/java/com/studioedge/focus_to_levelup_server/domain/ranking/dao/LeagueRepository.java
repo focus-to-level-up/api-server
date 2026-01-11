@@ -25,6 +25,18 @@ public interface LeagueRepository extends JpaRepository<League, Long> {
             "LIMIT 1")
     Optional<League> findSmallestBronzeLeagueForCategory(@Param("category") CategoryMainType category);
 
+    @Query("SELECT l FROM League l " +
+            "LEFT JOIN Ranking r ON r.league = l " +
+            "WHERE l.tier = :tier " + // 브론즈 리그만
+            "AND l.categoryType = :category " + // 특정 카테고리
+            "GROUP BY l.id " +
+            "ORDER BY COUNT(r.id) ASC " + // 인원이 가장 '적은' 순서
+            "LIMIT 1")
+    Optional<League> findSmallestLeagueForCategoryAndTier(
+            @Param("category") CategoryMainType category,
+            @Param("tier") Tier tier
+    );
+
 
     // 특정 시즌, 카테고리, 티어에 해당하는 모든 리그 조회하기
     List<League> findAllBySeasonAndCategoryTypeAndTier(Season season, CategoryMainType categoryType, Tier tier);

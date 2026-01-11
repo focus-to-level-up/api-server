@@ -30,14 +30,10 @@ public class WeeklyJobBatch {
                          Step grantGuildWeeklyReward,
                          Step processLeaguePlacement,
                          Step placeNewMemberInRanking,
-                         Step resetWeeklyAllData,
-                         Step updateMonthlyStat,
-                         Step updateMonthlySubjectStat) {
+                         Step resetWeeklyAllData) {
         return new JobBuilder("weeklyJob", jobRepository)
                 .start(updateWeeklyStat)
                 .next(grantWeeklyReward)
-//                .next(updateMonthlyStat)
-//                .next(updateMonthlySubjectStat)
                 .next(grantGuildWeeklyReward)
                 .next(processLeaguePlacement)
                 .next(placeNewMemberInRanking)

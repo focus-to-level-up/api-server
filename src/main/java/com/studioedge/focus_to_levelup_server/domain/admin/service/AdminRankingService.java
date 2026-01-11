@@ -35,12 +35,12 @@ public class AdminRankingService {
     public AdminMemberResponse excludeMemberFromRanking(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
+        Ranking ranking = rankingRepository.findByMemberId(member.getId())
+                .orElseThrow(MemberNotFoundException::new);
 
         // 비즈니스 로직: 상태 변경 (Member 엔티티 내부에 메서드 권장)
         member.banRanking();
-        member.getMemberSetting().banRanking();
-        Ranking ranking = rankingRepository.findByMemberId(member.getId())
-                .orElseThrow(MemberNotFoundException::new);
+        member.getMemberSetting().banRanking(ranking.getTier());
 
         ranking.getLeague().decreaseCurrentMembers();
         rankingRepository.deleteByMemberId(member.getId());
