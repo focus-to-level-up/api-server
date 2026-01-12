@@ -167,6 +167,9 @@ public class MemberInfo {
         this.categoryMain = request.categoryMain();
         this.categorySub = request.categorySub();
         this.categoryUpdatedAt = LocalDateTime.now();
+        this.school = "없음";
+        this.schoolAddress = "없음";
+        this.schoolUpdatedAt = null;
     }
 
     public void updateProfile(MemberAsset updateImage, MemberAsset updateBorder, String profileMessage) {

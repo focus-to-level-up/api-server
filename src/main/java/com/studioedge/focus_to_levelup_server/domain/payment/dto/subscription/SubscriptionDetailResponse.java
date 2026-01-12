@@ -56,7 +56,7 @@ public class SubscriptionDetailResponse {
 
         private static String getTypeName(SubscriptionType type) {
             return switch (type) {
-                case NORMAL -> "일반 구독권";
+                case BASIC -> "일반 구독권";
                 case PREMIUM -> "프리미엄 구독권";
                 default -> "없음";
             };

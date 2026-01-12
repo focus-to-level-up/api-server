@@ -119,7 +119,7 @@ public class RefundService {
 
         Product product = paymentLog.getProduct();
         SubscriptionType subscriptionType = product.getType() == ProductType.BASIC_SUBSCRIPTION
-                ? SubscriptionType.NORMAL
+                ? SubscriptionType.BASIC
                 : SubscriptionType.PREMIUM;
 
         int bonusTicketCount = subscriptionType.getBonusTicketCount();

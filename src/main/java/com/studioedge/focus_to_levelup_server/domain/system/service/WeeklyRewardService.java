@@ -98,13 +98,13 @@ public class WeeklyRewardService {
     /**
      * 구독 보너스 계산
      * - NONE: 0%
-     * - NORMAL: 50%
+     * - BASIC: 50%
      * - PREMIUM: 100%
      */
     private int calculateSubscriptionBonus(SubscriptionType subscriptionType, int baseAmount) {
         return switch (subscriptionType) {
             case NONE -> 0;
-            case NORMAL -> (int) (baseAmount * 0.5);
+            case BASIC -> (int) (baseAmount * 0.5);
             case PREMIUM -> baseAmount;
         };
     }

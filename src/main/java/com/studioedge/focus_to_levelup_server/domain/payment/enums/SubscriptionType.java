@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum SubscriptionType {
     NONE(0),
-    NORMAL(3),
+    BASIC(3),
     PREMIUM(6);
 
     private final int bonusTicketCount;

@@ -15,7 +15,6 @@ import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepositor
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
 import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
 import com.studioedge.focus_to_levelup_server.domain.ranking.exception.LeagueNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -172,6 +171,7 @@ public class AdminMemberService {
 
         member.reactivate();
         memberSetting.clearRankingWarning();
+        league.increaseCurrentMembers();
         rankingRepository.save(
                 Ranking.builder()
                         .league(league)

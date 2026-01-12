@@ -373,12 +373,15 @@ public class MemberServiceImpl implements MemberService {
     private void registerRanking(Member member, CategoryMainType mainType) {
         League league = leagueRepository.findSmallestBronzeLeagueForCategory(mainType)
                 .orElseThrow(LeagueNotFoundException::new);
-        Ranking ranking = Ranking.builder()
-                .league(league)
-                .member(member)
-                .tier(Tier.BRONZE)
-                .build();
-        rankingRepository.save(ranking);
+
+        league.increaseCurrentMembers();
+        rankingRepository.save(
+                Ranking.builder()
+                        .league(league)
+                        .member(member)
+                        .tier(Tier.BRONZE)
+                        .build()
+        );
     }
 
     @Override

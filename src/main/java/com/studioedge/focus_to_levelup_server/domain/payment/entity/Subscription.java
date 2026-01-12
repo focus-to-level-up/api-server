@@ -144,8 +144,8 @@ public class Subscription extends BaseEntity {
     /**
      * 일반 구독권 여부 확인
      */
-    public boolean isNormal() {
-        return this.type == SubscriptionType.NORMAL;
+    public boolean isBasic() {
+        return this.type == SubscriptionType.BASIC;
     }
 
     /**

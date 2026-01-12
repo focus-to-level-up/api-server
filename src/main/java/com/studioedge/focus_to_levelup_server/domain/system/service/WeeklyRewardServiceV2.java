@@ -123,11 +123,11 @@ public class WeeklyRewardServiceV2 {
             subscriptionBonusDisplay = baseReward; // 100%니까 그대로
             subscriptionBonusForTotal = subscriptionBonusDisplay;
         } else {
-            // NONE(미구독) 또는 NORMAL(베이직)
+            // NONE(미구독) 또는 BASIC(베이직)
             // [요구사항] 미구독이어도 베이직(50%) 기준으로 표시값 반환 (올림 처리)
             subscriptionBonusDisplay = calculateRoundedUp(baseReward * 0.5);
 
-            if (subscriptionType == SubscriptionType.NORMAL) {
+            if (subscriptionType == SubscriptionType.BASIC) {
                 subscriptionBonusForTotal = subscriptionBonusDisplay;
             }
             // NONE이면 subscriptionBonusForTotal은 0

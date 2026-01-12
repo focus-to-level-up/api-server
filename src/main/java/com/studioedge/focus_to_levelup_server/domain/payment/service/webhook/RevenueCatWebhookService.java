@@ -335,7 +335,7 @@ public class RevenueCatWebhookService {
     private void handleSubscriptionPurchase(Member member, MemberInfo memberInfo,
                                             Product product, EventPayload event) {
         SubscriptionType subscriptionType = product.getType() == ProductType.BASIC_SUBSCRIPTION
-                ? SubscriptionType.NORMAL
+                ? SubscriptionType.BASIC
                 : SubscriptionType.PREMIUM;
 
         // Free Trial vs 유료 구매 분기
