@@ -28,6 +28,7 @@ public class SecurityConfig {
     private static final String[] PERMIT_URL_ARRAY = {
             // health check (for ALB, ECS)
             "/health",
+            "/actuator/health",
 
             // test endpoint
             "/test/**",
