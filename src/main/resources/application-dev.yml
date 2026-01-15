@@ -16,7 +16,6 @@ spring:
       hibernate:
         hbm2ddl:
           auto: update
-
   batch:
     jdbc:
       schema: classpath:org/springframework/batch/core/schema-mysql.sql
