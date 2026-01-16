@@ -131,8 +131,8 @@ public class AttendanceService {
         int reward = cycleReward.getReward();
 
         // VIP 2배 적용
-        if (isVipMember(member)) {
-            reward *= 2;
+        if (isVipMember(member) && cycleReward.equals(AttendanceCycleReward.DAY_7)) {
+            reward += 200;
         }
         return reward;
     }

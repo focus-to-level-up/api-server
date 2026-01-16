@@ -16,6 +16,8 @@ public interface DailyGoalRepository extends JpaRepository<DailyGoal, Long> {
         Integer getTotalSeconds();
     }
 
+    Optional<DailyGoal> findFirstByMemberIdOrderByDailyGoalDateDesc(Long memberId);
+
     /**
      * 특정 유저의 특정 날짜 DailyGoal 조회
      */

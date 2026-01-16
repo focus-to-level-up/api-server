@@ -19,7 +19,7 @@ public record CreateDailyGoalRequest (
         return DailyGoal.builder()
                 .member(member)
                 .targetMinutes(request.targetMinutes())
-                .serviceDate(serviceDate)
+                .dailyGoalDate(serviceDate)
                 .build();
     }
 }
