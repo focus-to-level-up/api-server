@@ -2,6 +2,7 @@ package com.studioedge.focus_to_levelup_server.global.exception;
 
 import com.studioedge.focus_to_levelup_server.domain.admin.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.advertisement.exception.AdvertisementNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.attendance.exception.AttendanceAlreadyCheckedException;
 import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
@@ -45,6 +46,7 @@ public class ExceptionMapper {
         setUpStatException();
         setUpEventException();
         setUpFcmException();
+        setUpAttendanceException();
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -249,6 +251,11 @@ public class ExceptionMapper {
                 ExceptionSituation.of("입력한 학교가 존재하지 않습니다.", HttpStatus.BAD_REQUEST));
         mapper.put(EventUnAuthorizedException.class,
                 ExceptionSituation.of("이벤트에 참여할 권한이 없습니다.", HttpStatus.FORBIDDEN));
+    }
+
+    private static void setUpAttendanceException() {
+        mapper.put(AttendanceAlreadyCheckedException.class,
+                ExceptionSituation.of("이미 오늘 출석체크를 완료했습니다.", HttpStatus.FORBIDDEN));
     }
 
     /**
