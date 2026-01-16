@@ -29,7 +29,6 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
 import com.studioedge.focus_to_levelup_server.domain.store.service.ItemAchievementService;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.BackgroundRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.MonsterImageRepository;
@@ -47,7 +46,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +67,6 @@ public class FocusService {
     private final GuildMemberRepository guildMemberRepository;
     private final MonsterImageRepository monsterImageRepository;
     private final BackgroundRepository backgroundRepository;
-    private final RankingRepository rankingRepository;
     private final ItemAchievementService itemAchievementService;
     private final TrainingRewardService trainingRewardService;
     private final PlannerRepository plannerRepository;
@@ -102,6 +99,7 @@ public class FocusService {
         if (endTime.isAfter(limitTime)) {
             long durationUntilLimit = Duration.between(startTime, limitTime).getSeconds();
             savedFocusSeconds = (int) Math.max(0, durationUntilLimit);
+            endTime = startTime.plusSeconds(savedFocusSeconds);
         }
 
         int focusMinutes = savedFocusSeconds / 60;
@@ -112,16 +110,6 @@ public class FocusService {
                 .orElseThrow(MemberNotFoundException::new);
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(m.getId())
                 .orElseThrow(InvalidMemberException::new);
-//        MemberSetting memberSetting = memberSettingRepository.findByMemberId(m.getId())
-//                .orElseThrow(InvalidMemberException::new);
-//        if (focusMinutes >= RANKING_WARNING_FOCUS_MINUTES) {
-//            boolean isBanned = memberSetting.warning();
-//            if (isBanned) {
-//                member.banRanking();
-//                rankingRepository.deleteByMemberId(m.getId());
-//            }
-//        }
-
         DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), serviceDate)
                 .orElseThrow(DailyGoalNotFoundException::new);
         Subject subject = this.subjectRepository.findByIdAndDeleteAtIsNull(subjectId)
@@ -157,9 +145,9 @@ public class FocusService {
         // 골드 획득
         memberInfo.addGold(focusExp);
         // 일일 목표 공부 시간 더하기
-        dailyGoal.addCurrentSeconds(request.focusSeconds());
+        dailyGoal.addCurrentSeconds(savedFocusSeconds);
         // 과목 공부 시간 더하기
-        dailySubject.addSeconds(request.focusSeconds());
+        dailySubject.addSeconds(savedFocusSeconds);
         // 캐릭터 친밀도 상승
         memberCharacter.expUp(focusExp);
         // 집중 상태 해제
@@ -179,8 +167,8 @@ public class FocusService {
         // 길드 주간 집중 시간 업데이트 (가입한 모든 길드)
         List<GuildMember> guildMembers = guildMemberRepository.findAllByMemberIdWithGuild(m.getId());
         for (GuildMember gm : guildMembers) {
-            gm.addWeeklyFocusTime(request.focusSeconds());
-            gm.getGuild().updateAverageFocusTime(request.focusSeconds());
+            gm.addWeeklyFocusTime(savedFocusSeconds);
+            gm.getGuild().updateAverageFocusTime(savedFocusSeconds);
         }
 
         // 하루 최대 집중시간 확인하기
@@ -189,14 +177,14 @@ public class FocusService {
         }
 
         // 오늘 가장 빠른 시작 시각, 가장 늦은 종료 시각 업데이트
-        dailyGoal.updateEarliestStartTime(request.startTime().toLocalTime());
-        dailyGoal.updateLatestEndTime(LocalTime.now());
+        dailyGoal.updateEarliestStartTime(startTime.toLocalTime());
+        dailyGoal.updateLatestEndTime(endTime.toLocalTime());
 
         // 아이템 달성 조건 체크 (DailySubject 저장 이후)
-        itemAchievementService.checkAchievements(m.getId(), request.focusSeconds(), request.startTime(), dailyGoal);
+        itemAchievementService.checkAchievements(m.getId(), savedFocusSeconds, startTime, dailyGoal);
 
         // 훈련 보상 적립
-        trainingRewardService.accumulateTrainingReward(m.getId(), request.focusSeconds());
+        trainingRewardService.accumulateTrainingReward(m.getId(), savedFocusSeconds);
 
         // 플래너 저장
         plannerRepository.save(

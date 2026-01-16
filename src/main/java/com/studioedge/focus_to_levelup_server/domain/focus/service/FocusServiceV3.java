@@ -9,7 +9,7 @@ import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalReposito
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.PlannerRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequestV2;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequestV3;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailySubject;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.Planner;
@@ -41,7 +41,7 @@ import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.
 
 @Service
 @RequiredArgsConstructor
-public class FocusServiceV2 {
+public class FocusServiceV3 {
     private final MemberRepository memberRepository;
     private final MemberInfoRepository memberInfoRepository;
     private final SubjectRepository subjectRepository;
@@ -55,7 +55,7 @@ public class FocusServiceV2 {
     private final PlannerRepository plannerRepository;
 
     @Transactional
-    public void saveFocus(Member m, Long subjectId, SaveFocusRequestV2 request) {
+    public void saveFocus(Member m, Long subjectId, SaveFocusRequestV3 request) {
         /**
          * member 레벨업 -> member.levelUp()
          * subject 공부 시간 누적
@@ -68,26 +68,27 @@ public class FocusServiceV2 {
          * - 시작 시간을 기준으로 '다음 4시'를 구합니다.
          * - 종료 시간이 4시를 넘어가면, '시작~4시'까지의 시간만 저장하도록 focusSeconds를 조정합니다.
          */
-        LocalDateTime startTime = request.startTime();
-        LocalDateTime endTime = startTime.plusSeconds(request.focusSeconds());
+        LocalDateTime subjectStartTime = request.subjectStartTime();
+        LocalDateTime screenStartTime = request.screenStartTime();
+        LocalDateTime endTime = subjectStartTime.plusSeconds(request.seconds());
 
         LocalDateTime limitTime;
-        if (startTime.getHour() < 4) {
-            limitTime = startTime.toLocalDate().atTime(4, 0);
+        if (subjectStartTime.getHour() < 4) {
+            limitTime = subjectStartTime.toLocalDate().atTime(4, 0);
         } else {
-            limitTime = startTime.toLocalDate().plusDays(1).atTime(4, 0);
+            limitTime = subjectStartTime.toLocalDate().plusDays(1).atTime(4, 0);
         }
 
-        int savedFocusSeconds = request.focusSeconds();
+        int savedFocusSeconds = request.seconds();
         if (endTime.isAfter(limitTime)) {
-            long durationUntilLimit = Duration.between(startTime, limitTime).getSeconds();
+            long durationUntilLimit = Duration.between(subjectStartTime, limitTime).getSeconds();
             savedFocusSeconds = (int) Math.max(0, durationUntilLimit);
-            endTime = startTime.plusSeconds(savedFocusSeconds);
+            endTime = subjectStartTime.plusSeconds(savedFocusSeconds);
         }
 
         int focusMinutes = savedFocusSeconds / 60;
         int remainSeconds = savedFocusSeconds % 60;
-        LocalDate serviceDate = getServiceDate(startTime);
+        LocalDate serviceDate = getServiceDate(screenStartTime);
 
         Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
@@ -161,11 +162,11 @@ public class FocusServiceV2 {
         }
 
         // 오늘 가장 빠른 시작 시각, 가장 늦은 종료 시각 업데이트
-        dailyGoal.updateEarliestStartTime(startTime.toLocalTime());
+        dailyGoal.updateEarliestStartTime(screenStartTime.toLocalTime());
         dailyGoal.updateLatestEndTime(endTime.toLocalTime());
 
         // 아이템 달성 조건 체크 (DailySubject 저장 이후)
-        itemAchievementService.checkAchievements(m.getId(), savedFocusSeconds, startTime, dailyGoal);
+        itemAchievementService.checkAchievements(m.getId(), savedFocusSeconds, screenStartTime, dailyGoal);
 
         // 훈련 보상 적립
         trainingRewardService.accumulateTrainingReward(m.getId(), savedFocusSeconds);
@@ -176,7 +177,7 @@ public class FocusServiceV2 {
                         .member(member)
                         .subject(subject)
                         .date(serviceDate)
-                        .startTime(startTime.toLocalTime())
+                        .startTime(subjectStartTime.toLocalTime())
                         .endTime(endTime.toLocalTime())
                         .build()
         );

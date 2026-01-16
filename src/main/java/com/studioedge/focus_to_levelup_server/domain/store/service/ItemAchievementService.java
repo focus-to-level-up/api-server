@@ -67,7 +67,7 @@ public class ItemAchievementService {
      */
     public void checkAchievements(Long memberId, Integer focusSeconds,
                                   LocalDateTime sessionStartTime, DailyGoal dailyGoal) {
-        log.info("=== checkAchievements called: memberId={}, focusSeconds={}, startTime={}", memberId, focusSeconds, sessionStartTime);
+        log.info("=== checkAchievements called: memberId={}, seconds={}, startTime={}", memberId, focusSeconds, sessionStartTime);
         LocalDate serviceDate = getServiceDate();
 
         // 모든 아이템 조회 (progressData 업데이트용)
