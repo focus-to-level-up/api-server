@@ -29,7 +29,7 @@ public class AttendanceController {
     private final AttendanceService attendanceService;
 
     @GetMapping
-    @Operation(summary = "출석 현황 조회 (메인 진입)", description = """
+    @Operation(summary = "출석 현황 조회", description = """
             ### 기능
             - 유저의 출석판(7일 주기)과 연속 출석 현황을 조회합니다.
             - **새벽 04:00**를 기준으로 날짜가 변경됩니다.

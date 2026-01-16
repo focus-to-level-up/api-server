@@ -8,6 +8,8 @@ import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubTyp
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
+import java.time.LocalDateTime;
+
 @Builder
 public record GetProfileResponse(
         @Schema(description = "유저 pk", example = "1")
@@ -53,7 +55,9 @@ public record GetProfileResponse(
         @Schema(description = "골드 갯수", example = "1500")
         Integer gold,
         @Schema(description = "오늘 공부 시간 상위 %", example = "0.2")
-        Float topPercent
+        Float topPercent,
+        @Schema(description = "유저 등록 날짜", example = "2023-01-15T13:45:30")
+        LocalDateTime createdAt
 ) {
     public static GetProfileResponse of(Member member, MemberInfo memberInfo, String ranking,
                                         SubscriptionType subscriptionType, boolean boosted, float topPercent) {
@@ -80,6 +84,7 @@ public record GetProfileResponse(
                 .diamond(memberInfo.getDiamond())
                 .gold(memberInfo.getGold())
                 .topPercent(topPercent)
+                .createdAt(member.getCreatedAt())
                 .build();
     }
 }
