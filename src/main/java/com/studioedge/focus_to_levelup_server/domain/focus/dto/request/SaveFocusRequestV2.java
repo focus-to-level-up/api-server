@@ -19,9 +19,9 @@ public record SaveFocusRequestV2 (
         Integer maxConsecutiveSeconds,
         @NotNull(message = "집중 시작 시각은 필수입니다.")
         @Schema(description = "집중 시작 시각 (ISO 8601, UTC 또는 로컬 시간)", example = "2025-11-19T14:30:00")
-        LocalDateTime startTime,
+        LocalDateTime startTime, // x
         @NotNull(message = "일일 목표 pk는 필수입니다..")
         @Schema(description = "일일 목표 pk", example = "3")
-        Long dailyGoalId
-){
+        Long dailyGoalId // x
+) {
 }

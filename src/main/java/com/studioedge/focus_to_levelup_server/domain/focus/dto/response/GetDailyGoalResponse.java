@@ -21,29 +21,6 @@ public record GetDailyGoalResponse (
         @Schema(description = "일일 목표 수령 여부", example = "false")
         Boolean isReceived
 ) {
-//    public static GetDailyGoalResponse of(DailyGoal dailyGoal) {
-//        float rewardMultiplier = dailyGoal.getRewardMultiplier();
-//        int currentMinutes = dailyGoal.getCurrentSeconds() / 60;
-//
-//        if (currentMinutes < dailyGoal.getTargetMinutes()) {
-//            float exponent = (float) ((currentMinutes / 60.0) - 2.0);
-//            rewardMultiplier = (float) Math.pow(1.1, Math.max(0.0, exponent));
-//            // 소수점 2째자리까지
-//            rewardMultiplier = (float) (Math.round(rewardMultiplier * 100) / 100.0);
-//        }
-//
-//        int bonusExp = (int) (currentMinutes * rewardMultiplier);
-//
-//        return GetDailyGoalResponse.builder()
-//                .dailyGoalId(dailyGoal.getId())
-//                .currentSeconds(dailyGoal.getCurrentSeconds())
-//                .targetMinutes(dailyGoal.getTargetMinutes())
-//                .rewardMultiplier(rewardMultiplier)
-//                .bonusExp(bonusExp)
-//                .levelUp(bonusExp / 600)
-//                .build();
-//    }
-
     public static GetDailyGoalResponse of(DailyGoal dailyGoal) {
         int currentMinutes = dailyGoal.getCurrentSeconds() / 60;
         int targetMinutes = dailyGoal.getTargetMinutes();

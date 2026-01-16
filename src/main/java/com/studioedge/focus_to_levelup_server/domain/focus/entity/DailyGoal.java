@@ -71,10 +71,10 @@ public class DailyGoal extends BaseEntity {
     private LocalTime latestEndTime; // 가장 늦은 종료 시간(아이템 확인용)
 
     @Builder
-    public DailyGoal(Member member, Integer targetMinutes, LocalDate serviceDate) {
+    public DailyGoal(Member member, Integer targetMinutes, LocalDate dailyGoalDate) {
         this.member = member;
         this.targetMinutes = targetMinutes;
-        this.dailyGoalDate = serviceDate;
+        this.dailyGoalDate = dailyGoalDate;
 
         float exponent = (float) ((targetMinutes / 60.0) - 2.0);
         float rewardMultiplier = (float) Math.pow(1.1, Math.max(0.0, exponent));

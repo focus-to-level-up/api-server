@@ -38,8 +38,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
-
 @Service
 @RequiredArgsConstructor
 public class FocusServiceV2 {
@@ -87,16 +85,15 @@ public class FocusServiceV2 {
 
         int focusMinutes = savedFocusSeconds / 60;
         int remainSeconds = savedFocusSeconds % 60;
-        LocalDate serviceDate = getServiceDate(startTime);
 
         Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(m.getId())
                 .orElseThrow(InvalidMemberException::new);
-
-        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(member.getId(), serviceDate)
+        DailyGoal dailyGoal = dailyGoalRepository.findFirstByMemberIdOrderByDailyGoalDateDesc(member.getId())
                 .orElseThrow(DailyGoalNotFoundException::new);
-        Subject subject = this.subjectRepository.findByIdAndDeleteAtIsNull(subjectId)
+        LocalDate serviceDate = dailyGoal.getDailyGoalDate();
+        Subject subject = subjectRepository.findByIdAndDeleteAtIsNull(subjectId)
                 .orElseThrow(SubjectNotFoundException::new);
         MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefault(m.getId(), true)
                 .orElseThrow(CharacterDefaultNotFoundException::new);
