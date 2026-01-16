@@ -21,9 +21,13 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     long countByStatus(MemberStatus status);
 
+    boolean existsByNickname(String nickname);
+
+    boolean existsByReferralCode(String referralCode);
+
     Optional<Member> findBySocialTypeAndSocialId(SocialType socialType, String socialId);
 
-    boolean existsByNickname(String nickname);
+    Optional<Member> findByReferralCode(String referralCode);
 
     List<Member> findByNicknameContaining(String nickname);
 

@@ -1,25 +1,29 @@
 package com.studioedge.focus_to_levelup_server.global.exception;
 
-import com.studioedge.focus_to_levelup_server.domain.admin.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.admin.exception.AdminAccessDeniedException;
+import com.studioedge.focus_to_levelup_server.domain.admin.exception.AdminNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.admin.exception.SuperAdminRequiredException;
 import com.studioedge.focus_to_levelup_server.domain.advertisement.exception.AdvertisementNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.attendance.exception.AttendanceAlreadyCheckedException;
 import com.studioedge.focus_to_levelup_server.domain.auth.exception.*;
-import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.EventUnAuthorizedException;
 import com.studioedge.focus_to_levelup_server.domain.event.exception.SchoolNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.focus.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.guild.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.payment.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.promotion.exception.AlreadyRegisterReferralCodeException;
+import com.studioedge.focus_to_levelup_server.domain.promotion.exception.ReferralCodeNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.promotion.exception.SelfReferralCodeException;
 import com.studioedge.focus_to_levelup_server.domain.ranking.exception.LeagueNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingExcludeException;
-import com.studioedge.focus_to_levelup_server.domain.stat.exception.StatMonthNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.ranking.exception.RankingNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.payment.exception.*;
+import com.studioedge.focus_to_levelup_server.domain.stat.exception.StatMonthNotFoundException;
 import com.studioedge.focus_to_levelup_server.domain.store.exception.*;
 import com.studioedge.focus_to_levelup_server.domain.system.exception.*;
-import com.studioedge.focus_to_levelup_server.global.fcm.exception.*;
+import com.studioedge.focus_to_levelup_server.global.fcm.exception.EmptyFcmTokenListException;
+import com.studioedge.focus_to_levelup_server.global.fcm.exception.FcmSendException;
 import org.springframework.http.HttpStatus;
 
 import java.util.LinkedHashMap;
@@ -47,6 +51,7 @@ public class ExceptionMapper {
         setUpEventException();
         setUpFcmException();
         setUpAttendanceException();
+        setUpPromotionException();
     }
 
     public static ExceptionSituation getSituationOf(Exception exception) {
@@ -253,9 +258,24 @@ public class ExceptionMapper {
                 ExceptionSituation.of("이벤트에 참여할 권한이 없습니다.", HttpStatus.FORBIDDEN));
     }
 
+    /**
+     * Attendance 관련 예외 등록
+     */
     private static void setUpAttendanceException() {
         mapper.put(AttendanceAlreadyCheckedException.class,
                 ExceptionSituation.of("이미 오늘 출석체크를 완료했습니다.", HttpStatus.FORBIDDEN));
+    }
+
+    /**
+     * Promotion 관련 예외 등록
+     */
+    private static void setUpPromotionException() {
+        mapper.put(AlreadyRegisterReferralCodeException.class,
+                ExceptionSituation.of("이미 추천인 코드를 등록하였습니다.", HttpStatus.BAD_REQUEST));
+        mapper.put(ReferralCodeNotFoundException.class,
+                ExceptionSituation.of("존재하지 않는 추천인 코드입니다.", HttpStatus.NOT_FOUND));
+        mapper.put(SelfReferralCodeException.class,
+                ExceptionSituation.of("자기 자신의 추천인 코드는 등록할 수 없습니다.", HttpStatus.BAD_REQUEST));
     }
 
     /**

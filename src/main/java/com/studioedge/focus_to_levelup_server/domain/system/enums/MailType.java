@@ -11,5 +11,4 @@ public enum MailType {
     COUPON,                    // 쿠폰 보상 (기타 보상용)
     PROFILE_BORDER,            // 테두리 보상
     ADMIN_REWARD               // 어드민 재화 지급 (다이아, 골드, 보너스티켓)
-
 }

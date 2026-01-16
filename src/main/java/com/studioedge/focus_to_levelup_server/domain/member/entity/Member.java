@@ -99,6 +99,9 @@ public class Member extends BaseEntity {
     @ColumnDefault("'PENDING'")
     private MemberStatus status = MemberStatus.PENDING;
 
+    @Column(unique = true)
+    private String referralCode;
+
     @Builder
     public Member(SocialType socialType, String socialId, String nickname, String fcmToken,
                   String appleRefreshToken, String kakaoRefreshToken, String naverRefreshToken,
@@ -217,5 +220,9 @@ public class Member extends BaseEntity {
 
     public void updateLastLoginDateTime(LocalDateTime lastLoginDateTime) {
         this.lastLoginDateTime = lastLoginDateTime;
+    }
+
+    public void updateReferralCode(String code) {
+        this.referralCode = code;
     }
 }

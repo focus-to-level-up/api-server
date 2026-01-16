@@ -107,6 +107,10 @@ public class MemberInfo {
     @ColumnDefault("0")
     private Integer bonusTicketCount = 0; // 보너스 티켓 보유 개수 (주간 보상 10% 증가)
 
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer rouletteTicketCount = 0;
+
     @Builder
     public MemberInfo(Member member, Integer age, Gender gender, CategoryMainType categoryMain,
                       CategorySubType categorySub, String school, String profileMessage,
@@ -290,5 +294,14 @@ public class MemberInfo {
         this.school = request.schoolName();
         this.schoolAddress = request.schoolRegion();
         this.schoolUpdatedAt = LocalDateTime.now();
+    }
+
+    public void addRouletteTicket(int count) {
+        this.rouletteTicketCount += count;
+    }
+
+    public void useRouletteTicket() {
+        if (this.rouletteTicketCount <= 0) throw new IllegalStateException("티켓이 부족합니다");
+        this.rouletteTicketCount--;
     }
 }

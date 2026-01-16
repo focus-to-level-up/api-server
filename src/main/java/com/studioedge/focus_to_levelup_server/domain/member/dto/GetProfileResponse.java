@@ -56,7 +56,7 @@ public record GetProfileResponse(
         Integer gold,
         @Schema(description = "오늘 공부 시간 상위 %", example = "0.2")
         Float topPercent,
-        @Schema(description = "유저 등록 날짜", example = "2023-01-15T13:45:30")
+        @Schema(description = "유저 등록 날짜", example = "2026-01-15T13:45:30.123")
         LocalDateTime createdAt
 ) {
     public static GetProfileResponse of(Member member, MemberInfo memberInfo, String ranking,
