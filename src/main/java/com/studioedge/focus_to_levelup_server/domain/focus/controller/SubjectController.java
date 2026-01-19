@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "Subject")
@@ -62,9 +63,10 @@ public class SubjectController {
             )
     })
     public ResponseEntity<CommonResponse<List<GetSubjectResponse>>> getSubjectList(
-            @AuthenticationPrincipal Member member
+            @AuthenticationPrincipal Member member,
+            @RequestParam(required = false) LocalDate date
     ) {
-        return HttpResponseUtil.ok(subjectService.getSubjectList(member));
+        return HttpResponseUtil.ok(subjectService.getSubjectList(member, date));
     }
 
     /**

@@ -172,7 +172,7 @@ public class MemberServiceImpl implements MemberService {
             throw new NicknameUpdateException();
         }
         if (memberRepository.existsByNickname(request.nickname())) {
-            throw new IllegalArgumentException("해당 닉네임은 이미 존재합니다.");
+            throw new NicknameDuplicatedException();
         }
         Member me = memberRepository.findById(member.getId())
                 .orElseThrow(MemberNotFoundException::new);
@@ -272,7 +272,7 @@ public class MemberServiceImpl implements MemberService {
         }
 
         if (memberRepository.existsByNickname(request.nickname())) {
-            throw new IllegalArgumentException("해당 닉네임은 이미 존재합니다.");
+            throw new NicknameDuplicatedException();
         }
     }
 

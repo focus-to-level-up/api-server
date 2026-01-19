@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,9 +31,10 @@ public class SubjectService {
     private final TodoRepository todoRepository;
 
     @Transactional(readOnly = true)
-    public List<GetSubjectResponse> getSubjectList(Member member) {
+    public List<GetSubjectResponse> getSubjectList(Member member, LocalDate date) {
+        LocalDate serviceDate = date == null ? getServiceDate() : date;
         List<Subject> subjects = subjectRepository.findAllByMemberAndDeleteAtIsNull(member);
-        List<DailySubject> dailySubjects = dailySubjectRepository.findAllByMemberAndDate(member, getServiceDate());
+        List<DailySubject> dailySubjects = dailySubjectRepository.findAllByMemberAndDate(member, serviceDate);
         Map<Long, Integer> todayMinutesMap = dailySubjects.stream()
                 .collect(Collectors.toMap(
                         dailySubject -> dailySubject.getSubject().getId(),

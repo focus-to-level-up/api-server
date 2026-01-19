@@ -116,6 +116,8 @@ public class ExceptionMapper {
     private static void setUpMemberException() {
         mapper.put(MemberNotFoundException.class,
                 ExceptionSituation.of("해당 유저를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        mapper.put(NicknameDuplicatedException.class,
+                ExceptionSituation.of("해당 닉네임은 이미 존재합니다.", HttpStatus.BAD_REQUEST));
         mapper.put(NicknameUpdateException.class,
                 ExceptionSituation.of("닉네임은 변경일을 기준으로 1달 이후에 변경 가능합니다.", HttpStatus.BAD_REQUEST));
         mapper.put(InvalidMemberException.class,
