@@ -1,5 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.entity;
 
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.StartFocusRequestV2;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
@@ -65,6 +66,9 @@ public class DailyGoal extends BaseEntity {
     private LocalDateTime startTime; // 시작시간
 
     @Column
+    private LocalDateTime screenStartTime; // 시작시간
+
+    @Column
     private LocalTime earliestStartTime; // 가장 빠른 시작 시간(아이템 확인용)
 
     @Column
@@ -103,6 +107,11 @@ public class DailyGoal extends BaseEntity {
 
     public void updateStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
+    }
+
+    public void startFocus(StartFocusRequestV2 request) {
+        this.startTime = request.startTime();
+        this.screenStartTime = request.screenStartTime();
     }
 
     /**

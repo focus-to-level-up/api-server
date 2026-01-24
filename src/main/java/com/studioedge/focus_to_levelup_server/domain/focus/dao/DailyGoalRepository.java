@@ -23,6 +23,10 @@ public interface DailyGoalRepository extends JpaRepository<DailyGoal, Long> {
     Optional<DailyGoal> findByMemberIdAndDailyGoalDate(@Param("memberId") Long memberId,
                                                        @Param("dailyGoalDate") LocalDate dailyGoalDate);
 
+    // 방법 1: findFirst 사용 (가장 직관적)
+    // 해석: MemberId로 찾아서, DailyGoalDate 기준으로 내림차순 정렬하고, 첫 번째 것만 가져와라.
+    Optional<DailyGoal> findFirstByMemberIdOrderByDailyGoalDateDesc(Long memberId);
+
     List<DailyGoal> findAllByMemberIdInAndDailyGoalDate(List<Long> memberIds, LocalDate dailyGoalDate);
 
     @Query("SELECT dg FROM DailyGoal dg WHERE dg.member.id = :memberId AND dg.dailyGoalDate BETWEEN :startDate AND :endDate")

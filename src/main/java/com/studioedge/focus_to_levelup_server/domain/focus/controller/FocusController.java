@@ -1,6 +1,7 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.controller;
 
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.StartFocusRequest;
+import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.StartFocusRequestV2;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.FocusModeImageResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.service.FocusService;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
@@ -38,13 +39,37 @@ public class FocusController {
                     description = "집중 상태변경 성공"
             )
     })
-    public ResponseEntity<CommonResponse<Void>> startFocus(
+    public ResponseEntity<CommonResponse<Void>> startFocusV1(
             @AuthenticationPrincipal Member member,
             @Valid @RequestBody StartFocusRequest request
     ) {
-        focusService.startFocus(member, request);
+        focusService.startFocusV1(member, request);
         return HttpResponseUtil.updated(null);
     }
+
+    @PutMapping("/v2/focus")
+    @Operation(summary = "유저 집중 시작 ver2", description = """
+            ### 기능
+            - 유저가 과목에서 공부를 시작합니다.
+            - 집중중인 상태로 만들어줍니다.
+            - 종료 상태는 '과목 시간 저정'단계에서 수행됩니다.
+            """
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "집중 상태변경 성공"
+            )
+    })
+    public ResponseEntity<CommonResponse<Void>> startFocusV2(
+            @AuthenticationPrincipal Member member,
+            @Valid @RequestBody StartFocusRequestV2 request
+    ) {
+        focusService.startFocusV2(member, request);
+        return HttpResponseUtil.updated(null);
+    }
+
+
 
     /**
      * @TODO:

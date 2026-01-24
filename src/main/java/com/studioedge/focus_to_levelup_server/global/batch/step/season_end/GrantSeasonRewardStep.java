@@ -1,6 +1,5 @@
 package com.studioedge.focus_to_levelup_server.global.batch.step.season_end;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
@@ -25,7 +24,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -83,7 +85,10 @@ public class GrantSeasonRewardStep {
 
                 Tier finalTier = Tier.determineNextTier(currentLeagueTier, (double) (i + 1) / totalMembers, true);
 
+                // 1. 다이아 보상 메일 (기본)
                 mails.add(createSeasonEndMail(member, finalTier));
+
+                // 2. 프로필 테두리 보상 메일 (기본)
                 mails.add(createProfileBorderMail(member, finalTier));
             }
 
@@ -136,32 +141,23 @@ public class GrantSeasonRewardStep {
      * 2. 프로필 테두리 보상 메일 생성
      */
     private Mail createProfileBorderMail(Member member, Tier finalTier) {
-        try {
-            // SQL에 정의된 한글 에셋 이름 매핑
-            String assetName = Tier.getBorderAssetName(finalTier);
+        // SQL이나 Enum에 정의된 한글 에셋 이름 (예: "골드 프로필 테두리")
+        String assetName = Tier.getBorderAssetName(finalTier);
 
-            String description = objectMapper.writeValueAsString(new HashMap<String, Object>() {{
-                put("rewardType", "TIER_BORDER");
-                put("tier", finalTier.name());
-                put("assetName", assetName); // 예: "골드 프로필 테두리"
-            }});
+        String title = finalTier.name() + " 테두리 보상";
+        String description = String.format("%s 티어 달성 기념으로\n[%s]를 드립니다.", finalTier.name(), assetName);
 
-            return Mail.builder()
-                    .receiver(member)
-                    .senderName("Focus to Level Up")
-                    .type(MailType.PROFILE_BORDER) // 혹은 ITEM_REWARD
-                    .title(finalTier.name() + " 테두리 보상")
-                    .description(description)
-                    .popupTitle("시즌 종료 특별 보상")
-                    .popupContent(finalTier.name() + " 티어 달성을 축하하며 특별한 테두리를 드립니다!")
-                    .reward(0)
-                    .expiredAt(LocalDate.now().plusDays(7))
-                    .build();
-
-        } catch (JsonProcessingException e) {
-            log.error("Failed to create border mail JSON for member {}", member.getId(), e);
-            return null;
-        }
+        return Mail.builder()
+                .receiver(member)
+                .senderName("Focus to Level Up")
+                .type(MailType.PROFILE_BORDER)
+                .title(title)
+                .description(description) // JSON 대신 평문 사용
+                .popupTitle("시즌 종료 특별 보상")
+                .popupContent(finalTier.name() + " 티어 달성을 축하하며 특별한 테두리를 드립니다!")
+                .reward(0) // 재화 보상 없음 (아이템 지급은 수령 시 처리)
+                .expiredAt(LocalDate.now().plusDays(7))
+                .build();
     }
 
 }
