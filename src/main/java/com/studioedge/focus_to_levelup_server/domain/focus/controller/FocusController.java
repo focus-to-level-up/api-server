@@ -1,7 +1,6 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.controller;
 
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.StartFocusRequest;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.StartFocusRequestV2;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.FocusModeImageResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.service.FocusService;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
@@ -63,9 +62,9 @@ public class FocusController {
     })
     public ResponseEntity<CommonResponse<Void>> startFocusV2(
             @AuthenticationPrincipal Member member,
-            @Valid @RequestBody StartFocusRequestV2 request
+            @RequestParam(value = "resetScreenTime", defaultValue = "false") boolean isResetScreenTime
     ) {
-        focusService.startFocusV2(member, request);
+        focusService.startFocusV2(member, isResetScreenTime);
         return HttpResponseUtil.updated(null);
     }
 

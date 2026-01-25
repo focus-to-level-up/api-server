@@ -11,7 +11,6 @@ import com.studioedge.focus_to_levelup_server.domain.focus.dao.PlannerRepository
 import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.StartFocusRequest;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.StartFocusRequestV2;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.FocusModeImageResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.MonsterAnimationResponse;
 import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
@@ -211,14 +210,17 @@ public class FocusService {
     }
 
     @Transactional
-    public void startFocusV2(Member m, StartFocusRequestV2 request) {
+    public void startFocusV2(Member m, boolean isResetScreenTime) {
         Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
         DailyGoal dailyGoal = dailyGoalRepository.findFirstByMemberIdOrderByDailyGoalDateDesc(m.getId())
                 .orElseThrow(DailyGoalNotFoundException::new);
 
         member.focusOn();
-        dailyGoal.startFocus(request);
+        dailyGoal.updateStartTime();
+        if (isResetScreenTime) {
+            dailyGoal.updateScreenStartTime();
+        }
     }
 
     @Transactional(readOnly = true)

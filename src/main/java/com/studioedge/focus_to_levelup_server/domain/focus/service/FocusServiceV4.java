@@ -115,7 +115,7 @@ public class FocusServiceV4 {
                 .orElseThrow(SubjectNotFoundException::new);
         MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefault(m.getId(), true)
                 .orElseThrow(CharacterDefaultNotFoundException::new);
-        DailySubject dailySubject = dailySubjectRepository.findByMemberAndSubjectAndDate(member, subject, serviceDate)
+        DailySubject dailySubject = dailySubjectRepository.findByMemberAndSubjectAndDate(member, subject, dailyGoal.getDailyGoalDate())
                 .orElseGet(() -> {
                     // 오늘 해당 과목으로 공부한 기록이 없으면, 새로 생성
                     return DailySubject.builder()

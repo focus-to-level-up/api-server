@@ -1,6 +1,5 @@
 package com.studioedge.focus_to_levelup_server.domain.focus.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.StartFocusRequestV2;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
 import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
 import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
@@ -105,13 +104,16 @@ public class DailyGoal extends BaseEntity {
         this.currentSeconds += seconds;
     }
 
+    public void updateStartTime() {
+        this.startTime = LocalDateTime.now();
+    }
+
     public void updateStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
 
-    public void startFocus(StartFocusRequestV2 request) {
-        this.startTime = request.startTime();
-        this.screenStartTime = request.screenStartTime();
+    public void updateScreenStartTime() {
+        this.screenStartTime = LocalDateTime.now();
     }
 
     /**
