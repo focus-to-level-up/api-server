@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 
 @Slf4j
-@Profile({"local", "dev"})
+@Profile({"local", "dev", "prod"})
 @Tag(name = "Batch", description = "Batch API (관리자용)")
 @RestController
 @RequestMapping("/api/v1/batch")
