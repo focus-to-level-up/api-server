@@ -65,7 +65,7 @@ public class DailyGoal extends BaseEntity {
     private LocalDateTime startTime; // 시작시간
 
     @Column
-    private LocalDateTime screenStartTime; // 시작시간
+    private LocalDateTime screenStartTime; // 집중화면진입시간
 
     @Column
     private LocalTime earliestStartTime; // 가장 빠른 시작 시간(아이템 확인용)

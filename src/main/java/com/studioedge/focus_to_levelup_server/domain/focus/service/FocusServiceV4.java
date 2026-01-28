@@ -56,13 +56,6 @@ public class FocusServiceV4 {
 
     @Transactional
     public void saveFocus(Member m, Long subjectId) {
-        /**
-         * member 레벨업 -> member.levelUp()
-         * subject 공부 시간 누적
-         * dailyGoal 누적
-         * 대표 캐릭터 친밀도 누적
-         * 현재 집중중 상태 해제
-         * */
         /*
          * 4시 경계 체크 및 시간 보정 로직 (추가된 부분)
          * - 시작 시간을 기준으로 '다음 4시'를 구합니다.
@@ -70,20 +63,20 @@ public class FocusServiceV4 {
          */
         LocalDate serviceDate = getServiceDate();
         // 1. DailyGoal 조회 (가장 최근 것)
-        DailyGoal dailyGoal = dailyGoalRepository.findFirstByMemberIdOrderByDailyGoalDateDesc(m.getId())
-                .orElseThrow(DailyGoalNotFoundException::new);
+        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), getServiceDate())
+                .orElse(dailyGoalRepository.findFirstByMemberIdOrderByDailyGoalDateDesc(m.getId())
+                        .orElseThrow(DailyGoalNotFoundException::new));
 
-        // 2. 시작 시간 검증 (NPE 방지)
+        // 2. 시작 시간 검증
         if (dailyGoal.getStartTime() == null || dailyGoal.getScreenStartTime() == null) {
             // 이미 저장이 되었거나, 시작 요청이 없었던 경우 예외 처리 또는 무시
             throw new IllegalArgumentException("진행 중인 집중 세션이 없습니다.");
         }
 
+        LocalDateTime now = LocalDateTime.now();
         LocalDateTime subjectStartTime = dailyGoal.getStartTime();
         LocalDateTime screenStartTime = dailyGoal.getScreenStartTime();
-        LocalDateTime now = LocalDateTime.now();
-        long totalSecondsLong = Duration.between(subjectStartTime, now).getSeconds();
-        int seconds = (int) totalSecondsLong;
+        int seconds = (int) Duration.between(subjectStartTime, now).getSeconds();
 
         if (seconds < 0) seconds = 0;
         LocalDateTime endTime = subjectStartTime.plusSeconds(seconds);
