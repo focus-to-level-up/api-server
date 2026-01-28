@@ -3,7 +3,6 @@ package com.studioedge.focus_to_levelup_server.global.batch.schedule;
 import com.studioedge.focus_to_levelup_server.domain.ranking.dao.SeasonRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -44,7 +43,7 @@ public class GlobalBatchScheduler {
      * 순서: Daily -> Monthly(1일) -> SeasonEnd(시즌종료주) or Weekly(월요일)
      */
     @Scheduled(cron = "0 0 4 * * ?", zone = "Asia/Seoul")
-    @SchedulerLock(name = "runBatchJobs", lockAtMostFor = "PT30M")
+//    @SchedulerLock(name = "runBatchJobs", lockAtMostFor = "PT30M")
     public void runBatchJobs() {
         LocalDate today = LocalDate.now();
         LocalDateTime runTime = LocalDateTime.now();
