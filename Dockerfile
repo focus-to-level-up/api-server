@@ -7,7 +7,7 @@ RUN gradle dependencies --no-daemon
 COPY src /build/src
 RUN gradle build -x test --parallel
 
-FROM openjdk:17.0.1-slim
+FROM amazoncorretto:17
 WORKDIR /app
 
 COPY --from=builder /build/build/libs/*-SNAPSHOT.jar ./app.jar
