@@ -78,6 +78,7 @@ public record MailInfo(
             case COUPON -> "EVENT"; // 쿠폰은 다양한 보상 가능 (기본: EVENT 아이콘)
             case PROFILE_BORDER -> "PROFILE_BORDER";
             case ADMIN_REWARD -> "ADMIN"; // 어드민 재화 지급
+            case WARNING -> "WARNING";
         };
     }
 }

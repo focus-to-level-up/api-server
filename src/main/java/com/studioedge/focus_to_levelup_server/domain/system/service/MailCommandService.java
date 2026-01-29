@@ -77,6 +77,7 @@ public class MailCommandService {
             case EVENT, GUILD_WEEKLY, TIER_PROMOTION, SEASON_END -> handleDiamondMail(mail, memberId);
             case COUPON -> handleCouponMail(mail, memberId);
             case ADMIN_REWARD -> handleAdminRewardMail(mail, memberId);
+            case WARNING -> handleWarningMail(mail, memberId);
         };
     }
 
@@ -317,6 +318,18 @@ public class MailCommandService {
                 mail.getId(),
                 mail.getTitle(),
                 CharacterRewardInfo.from(selectedCharacter)
+        );
+    }
+
+    /**
+     * 경고 우편 처리
+     * */
+    private MailAcceptResponse handleWarningMail(Mail mail, Long memberId) {
+        // 우편 수령 처리
+        mail.markAsReceived();
+        return MailAcceptResponse.ofWarning(
+                mail.getId(),
+                mail.getTitle()
         );
     }
 }

@@ -8,21 +8,36 @@ import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
 import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
 import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class AdvertisementService {
 
     private final AdvertisementRepository advertisementRepository;
+    private final StringRedisTemplate redisTemplate;
+
+    // Redis Key Prefix 정의
+    private static final String AD_EXPOSURE_KEY_PREFIX = "ad:exposure:member:";
+    private static final long AD_COOLDOWN_HOURS = 3L;
+
     /**
      * 앱 실행 시 노출할 광고 1개 조회
      */
     @Transactional
     public AdvertisementResponse getAdvertisement(Member member) {
+        String redisKey = AD_EXPOSURE_KEY_PREFIX + member.getId();
+        String hasViewed = redisTemplate.opsForValue().get(redisKey);
+
+        if (hasViewed != null) {
+            return null;
+        }
+
         // 1. 유저의 Sub 카테고리 확인
         MemberInfo memberInfo = member.getMemberInfo();
         if (memberInfo == null || memberInfo.getCategorySub() == null) {
@@ -43,6 +58,8 @@ public class AdvertisementService {
 
         // 4. 노출 수(View Count) 증가 (DB 직접 업데이트로 동시성 방어)
         advertisementRepository.incrementViewCount(advertisement.getId());
+
+        redisTemplate.opsForValue().set(redisKey, "true", AD_COOLDOWN_HOURS, TimeUnit.HOURS);
 
         // 5. 응답 반환
         return AdvertisementResponse.from(advertisement);

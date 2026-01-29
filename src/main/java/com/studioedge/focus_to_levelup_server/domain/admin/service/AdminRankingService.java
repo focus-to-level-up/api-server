@@ -10,10 +10,14 @@ import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingReposito
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
 import com.studioedge.focus_to_levelup_server.domain.ranking.exception.LeagueNotFoundException;
+import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
+import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
+import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -23,6 +27,7 @@ public class AdminRankingService {
     private final LeagueRepository leagueRepository;
     private final RankingRepository rankingRepository;
     private final MemberRepository memberRepository;
+    private final MailRepository mailRepository;
 
     public AdminRankingResponse getRankingsByLeague(Long leagueId) {
         League league = leagueRepository.findById(leagueId)
@@ -44,6 +49,19 @@ public class AdminRankingService {
 
         ranking.getLeague().decreaseCurrentMembers();
         rankingRepository.deleteByMemberId(member.getId());
+
+        mailRepository.save(
+                Mail.builder()
+                        .receiver(member)
+                        .senderName("운영자")
+                        .type(MailType.WARNING)
+                        .title("랭킹 정지")
+                        .description("비정상적인 이용으로 랭킹이용이 정지되었습니다")
+                        .popupTitle("랭킹 정지")
+                        .popupContent("비정상적인 이용으로 랭킹이용이 정지되었습니다\n정상적인 형태로 이용을 하시면 1주 후에 랭킹에 다시 참여하실 수 있습니다.")
+                        .expiredAt(LocalDate.now().plusDays(7))
+                        .build()
+        );
 
         return AdminMemberResponse.from(member, member.getMemberInfo());
     }

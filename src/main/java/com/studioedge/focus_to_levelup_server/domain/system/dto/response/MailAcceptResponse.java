@@ -63,4 +63,14 @@ public record MailAcceptResponse(
                 .assetRewardInfo(assetRewardInfo)
                 .build();
     }
+
+    public static MailAcceptResponse ofWarning(Long mailId, String title) {
+        return MailAcceptResponse.builder()
+                .mailId(mailId)
+                .title(title)
+                .diamondRewarded(0)
+                .subscriptionInfo(null)
+                .characterRewardInfo(null)
+                .build();
+    }
 }

@@ -148,6 +148,7 @@ public class PromotionService {
         }
         return RouletteReward.GOLD_1000; // Fallback
     }
+
     /**
      * 룰렛 보상 메일 생성
      */
