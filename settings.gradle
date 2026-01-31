@@ -1,1 +1,13 @@
 rootProject.name = 'focus-to-levelup-server'
+
+include 'levelup-common'
+include 'levelup-domain'
+include 'levelup-infra'
+include 'levelup-infra:mysql'
+include 'levelup-infra:redis'
+include 'levelup-infra:client'
+include 'levelup-infra:jwt'
+include 'levelup-application'
+include 'levelup-application:api'
+include 'levelup-application:batch'
+include 'levelup-application:admin'

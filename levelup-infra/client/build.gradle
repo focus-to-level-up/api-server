@@ -1,0 +1,17 @@
+bootJar { enabled = false }
+jar { enabled = true }
+
+dependencies {
+    // AWS
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
+    // WebClient & Gson (for Social Login APIs)
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    // Google & Firebase
+    // Google Auth (for Google Play receipt validation & Firebase Admin SDK)
+    // Firebase Admin SDK 9.7.0 requires 1.37.1+ (see gradle dependencies output)
+    implementation 'com.google.auth:google-auth-library-oauth2-http:1.37.1'
+    implementation 'com.google.firebase:firebase-admin:9.7.0'
+}

@@ -1,0 +1,13 @@
+bootJar { enabled = true }
+jar { enabled = false }
+
+dependencies {
+    implementation project(':levelup-domain')
+    implementation project(':levelup-common')
+    implementation project(':levelup-infra:mysql')
+    implementation project(':levelup-infra:jwt')
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+}
