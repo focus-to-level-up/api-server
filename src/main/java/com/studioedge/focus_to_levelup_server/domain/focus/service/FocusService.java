@@ -213,9 +213,8 @@ public class FocusService {
     public void startFocusV2(Member m, boolean isResetScreenTime) {
         Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
-        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), getServiceDate())
-                .orElse(dailyGoalRepository.findFirstByMemberIdOrderByDailyGoalDateDesc(m.getId())
-                        .orElseThrow(DailyGoalNotFoundException::new));
+        DailyGoal dailyGoal = dailyGoalRepository.findFirstByMemberIdOrderByDailyGoalDateDesc(m.getId())
+                        .orElseThrow(DailyGoalNotFoundException::new);
         member.focusOn();
         dailyGoal.updateStartTime();
         if (isResetScreenTime || dailyGoal.getScreenStartTime() == null) {

@@ -63,19 +63,18 @@ public class FocusServiceV4 {
          */
         LocalDate serviceDate = getServiceDate();
         // 1. DailyGoal 조회 (가장 최근 것)
-        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), getServiceDate())
-                .orElse(dailyGoalRepository.findFirstByMemberIdOrderByDailyGoalDateDesc(m.getId())
-                        .orElseThrow(DailyGoalNotFoundException::new));
+        DailyGoal dailyGoal = dailyGoalRepository.findFirstByMemberIdOrderByDailyGoalDateDesc(m.getId())
+                        .orElseThrow(DailyGoalNotFoundException::new);
 
         // 2. 시작 시간 검증
-        if (dailyGoal.getStartTime() == null || dailyGoal.getScreenStartTime() == null) {
+        if (dailyGoal.getStartTime() == null) {
             // 이미 저장이 되었거나, 시작 요청이 없었던 경우 예외 처리 또는 무시
             throw new IllegalArgumentException("진행 중인 집중 세션이 없습니다.");
         }
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime subjectStartTime = dailyGoal.getStartTime();
-        LocalDateTime screenStartTime = dailyGoal.getScreenStartTime();
+        LocalDateTime screenStartTime = dailyGoal.getScreenStartTime() == null ? subjectStartTime : dailyGoal.getScreenStartTime();
         int seconds = (int) Duration.between(subjectStartTime, now).getSeconds();
 
         if (seconds < 0) seconds = 0;
