@@ -21,7 +21,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.CollectionUtils;
 
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
@@ -39,8 +38,6 @@ public class UpdateMonthlyStatStep {
     private final MemberRepository memberRepository;
     private final MonthlyStatRepository monthlyStatRepository;
     private final DailyGoalRepository dailyGoalRepository;
-
-    private final Clock clock;
 
     @Bean
     public Step updateMonthlyStat(ItemProcessor<Member, Member> passThroughMemberProcessor) {
@@ -65,7 +62,7 @@ public class UpdateMonthlyStatStep {
 
     @Bean
     public ItemWriter<Member> updateMonthStatWriter() {
-        LocalDate today = LocalDate.now(clock);
+        LocalDate today = LocalDate.now();
         LocalDate firstDayOfLastMonth = today.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
         LocalDate lastDayOfLastMonth = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
         int targetYear = firstDayOfLastMonth.getYear();

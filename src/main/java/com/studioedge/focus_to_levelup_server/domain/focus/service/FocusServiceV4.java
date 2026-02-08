@@ -113,7 +113,7 @@ public class FocusServiceV4 {
                     return DailySubject.builder()
                             .member(member)
                             .subject(subject)
-                            .date(serviceDate)
+                            .date(dailyGoal.getDailyGoalDate())
                             .build();
                 });
         if (!subject.getMember().getId().equals(m.getId())) {

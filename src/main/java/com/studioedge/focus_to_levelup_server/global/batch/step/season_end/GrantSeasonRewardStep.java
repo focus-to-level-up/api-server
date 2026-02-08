@@ -114,9 +114,6 @@ public class GrantSeasonRewardStep {
         // 보상 계산
         int diamonds = Tier.getSeasonRewardDiamonds(finalTier);
 
-        // 마스터인 경우 구독권 텍스트 추가
-        boolean isMaster = (finalTier == Tier.MASTER);
-
         String title = "시즌이 종료되었습니다. 최종 보상을 확인하세요";
         String popupTitle = finalTier.name() + " 시즌 종료 보상";
         String popupContent = String.format(
@@ -129,7 +126,7 @@ public class GrantSeasonRewardStep {
                 .senderName("Focus to Level Up")
                 .type(MailType.SEASON_END)
                 .title(title)
-                .description("시즌 종료 보상입니다.\n" + (isMaster ? "(구독권 포함)" : ""))
+                .description("시즌 종료 보상입니다!\n")
                 .popupTitle(popupTitle)
                 .popupContent(popupContent)
                 .reward(diamonds) // 다이아 보상

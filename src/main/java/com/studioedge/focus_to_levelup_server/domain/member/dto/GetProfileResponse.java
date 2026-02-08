@@ -75,7 +75,7 @@ public record GetProfileResponse(
                 .focusOn(member.getIsFocusing())
                 .subscriptionType(subscriptionType)
                 .currentTier(ranking)
-                .highestTier(memberInfo.getHighestTier() == null ? "-" : memberInfo.getHighestTier().toString())
+                .highestTier(memberInfo.getHighestTier() == null ? "BRONZE" : memberInfo.getHighestTier().toString())
                 .currentLevel(member.getCurrentLevel())
                 .currentExp(member.getCurrentExp())
                 .totalLevel(memberInfo.getTotalLevel())

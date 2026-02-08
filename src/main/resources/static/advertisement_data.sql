@@ -44,5 +44,31 @@ VALUES
 -- , (@ad_id_1, 'HIGH_2');
 
 -- -----------------------------------------------------
+-- 2. 김서현(kim._.fx) 선생님 광고
+-- 타겟: 예비 고3 (HIGH_3), N수생 (N_SU)
+-- 설문조사 기반 데이터
+-- -----------------------------------------------------
+
+-- [Step 1] 부모 테이블(advertisements)에 정보 저장
+-- 이미지 파일명은 인스타 ID를 참고하여 'kim_fx.png'로 가정하였습니다.
+-- 실제 S3에 업로드된 파일명과 일치해야 합니다.
+INSERT INTO advertisements (image_url, link, click_count, view_count, is_active)
+VALUES (
+           CONCAT(@s3_ad_base_url, 'kim._.fx.png'),
+           'https://hacks-zone.imweb.me',
+           0,
+           0,
+           true
+       );
+
+-- 방금 들어간 광고의 ID를 변수에 저장
+SET @ad_id_2 = LAST_INSERT_ID();
+
+-- [Step 2] 자식 테이블(advertisement_categories)에 타겟 카테고리 매핑
+-- 설문조사의 '예비 고3'과 'N수'를 모두 포함합니다.
+INSERT INTO advertisement_categories (advertisement_id, category_sub)
+VALUES
+    (@ad_id_2, 'HIGH_3'), -- 예비 고3
+    (@ad_id_2, 'N_SU');   -- N수생 (기타 답변 반영)
 
 SET FOREIGN_KEY_CHECKS = 1;
