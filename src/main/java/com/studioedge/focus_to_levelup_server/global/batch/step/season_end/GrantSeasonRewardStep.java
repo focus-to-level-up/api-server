@@ -6,7 +6,9 @@ import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepositor
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
 import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
 import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
+import com.studioedge.focus_to_levelup_server.domain.system.dao.AssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
+import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
 import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
 import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +43,7 @@ public class GrantSeasonRewardStep {
     private final MailRepository mailRepository;
     private final LeagueRepository leagueRepository;
     private final ObjectMapper objectMapper;
+    private final AssetRepository assetRepository;
 
     @Bean
     public Step grantSeasonReward() {
@@ -140,6 +143,8 @@ public class GrantSeasonRewardStep {
     private Mail createProfileBorderMail(Member member, Tier finalTier) {
         // SQL이나 Enum에 정의된 한글 에셋 이름 (예: "골드 프로필 테두리")
         String assetName = Tier.getBorderAssetName(finalTier);
+        Asset asset = assetRepository.findByName(assetName)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 에셋입니다: " + assetName));
 
         String title = finalTier.name() + " 테두리 보상";
         String description = String.format("%s 티어 달성 기념으로\n[%s]를 드립니다.", finalTier.name(), assetName);
@@ -153,6 +158,8 @@ public class GrantSeasonRewardStep {
                 .popupTitle("시즌 종료 특별 보상")
                 .popupContent(finalTier.name() + " 티어 달성을 축하하며 특별한 테두리를 드립니다!")
                 .reward(0) // 재화 보상 없음 (아이템 지급은 수령 시 처리)
+                .assetName(assetName)
+                .profileBorderImageUrl(asset.getAssetUrl())
                 .expiredAt(LocalDate.now().plusDays(7))
                 .build();
     }

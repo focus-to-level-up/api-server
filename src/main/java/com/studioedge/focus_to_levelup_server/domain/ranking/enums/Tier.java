@@ -74,7 +74,7 @@ public enum Tier {
             case SILVER: return "실버 프로필 테두리";
             case GOLD: return "골드 프로필 테두리";
             case PLATINUM: return "플레티넘 프로필 테두리";
-            case DIAMOND: return "애매랄드 프로필 테두리"; // SQL 데이터 반영 (Diamond -> Emerald)
+            case DIAMOND: return "에메랄드 프로필 테두리";
             case MASTER: return "마스터 프로필 테두리";
             default: return "브론즈 프로필 테두리";
         }
