@@ -180,7 +180,8 @@ public class MemberInfo {
         if (updateImage.getAsset().getType() != AssetType.CHARACTER_PROFILE_IMAGE) {
             throw new IllegalArgumentException("제공된 에셋이 프로필 이미지가 아닙니다.");
         }
-        if (updateBorder.getAsset().getType() != AssetType.CHARACTER_PROFILE_BORDER) {
+        if (updateBorder.getAsset().getType() != AssetType.CHARACTER_PROFILE_BORDER &&
+                updateBorder.getAsset().getType() != AssetType.TIER_BORDER) {
             throw new IllegalArgumentException("제공된 에셋이 테두리가 아닙니다.");
         }
         this.profileMessage = profileMessage;

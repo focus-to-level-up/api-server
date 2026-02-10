@@ -138,7 +138,7 @@ INSERT INTO assets (type, name, asset_url) VALUES
     ('TIER_BORDER', '실버 프로필 테두리', CONCAT(@s3_border_base, 'silver_profile_border.png')),
     ('TIER_BORDER', '골드 프로필 테두리', CONCAT(@s3_border_base, 'gold_profile_border.png')),
     ('TIER_BORDER', '플레티넘 프로필 테두리', CONCAT(@s3_border_base, 'platinum_profile_border.png')),
-    ('TIER_BORDER', '에메랄드 프로필 테두리', CONCAT(@s3_border_base, 'emerald_profile_border.png')),
+    ('TIER_BORDER', '다이아 프로필 테두리', CONCAT(@s3_border_base, 'diamond_profile_border.png')),
     ('TIER_BORDER', '마스터 프로필 테두리', CONCAT(@s3_border_base, 'master_profile_border.png'));
 
 -- -----------------------------------------------------
