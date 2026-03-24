@@ -1,0 +1,42 @@
+package com.studioedge.batch.job;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Slf4j
+@Configuration
+@RequiredArgsConstructor
+public class SeasonEndJobBatch {
+    /**
+     * 1. 주간 통계 / 주간 과목 시간 통계 집계
+     * 2. 주간 보상 지급
+     * 3. 길드 주간 보상 지급
+     * 4. 시즌 보상 지급
+     * 5. 새 시즌 생성 및 전원 브론즈 배치
+     * */
+
+    private final JobRepository jobRepository;
+
+    @Bean
+    public Job seasonEndJob(Step updateWeeklyStat,
+                            Step grantWeeklyReward,
+                            Step grantGuildWeeklyReward,
+                            Step grantSeasonReward,
+                            Step startNewSeason,
+                            Step resetWeeklyAllData) {
+        return new JobBuilder("seasonEndJob", jobRepository)
+                .start(updateWeeklyStat)
+                .next(grantWeeklyReward)
+                .next(grantGuildWeeklyReward)
+                .next(grantSeasonReward)
+                .next(startNewSeason)
+                .next(resetWeeklyAllData)
+                .build();
+    }
+}

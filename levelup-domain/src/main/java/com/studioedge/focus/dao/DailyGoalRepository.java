@@ -1,0 +1,94 @@
+package com.studioedge.focus.dao;
+
+import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminDailyStatResponse;
+import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+public interface DailyGoalRepository extends JpaRepository<DailyGoal, Long> {
+    interface MonthlyFocusStat {
+        Long getMemberId();
+        Integer getTotalSeconds();
+    }
+
+    /**
+     * 특정 유저의 특정 날짜 DailyGoal 조회
+     */
+    @Query("SELECT dg FROM DailyGoal dg WHERE dg.member.id = :memberId AND dg.dailyGoalDate = :dailyGoalDate")
+    Optional<DailyGoal> findByMemberIdAndDailyGoalDate(@Param("memberId") Long memberId,
+                                                       @Param("dailyGoalDate") LocalDate dailyGoalDate);
+
+    // 방법 1: findFirst 사용 (가장 직관적)
+    // 해석: MemberId로 찾아서, DailyGoalDate 기준으로 내림차순 정렬하고, 첫 번째 것만 가져와라.
+    Optional<DailyGoal> findFirstByMemberIdOrderByDailyGoalDateDesc(Long memberId);
+
+    List<DailyGoal> findAllByMemberIdInAndDailyGoalDate(List<Long> memberIds, LocalDate dailyGoalDate);
+
+    @Query("SELECT dg FROM DailyGoal dg WHERE dg.member.id = :memberId AND dg.dailyGoalDate BETWEEN :startDate AND :endDate")
+    List<DailyGoal> findAllByMemberIdAndDailyGoalDateBetween(
+            @Param("memberId") Long memberId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @Query("SELECT dg.member.id as memberId, SUM(dg.currentSeconds) as totalSeconds " +
+            "FROM DailyGoal dg " +
+            "WHERE dg.member.id IN :memberIds " +
+            "AND dg.dailyGoalDate BETWEEN :startDate AND :endDate " +
+            "GROUP BY dg.member.id")
+    List<MonthlyFocusStat> findMonthlyStatsByMemberIds(
+            @Param("memberIds") List<Long> memberIds,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    // 1. 내 오늘 공부 시간 조회 (없을 수도 있음 -> Optional)
+    @Query("SELECT d.currentSeconds FROM DailyGoal d WHERE d.member.id = :memberId AND d.dailyGoalDate = :date")
+    Optional<Integer> findFocusTimeByMemberIdAndDate(@Param("memberId") Long memberId, @Param("date") LocalDate date);
+
+    // 2. 나보다 공부 시간이 많은 '기록'의 개수 조회
+    // (DailyGoal이 없는 유저는 0초이므로 이 카운트에 포함되지 않음 -> 정확함)
+    @Query("SELECT COUNT(d) FROM DailyGoal d WHERE d.dailyGoalDate = :date AND d.currentSeconds > :myFocusTime")
+    long countByDateAndFocusTimeGreaterThan(@Param("date") LocalDate date, @Param("myFocusTime") Integer myFocusTime);
+
+    // === Admin 통계용 쿼리 ===
+
+    /**
+     * 일간: 특정 날짜의 유저별 집중시간(초) 목록 조회
+     */
+    @Query("SELECT dg.currentSeconds FROM DailyGoal dg WHERE dg.dailyGoalDate = :date")
+    List<Integer> findAllDailySecondsByDate(@Param("date") LocalDate date);
+
+    /**
+     * 주간: 날짜 범위의 유저별 집중시간(초) 합계 목록 조회
+     */
+    @Query("SELECT SUM(dg.currentSeconds) FROM DailyGoal dg " +
+            "WHERE dg.dailyGoalDate BETWEEN :startDate AND :endDate " +
+            "GROUP BY dg.member.id")
+    List<Long> findAllWeeklySecondsBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT AVG(d.currentSeconds) FROM DailyGoal d WHERE d.member.id = :memberId")
+    Double getAverageFocusTimeByMemberId(@Param("memberId") Long memberId);
+
+    @Query("SELECT AVG(d.maxConsecutiveSeconds) FROM DailyGoal d WHERE d.member.id = :memberId")
+    Double getAverageMaxConsecutiveFocusTimeByMemberId(@Param("memberId") Long memberId);
+
+    @Query("SELECT new com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminDailyStatResponse(" +
+            "d.dailyGoalDate, " +
+            "d.currentSeconds, " +
+            "d.maxConsecutiveSeconds) " +
+            "FROM DailyGoal d " +
+            "WHERE d.member.id = :memberId " +
+            "AND d.dailyGoalDate BETWEEN :startDate AND :endDate " +
+            "ORDER BY d.dailyGoalDate ASC")
+    List<AdminDailyStatResponse> findDailyStatsByMemberIdAndDateRange(
+            @Param("memberId") Long memberId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+}

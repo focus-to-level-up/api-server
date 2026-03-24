@@ -1,0 +1,66 @@
+package com.studioedge.ranking.repository;
+
+import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
+import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
+import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Season;
+import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+public interface RankingRepository extends JpaRepository<Ranking, Long> {
+    Optional<Ranking> findByMember(Member member);
+
+    Optional<Ranking> findByMemberId(Long memberId);
+
+    List<Ranking> findAllByLeague(League league);
+
+    @Query("SELECT r FROM Ranking r JOIN FETCH r.member JOIN FETCH r.league WHERE r.league.endDate = :endDate")
+    Page<Ranking> findAllByLeagueEndDate(@Param("endDate") LocalDate endDate, Pageable pageable);
+
+    @Query(value = "SELECT r, dg FROM Ranking r " +
+            "JOIN FETCH r.member m " +
+            "JOIN FETCH r.league l " +
+            "LEFT JOIN FETCH m.memberInfo mi " +
+            "LEFT JOIN FETCH mi.profileImage mpi " +
+            "LEFT JOIN FETCH mpi.asset " +
+            "LEFT JOIN DailyGoal dg ON dg.member = m AND dg.dailyGoalDate = :date " +
+            "WHERE l.season = :season AND l = :league " +
+            "ORDER BY m.currentLevel DESC, m.currentExp DESC")
+    List<Object[]> findRankingsWithDailyGoal(
+            @Param("season") Season season,
+            @Param("league") League league,
+            @Param("date") LocalDate date
+    );
+
+    @Query("SELECT r FROM Ranking r " +
+            "JOIN FETCH r.member m " +          // Member 정보 즉시 로딩
+            "JOIN r.league l " +                // League 조인
+            "WHERE l.season = :season " +       // 시즌 조건
+            "AND r.tier = :tier " +             // 티어 조건
+            "ORDER BY m.currentLevel DESC, m.currentExp DESC") // 점수(레벨, 경험치) 정렬
+    List<Ranking> findAllBySeasonAndTierOrderByScoreDesc(
+            @Param("season") Season season,
+            @Param("tier") Tier tier
+    );
+
+    @Query(value = "SELECT r FROM Ranking r " +
+            "JOIN FETCH r.member m " +
+            "WHERE r.league = :league " +
+            "ORDER BY m.currentLevel DESC, m.currentExp DESC")
+    List<Ranking> findAllBySortedLeague(League league);
+
+    void deleteByMemberId(Long memberId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("DELETE FROM Ranking r WHERE r.league.id IN :leagueIds")
+    void deleteByLeagueIdIn(@Param("leagueIds") List<Long> leagueIds);
+}

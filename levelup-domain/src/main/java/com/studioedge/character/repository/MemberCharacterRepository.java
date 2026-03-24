@@ -1,0 +1,57 @@
+package com.studioedge.character.repository;
+
+import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface MemberCharacterRepository extends JpaRepository<MemberCharacter, Long> {
+
+    /**
+     * 유저의 모든 캐릭터 조회 (Character fetch join)
+     */
+    @Query("SELECT mc FROM MemberCharacter mc JOIN FETCH mc.character WHERE mc.member.id = :memberId")
+    List<MemberCharacter> findAllByMemberIdWithCharacter(@Param("memberId") Long memberId);
+
+    /**
+     * 유저의 대표 캐릭터 조회 (fetch join 필요)
+     */
+    @Query("SELECT mc FROM MemberCharacter mc JOIN FETCH mc.character WHERE mc.member.id = :memberId AND mc.isDefault = true")
+    Optional<MemberCharacter> findByMemberIdAndIsDefaultTrue(@Param("memberId") Long memberId);
+
+    /**
+     * 유저가 대표 캐릭터를 설정했는지 확인
+     */
+    @Query("SELECT COUNT(mc) > 0 FROM MemberCharacter mc WHERE mc.member.id = :memberId AND mc.isDefault = true")
+    boolean existsByMemberIdAndIsDefaultTrue(@Param("memberId") Long memberId);
+
+    /**
+     * 유저가 특정 캐릭터를 소유하고 있는지 확인
+     */
+    boolean existsByMemberIdAndCharacterId(Long memberId, Long characterId);
+
+    /**
+     * 유저의 특정 캐릭터 조회 (fetch join 필요)
+     */
+    @Query("SELECT mc FROM MemberCharacter mc JOIN FETCH mc.character WHERE mc.member.id = :memberId AND mc.character.id = :characterId")
+    Optional<MemberCharacter> findByMemberIdAndCharacterId(@Param("memberId") Long memberId, @Param("characterId") Long characterId);
+
+    Optional<MemberCharacter> findByMemberIdAndIsDefault(Long memberId, Boolean isDefault);
+
+    /**
+     * 특정 유저의 특정 층수에 배치된 캐릭터 개수 조회
+     */
+    @Query("SELECT COUNT(mc) FROM MemberCharacter mc WHERE mc.member.id = :memberId AND mc.floor = :floor")
+    Long countByMemberIdAndFloor(@Param("memberId") Long memberId, @Param("floor") Integer floor);
+
+    @Query("SELECT mc FROM MemberCharacter mc " +
+            "JOIN FETCH mc.member m " +               // Member 정보 필요
+            "JOIN FETCH mc.character c " +            // Character 정보 필요
+            "LEFT JOIN FETCH c.characterAssets ca " + // 캐릭터가 가진 에셋 목록 필요
+            "LEFT JOIN FETCH ca.asset a " +           // 실제 에셋 상세 정보 필요
+            "WHERE mc.id = :memberCharacterId")
+    Optional<MemberCharacter> findByIdWithAssets(@Param("memberCharacterId") Long memberCharacterId);
+}
