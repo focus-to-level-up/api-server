@@ -1,7 +1,7 @@
 package com.studioedge.guild.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
+import com.studioedge.common.entity.BaseEntity;
+import com.studioedge.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -45,7 +45,8 @@ public class GuildBoost extends BaseEntity {
     private Boolean isActive = true; // 활성화 여부
 
     @Builder
-    public GuildBoost(Guild guild, Member member, LocalDate startDate, LocalDate endDate, Boolean isActive) {
+    public GuildBoost(Guild guild, Member member, LocalDate startDate,
+                      LocalDate endDate, Boolean isActive) {
         this.guild = guild;
         this.member = member;
         this.startDate = startDate;

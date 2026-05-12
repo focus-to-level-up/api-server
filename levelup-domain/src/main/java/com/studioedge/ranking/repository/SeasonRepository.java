@@ -1,6 +1,6 @@
 package com.studioedge.ranking.repository;
 
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Season;
+import com.studioedge.ranking.entity.Season;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

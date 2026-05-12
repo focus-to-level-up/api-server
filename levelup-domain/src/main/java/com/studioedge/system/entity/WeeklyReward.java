@@ -1,8 +1,7 @@
 package com.studioedge.system.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
+import com.studioedge.common.entity.BaseEntity;
+import com.studioedge.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -47,7 +46,7 @@ public class WeeklyReward extends BaseEntity {
 
     @Builder
     public WeeklyReward(Member member, Character lastCharacter, String lastCharacterImageUrl,
-                        Integer lastLevel,  Integer evolution) {
+                        Integer lastLevel, Integer evolution) {
         this.member = member;
         this.lastCharacter = lastCharacter;
         this.lastLevel = lastLevel;

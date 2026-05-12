@@ -1,6 +1,6 @@
 package com.studioedge.item.repository;
 
-import com.studioedge.focus_to_levelup_server.domain.store.entity.MemberItem;
+import com.studioedge.item.entity.MemberItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

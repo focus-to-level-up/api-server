@@ -1,6 +1,9 @@
 package com.studioedge.focus.exception;
 
-import com.studioedge.focus_to_levelup_server.global.exception.CommonException;
+import com.studioedge.exception.CommonException;
 
 public class SubjectNotFoundException extends CommonException {
+    public SubjectNotFoundException() {
+        super(404, "해당 과목을 찾을 수 없습니다.");
+    }
 }

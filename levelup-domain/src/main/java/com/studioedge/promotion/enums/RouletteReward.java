@@ -1,6 +1,6 @@
 package com.studioedge.promotion.enums;
 
-import com.studioedge.focus_to_levelup_server.global.common.enums.RewardType;
+import com.studioedge.common.enums.RewardType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

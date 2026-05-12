@@ -1,6 +1,6 @@
 package com.studioedge.item.repository;
 
-import com.studioedge.focus_to_levelup_server.domain.store.entity.ItemDetail;
+import com.studioedge.item.entity.ItemDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

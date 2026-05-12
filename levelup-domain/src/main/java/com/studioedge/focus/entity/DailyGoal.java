@@ -1,8 +1,7 @@
 package com.studioedge.focus.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
-import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
+import com.studioedge.common.entity.BaseEntity;
+import com.studioedge.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -15,6 +14,8 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+
+import static com.studioedge.common.policy.ServiceTimePolicy.*;
 
 @Entity
 @Table(
@@ -123,7 +124,7 @@ public class DailyGoal extends BaseEntity {
      * 예: 23:00에 시작 후 01:00에 다시 시작하면, 23:00이 더 빠른 시간입니다.
      */
     public void updateEarliestStartTime(LocalTime startTime) {
-        if (this.earliestStartTime == null || AppConstants.toServiceMinutes(startTime) < AppConstants.toServiceMinutes(this.earliestStartTime)) {
+        if (this.earliestStartTime == null || toServiceMinutes(startTime) < toServiceMinutes(this.earliestStartTime)) {
             this.earliestStartTime = startTime;
         }
     }
@@ -135,7 +136,7 @@ public class DailyGoal extends BaseEntity {
      * 예: 23:30에 종료 후 01:30에 다시 종료하면, 01:30이 더 늦은 시간입니다.
      */
     public void updateLatestEndTime(LocalTime endTime) {
-        if (this.latestEndTime == null || AppConstants.isServiceTimeAfter(endTime, this.latestEndTime)) {
+        if (this.latestEndTime == null || isServiceTimeAfter(endTime, this.latestEndTime)) {
             this.latestEndTime = endTime;
         }
     }

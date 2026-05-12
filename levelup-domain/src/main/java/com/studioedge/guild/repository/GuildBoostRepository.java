@@ -1,6 +1,6 @@
 package com.studioedge.guild.repository;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildBoost;
+import com.studioedge.guild.entity.GuildBoost;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

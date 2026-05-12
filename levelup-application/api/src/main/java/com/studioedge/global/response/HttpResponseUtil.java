@@ -1,7 +1,6 @@
 package com.studioedge.global.response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,7 +1,7 @@
 package com.studioedge.mail.repository;
 
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
+import com.studioedge.mail.entity.Mail;
+import com.studioedge.mail.enums.MailType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

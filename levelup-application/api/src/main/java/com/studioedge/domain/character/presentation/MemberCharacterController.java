@@ -1,17 +1,18 @@
 package com.studioedge.domain.character.presentation;
 
-import com.studioedge.focus_to_levelup_server.domain.character.dto.request.SetDefaultCharacterRequest;
-import com.studioedge.focus_to_levelup_server.domain.character.dto.response.ClaimTrainingRewardResponse;
-import com.studioedge.focus_to_levelup_server.domain.character.dto.response.MemberCharacterListResponse;
-import com.studioedge.focus_to_levelup_server.domain.character.dto.response.MemberCharacterResponse;
-import com.studioedge.focus_to_levelup_server.domain.character.dto.response.TrainingRewardResponse;
-import com.studioedge.focus_to_levelup_server.domain.character.service.EvolveCharacterService;
-import com.studioedge.focus_to_levelup_server.domain.character.service.MemberCharacterService;
-import com.studioedge.focus_to_levelup_server.domain.character.service.TrainingRewardService;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.common.enums.Rarity;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
-import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
+import com.studioedge.character.enums.Rarity;
+import com.studioedge.domain.character.business.MemberCharacterCommandService;
+import com.studioedge.domain.character.business.MemberCharacterQueryService;
+import com.studioedge.domain.character.business.TrainingRewardCommandService;
+import com.studioedge.domain.character.business.TrainingRewardQueryService;
+import com.studioedge.domain.character.request.SetDefaultCharacterRequest;
+import com.studioedge.domain.character.response.ClaimTrainingRewardResponse;
+import com.studioedge.domain.character.response.MemberCharacterListResponse;
+import com.studioedge.domain.character.response.MemberCharacterResponse;
+import com.studioedge.domain.character.response.TrainingRewardResponse;
+import com.studioedge.global.response.HttpResponseUtil;
+import com.studioedge.member.entity.Member;
+import com.studioedge.response.CommonResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,9 +28,10 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class MemberCharacterController {
 
-    private final MemberCharacterService memberCharacterService;
-    private final TrainingRewardService trainingRewardService;
-    private final EvolveCharacterService evolveCharacterService;
+    private final MemberCharacterQueryService memberCharacterQueryService;
+    private final MemberCharacterCommandService memberCharacterCommandService;
+    private final TrainingRewardCommandService trainingRewardCommandService;
+    private final TrainingRewardQueryService trainingRewardQueryService;
 
     @Operation(summary = "보유 캐릭터 목록 조회", description = "내가 보유한 캐릭터를 조회합니다. 등급별 필터링이 가능합니다.")
     @GetMapping
@@ -38,7 +40,7 @@ public class MemberCharacterController {
             @Parameter(description = "캐릭터 등급 (null이면 전체 조회)", required = false)
             @RequestParam(required = false) Rarity rarity
     ) {
-        MemberCharacterListResponse response = memberCharacterService.getAllMemberCharacters(member.getId(), rarity);
+        MemberCharacterListResponse response = memberCharacterQueryService.getAllMemberCharacters(member.getId(), rarity);
         return HttpResponseUtil.ok(response);
     }
 
@@ -49,7 +51,7 @@ public class MemberCharacterController {
             @Parameter(description = "맴버 pk")
             @RequestParam(required = false) Long memberId
     ) {
-        MemberCharacterResponse response = memberCharacterService.getDefaultCharacter(memberId == null ? member.getId() : memberId);
+        MemberCharacterResponse response = memberCharacterQueryService.getDefaultCharacter(memberId == null ? member.getId() : memberId);
         return HttpResponseUtil.ok(response);
     }
 
@@ -62,7 +64,7 @@ public class MemberCharacterController {
             @Parameter(description = "가속하기 여부", required = true)
             @RequestParam Boolean doFastEvolution
     ) {
-        evolveCharacterService.evolveCharacter(member.getId(), memberCharacterId, doFastEvolution);
+        memberCharacterCommandService.evolveCharacter(member.getId(), memberCharacterId, doFastEvolution);
         return HttpResponseUtil.ok(null);
     }
 
@@ -72,7 +74,7 @@ public class MemberCharacterController {
             @AuthenticationPrincipal Member member,
             @Valid @RequestBody SetDefaultCharacterRequest request
     ) {
-        MemberCharacterResponse response = memberCharacterService.setDefaultCharacter(member.getId(), request);
+        MemberCharacterResponse response = memberCharacterCommandService.setDefaultCharacter(member.getId(), request);
         return HttpResponseUtil.updated(response);
     }
 
@@ -81,7 +83,7 @@ public class MemberCharacterController {
     public ResponseEntity<CommonResponse<TrainingRewardResponse>> getTrainingReward(
             @AuthenticationPrincipal Member member
     ) {
-        int accumulatedReward = trainingRewardService.getAccumulatedReward(member.getId());
+        int accumulatedReward = trainingRewardQueryService.getAccumulatedReward(member.getId());
         return HttpResponseUtil.ok(TrainingRewardResponse.of(accumulatedReward));
     }
 
@@ -90,8 +92,8 @@ public class MemberCharacterController {
     public ResponseEntity<CommonResponse<ClaimTrainingRewardResponse>> claimTrainingReward(
             @AuthenticationPrincipal Member member
     ) {
-        int claimedDiamond = trainingRewardService.claimTrainingReward(member.getId());
-        int remainingReward = trainingRewardService.getAccumulatedReward(member.getId());
+        int claimedDiamond = trainingRewardCommandService.claimTrainingReward(member.getId());
+        int remainingReward = trainingRewardQueryService.getAccumulatedReward(member.getId());
         return HttpResponseUtil.ok(ClaimTrainingRewardResponse.of(claimedDiamond, remainingReward));
     }
 }

@@ -1,6 +1,6 @@
 package com.studioedge.character.repository;
 
-import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
+import com.studioedge.character.entity.MemberCharacter;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

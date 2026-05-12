@@ -1,8 +1,8 @@
 package com.studioedge.guild.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
+import com.studioedge.common.entity.BaseEntity;
+import com.studioedge.guild.enums.GuildRole;
+import com.studioedge.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

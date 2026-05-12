@@ -1,15 +1,13 @@
 package com.studioedge.member.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.character.exception.InsufficientDiamondException;
-import com.studioedge.focus_to_levelup_server.domain.member.dto.UpdateCategoryRequest;
-import com.studioedge.focus_to_levelup_server.domain.member.dto.UpdateSchoolRequest;
-import com.studioedge.focus_to_levelup_server.domain.member.enums.Gender;
-import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
-import com.studioedge.focus_to_levelup_server.domain.store.exception.InsufficientGoldException;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.MemberAsset;
-import com.studioedge.focus_to_levelup_server.global.common.enums.AssetType;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
+import com.studioedge.character.exception.InsufficientDiamondException;
+import com.studioedge.common.enums.AssetType;
+import com.studioedge.common.enums.CategoryMainType;
+import com.studioedge.common.enums.CategorySubType;
+import com.studioedge.item.exception.InsufficientGoldException;
+import com.studioedge.member.enums.Gender;
+import com.studioedge.ranking.enums.Tier;
+import com.studioedge.system.entity.MemberAsset;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -140,6 +138,7 @@ public class MemberInfo {
     public int claimTrainingReward() {
         int diamondReward = this.trainingReward / 60;
         int remainingMinutes = this.trainingReward % 60;
+
         this.diamond += diamondReward;
         this.trainingReward = remainingMinutes;
         return diamondReward;

@@ -1,7 +1,6 @@
 package com.studioedge.member.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.member.dto.MemberSettingDto;
-import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
+import com.studioedge.ranking.enums.Tier;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -71,12 +70,13 @@ public class MemberSetting {
         this.member = member;
     }
 
-    public void updateSetting(MemberSettingDto request) {
-        this.alarmOn = request.alarmOn();
-        this.isPomodoro = request.isPomodoro();
-        this.isAIPlanner = request.isAIPlanner();
-        this.isSubscriptionMessageBlocked = request.isSubscriptionMessageBlocked();
-        this.totalStatColor = request.totalStatColor();
+    public void updateSetting(boolean alarmOn, boolean isPomodoro, boolean IsAIPlanner,
+                              boolean isSubscriptionMessageBlocked, String totalStatColor) {
+        this.alarmOn = alarmOn;
+        this.isPomodoro = isPomodoro;
+        this.isAIPlanner = IsAIPlanner;
+        this.isSubscriptionMessageBlocked = isSubscriptionMessageBlocked;
+        this.totalStatColor = totalStatColor;
     }
 
     public void updateTotalStatColor(String color) {

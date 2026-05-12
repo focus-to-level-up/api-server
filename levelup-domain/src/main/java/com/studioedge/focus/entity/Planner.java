@@ -1,8 +1,7 @@
 package com.studioedge.focus.entity;
 
-import com.studioedge.domain.focus.entity.Subject;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
+import com.studioedge.common.entity.BaseEntity;
+import com.studioedge.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -40,8 +39,8 @@ public class Planner extends BaseEntity {
     private LocalTime endTime;
 
     @Builder
-    public Planner(Member member, LocalDate date,
-                   Subject subject, LocalTime startTime, LocalTime endTime) {
+    public Planner(Member member, LocalDate date, Subject subject,
+                   LocalTime startTime, LocalTime endTime) {
         this.member = member;
         this.date = date;
         this.subject = subject;

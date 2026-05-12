@@ -1,15 +1,15 @@
 package com.studioedge.domain.character.presentation;
 
-import com.studioedge.focus_to_levelup_server.domain.character.dto.request.CharacterPurchaseRequest;
-import com.studioedge.focus_to_levelup_server.domain.character.dto.response.CharacterListResponse;
-import com.studioedge.focus_to_levelup_server.domain.character.dto.response.CharacterResponse;
-import com.studioedge.focus_to_levelup_server.domain.character.dto.response.MemberCharacterResponse;
-import com.studioedge.focus_to_levelup_server.domain.character.service.CharacterPurchaseService;
-import com.studioedge.focus_to_levelup_server.domain.character.service.CharacterQueryService;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.common.enums.Rarity;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
-import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
+import com.studioedge.character.enums.Rarity;
+import com.studioedge.domain.character.business.MemberCharacterCommandService;
+import com.studioedge.domain.character.business.CharacterQueryService;
+import com.studioedge.domain.character.request.CharacterPurchaseRequest;
+import com.studioedge.domain.character.response.CharacterListResponse;
+import com.studioedge.domain.character.response.CharacterResponse;
+import com.studioedge.domain.character.response.MemberCharacterResponse;
+import com.studioedge.global.response.HttpResponseUtil;
+import com.studioedge.member.entity.Member;
+import com.studioedge.response.CommonResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class CharacterController {
 
     private final CharacterQueryService characterQueryService;
-    private final CharacterPurchaseService characterPurchaseService;
+    private final MemberCharacterCommandService memberCharacterCommandService;
 
     @Operation(summary = "캐릭터 목록 조회", description = "전체 또는 등급별 캐릭터 목록을 조회합니다.")
     @GetMapping
@@ -54,7 +54,7 @@ public class CharacterController {
             @AuthenticationPrincipal Member member,
             @Valid @RequestBody CharacterPurchaseRequest request
     ) {
-        MemberCharacterResponse response = characterPurchaseService.purchaseCharacter(member.getId(), request);
+        MemberCharacterResponse response = memberCharacterCommandService.purchaseCharacter(member.getId(), request);
         return HttpResponseUtil.created(response);
     }
 }

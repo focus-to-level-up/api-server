@@ -1,6 +1,6 @@
 package com.studioedge.payment.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.ProductType;
+import com.studioedge.payment.enums.ProductType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

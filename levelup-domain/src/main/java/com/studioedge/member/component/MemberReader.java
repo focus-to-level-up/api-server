@@ -18,7 +18,6 @@ public class MemberReader {
 
     public Member findOne(Long memberId) {
         log.info("Finding member with ID: {}", memberId);
-        return memberRepository.findById(memberId)
-                .orElseThrow(MemberNotFoundException::new);
+        return memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
     }
 }

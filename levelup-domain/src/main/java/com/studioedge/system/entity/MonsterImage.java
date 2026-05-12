@@ -1,7 +1,6 @@
 package com.studioedge.system.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Monster;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.MonsterImageType;
+import com.studioedge.system.enums.MonsterImageType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

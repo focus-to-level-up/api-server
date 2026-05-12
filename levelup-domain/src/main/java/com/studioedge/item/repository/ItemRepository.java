@@ -1,7 +1,7 @@
 package com.studioedge.item.repository;
 
-import com.studioedge.focus_to_levelup_server.domain.store.entity.Item;
-import com.studioedge.focus_to_levelup_server.domain.store.enums.ItemType;
+import com.studioedge.item.entity.Item;
+import com.studioedge.item.enums.ItemType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

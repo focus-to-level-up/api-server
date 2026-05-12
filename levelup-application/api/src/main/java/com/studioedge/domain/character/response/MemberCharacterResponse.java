@@ -1,9 +1,9 @@
 package com.studioedge.domain.character.response;
 
-import com.studioedge.focus_to_levelup_server.domain.character.entity.CharacterImage;
-import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
-import com.studioedge.focus_to_levelup_server.domain.character.enums.CharacterImageType;
-import com.studioedge.focus_to_levelup_server.global.common.enums.Rarity;
+import com.studioedge.character.entity.CharacterImage;
+import com.studioedge.character.entity.MemberCharacter;
+import com.studioedge.character.enums.CharacterImageType;
+import com.studioedge.character.enums.Rarity;
 import lombok.Builder;
 
 import java.util.List;

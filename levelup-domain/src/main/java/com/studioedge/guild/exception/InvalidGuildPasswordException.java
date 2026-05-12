@@ -1,6 +1,9 @@
 package com.studioedge.guild.exception;
 
-import com.studioedge.focus_to_levelup_server.global.exception.CommonException;
+import com.studioedge.exception.CommonException;
 
 public class InvalidGuildPasswordException extends CommonException {
+    public InvalidGuildPasswordException() {
+        super(400, "길드 비밀번호가 일치하지 않습니다.");
+    }
 }

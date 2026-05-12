@@ -1,6 +1,9 @@
 package com.studioedge.focus.exception;
 
-import com.studioedge.focus_to_levelup_server.global.exception.CommonException;
+import com.studioedge.exception.CommonException;
 
 public class TodoNotFoundException extends CommonException {
+    public TodoNotFoundException() {
+        super(404, "해당 할일을 찾을 수 없습니다.");
+    }
 }

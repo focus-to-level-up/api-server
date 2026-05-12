@@ -1,6 +1,0 @@
-package com.studioedge.system.exception;
-
-import com.studioedge.focus_to_levelup_server.global.exception.CommonException;
-
-public class CouponNotFoundException extends CommonException {
-}

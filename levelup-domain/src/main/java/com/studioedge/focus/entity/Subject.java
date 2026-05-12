@@ -1,8 +1,7 @@
 package com.studioedge.focus.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateSubjectRequest;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
+import com.studioedge.common.entity.BaseEntity;
+import com.studioedge.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -42,9 +41,9 @@ public class Subject extends BaseEntity {
         this.color = color;
     }
 
-    public void update(CreateSubjectRequest request) {
-        this.name = request.name();
-        this.color = request.color();
+    public void update(String name, String color) {
+        this.name = name;
+        this.color = color;
         this.deleteAt = null;
     }
 

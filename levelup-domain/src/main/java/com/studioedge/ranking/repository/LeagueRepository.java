@@ -1,9 +1,9 @@
 package com.studioedge.ranking.repository;
 
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Season;
-import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
+import com.studioedge.common.enums.CategoryMainType;
+import com.studioedge.ranking.entity.League;
+import com.studioedge.ranking.entity.Season;
+import com.studioedge.ranking.enums.Tier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

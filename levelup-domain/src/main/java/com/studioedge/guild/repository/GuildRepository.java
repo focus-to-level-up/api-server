@@ -1,7 +1,7 @@
 package com.studioedge.guild.repository;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
+import com.studioedge.common.enums.CategorySubType;
+import com.studioedge.guild.entity.Guild;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

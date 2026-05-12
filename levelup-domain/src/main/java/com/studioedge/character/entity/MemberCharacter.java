@@ -1,8 +1,9 @@
 package com.studioedge.character.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
+import com.studioedge.character.enums.Rarity;
+import com.studioedge.character.exception.CharacterEvolveException;
+import com.studioedge.common.entity.BaseEntity;
+import com.studioedge.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -34,7 +35,7 @@ public class MemberCharacter extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "character_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private com.studioedge.focus_to_levelup_server.domain.character.entity.Character character;
+    private Character character;
 
     @Column(nullable = false)
     private Integer currentLevel;
@@ -45,9 +46,8 @@ public class MemberCharacter extends BaseEntity {
     @Column(nullable = false)
     private Integer evolution;
 
-    // 캐릭터 위치 (1~9: 1층=1,2,3 / 2층=4,5,6 / 3층=7,8,9)
     @Column(nullable = false)
-    private Integer floor;
+    private Integer floor; // 캐릭터 위치 (1~9: 1층=1,2,3 / 2층=4,5,6 / 3층=7,8,9)
 
     @Column(nullable = false)
     private Integer remainReward; // 남아있는 훈련보상. 수령받으면 0개
@@ -56,7 +56,7 @@ public class MemberCharacter extends BaseEntity {
     private Boolean isDefault; // 대표 캐릭터 여부
 
     @Column(nullable = false)
-    private Integer defaultEvolution; // 대표 캐릭터의 진화단계 여부
+    private Integer defaultEvolution; // 대표 캐릭터의 진화단계
 
     @Builder
     public MemberCharacter(Member member, Character character, Integer floor)
@@ -72,6 +72,11 @@ public class MemberCharacter extends BaseEntity {
         this.defaultEvolution = 1;
     }
 
+    public void setAsDefault(Integer defaultEvolution) {
+        this.isDefault = true;
+        this.defaultEvolution = defaultEvolution;
+    }
+
     public void unsetAsDefault() {
         this.isDefault = false;
     }
@@ -84,13 +89,12 @@ public class MemberCharacter extends BaseEntity {
         }
     }
 
-    public void levelUp(Integer level) {
-        this.currentLevel += level;
+    public void jumpToLevel(int level) {
+        this.currentLevel = level;
     }
 
-    public void setAsDefault(Integer defaultEvolution) {
-        this.isDefault = true;
-        this.defaultEvolution = defaultEvolution;
+    public void levelUp(Integer level) {
+        this.currentLevel += level;
     }
 
     public int evolve() {
@@ -98,7 +102,20 @@ public class MemberCharacter extends BaseEntity {
         return this.evolution;
     }
 
-    public void jumpToLevel(int level) {
-        this.currentLevel = level;
+    public int getRequiredLevelForNextEvolution() {
+        return switch (this.character.getRarity()) {
+            case RARE -> (this.evolution == 1) ? 400 : 800;
+            case EPIC -> (this.evolution == 1) ? 800 : 1600;
+            case UNIQUE -> (this.evolution == 1) ? 1600 : 3200;
+            default -> throw new CharacterEvolveException();
+        };
+    }
+
+    /**
+     * 캐릭터의 시간당 훈련 보상 계산
+     */
+    public int calculateRewardPerHour() {
+        Rarity rarity = this.getCharacter().getRarity();
+        return rarity.getTrainingRewardPerHour(this.getEvolution());
     }
 }

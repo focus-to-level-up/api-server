@@ -1,7 +1,7 @@
 package com.studioedge.payment.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.WebhookEventStatus;
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.WebhookEventType;
+import com.studioedge.payment.enums.WebhookEventStatus;
+import com.studioedge.payment.enums.WebhookEventType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

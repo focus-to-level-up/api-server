@@ -16,4 +16,8 @@ public enum CategoryMainType {
     public String getCategoryName() {
         return this.key;
     }
+
+    public boolean isSchoolCategory() {
+        return this == ELEMENTARY_SCHOOL || this == MIDDLE_SCHOOL || this == HIGH_SCHOOL;
+    }
 }

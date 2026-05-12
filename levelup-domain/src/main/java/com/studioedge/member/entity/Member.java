@@ -1,12 +1,10 @@
 
 package com.studioedge.member.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
-import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
-import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;
-import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
-import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
+import com.studioedge.common.entity.BaseEntity;
+import com.studioedge.member.enums.MemberStatus;
+import com.studioedge.member.enums.SocialType;
+import com.studioedge.ranking.enums.Tier;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

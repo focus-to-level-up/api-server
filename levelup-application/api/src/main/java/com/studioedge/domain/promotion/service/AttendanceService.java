@@ -3,7 +3,7 @@ package com.studioedge.domain.promotion.service;
 import com.studioedge.promotion.entity.Attendance;
 import com.studioedge.promotion.enums.AttendanceCycleReward;
 import com.studioedge.promotion.exception.AttendanceAlreadyCheckedException;
-import com.studioedge.promotion.dao.AttendanceRepository;
+import com.studioedge.promotion.repository.AttendanceRepository;
 import com.studioedge.domain.promotion.response.AttendanceCheckResponse;
 import com.studioedge.domain.promotion.response.AttendanceInfoResponse;
 import com.studioedge.domain.payment.dao.SubscriptionRepository;

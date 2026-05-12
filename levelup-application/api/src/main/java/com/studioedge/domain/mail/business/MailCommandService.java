@@ -5,7 +5,7 @@ import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharact
 import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
 import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
 import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.character.service.CharacterCommandService;
+import com.studioedge.domain.character.business.MemberCharacterCommandService;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberAssetRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
@@ -41,7 +41,7 @@ public class MailCommandService {
     private final MemberCharacterRepository memberCharacterRepository;
     private final AssetRepository assetRepository;
     private final MemberAssetRepository memberAssetRepository;
-    private final CharacterCommandService characterCommandService;
+    private final MemberCharacterCommandService memberCharacterCommandService;
 
     /**
      * 우편 수락 및 보상 지급
@@ -249,7 +249,7 @@ public class MailCommandService {
                 .orElseThrow(InvalidMemberException::new);
 
         // 캐릭터 지급 (공통 서비스 사용 - 중복 체크 및 자동 층수 배치 포함)
-        MemberCharacter memberCharacter = characterCommandService.grantCharacter(member, character);
+        MemberCharacter memberCharacter = memberCharacterCommandService.grantCharacter(member, character);
 
         if (memberCharacter == null) {
             log.warn("Member {} already owns character {}, skipping reward", memberId, characterId);
@@ -306,7 +306,7 @@ public class MailCommandService {
         }
 
         // 캐릭터 지급 (공통 서비스 사용 - 중복 체크 및 자동 층수 배치 포함)
-        MemberCharacter memberCharacter = characterCommandService.grantCharacter(member, selectedCharacter);
+        MemberCharacter memberCharacter = memberCharacterCommandService.grantCharacter(member, selectedCharacter);
 
         // 우편 수령 처리
         mail.markAsReceived();

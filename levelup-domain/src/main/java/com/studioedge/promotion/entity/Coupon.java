@@ -1,8 +1,8 @@
 package com.studioedge.promotion.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
-import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
-import com.studioedge.focus_to_levelup_server.global.common.enums.RewardType;
+import com.studioedge.common.entity.BaseEntity;
+import com.studioedge.common.enums.RewardType;
+import com.studioedge.payment.enums.SubscriptionType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

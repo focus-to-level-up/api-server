@@ -1,9 +1,9 @@
 package com.studioedge.mail.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
-import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
+import com.studioedge.common.entity.BaseEntity;
+import com.studioedge.mail.enums.MailType;
+import com.studioedge.member.entity.Member;
+import com.studioedge.ranking.enums.Tier;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -93,9 +93,11 @@ public class Mail extends BaseEntity {
 
     @Builder
     public Mail(Member receiver, String senderName, MailType type, String title,
-                String description, String popupTitle, String popupContent, Integer reward, LocalDate expiredAt, Long paymentLogId,
+                String description, String popupTitle, String popupContent,
+                Integer reward, LocalDate expiredAt, Long paymentLogId,
                 Integer diamondAmount, Integer goldAmount,
-                Long characterId, String characterImageUrl, Tier profileBorderTier, String profileBorderImageUrl, Integer bonusTicketCount,
+                Long characterId, String characterImageUrl, Tier profileBorderTier,
+                String profileBorderImageUrl, Integer bonusTicketCount,
                 String assetName, String allowedRarity)
     {
         this.receiver = receiver;

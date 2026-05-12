@@ -1,7 +1,6 @@
 package com.studioedge.character.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
-import com.studioedge.focus_to_levelup_server.domain.character.enums.CharacterImageType;
+import com.studioedge.character.enums.CharacterImageType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

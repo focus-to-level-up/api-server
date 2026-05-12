@@ -1,7 +1,7 @@
 package com.studioedge.domain.character.response;
 
-import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
-import com.studioedge.focus_to_levelup_server.global.common.enums.Rarity;
+import com.studioedge.character.entity.Character;
+import com.studioedge.character.enums.Rarity;
 import lombok.Builder;
 
 import java.util.List;

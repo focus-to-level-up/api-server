@@ -1,6 +1,6 @@
 package com.studioedge.member.repository;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
+import com.studioedge.member.entity.MemberSetting;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

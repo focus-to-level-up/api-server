@@ -1,6 +1,6 @@
 package com.studioedge.stat.repository;
 
-import com.studioedge.focus_to_levelup_server.domain.stat.entity.MonthlySubjectStat;
+import com.studioedge.stat.entity.MonthlySubjectStat;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

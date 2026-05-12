@@ -1,10 +1,8 @@
 package com.studioedge.ranking.entity;
 
-import com.studioedge.domain.ranking.entity.Ranking;
-import com.studioedge.domain.ranking.entity.Season;
-import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
-import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
+import com.studioedge.common.entity.BaseEntity;
+import com.studioedge.common.enums.CategoryMainType;
+import com.studioedge.ranking.enums.Tier;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

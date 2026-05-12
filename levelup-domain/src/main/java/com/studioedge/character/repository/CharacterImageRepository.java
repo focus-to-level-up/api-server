@@ -1,7 +1,7 @@
 package com.studioedge.character.repository;
 
-import com.studioedge.focus_to_levelup_server.domain.character.entity.CharacterImage;
-import com.studioedge.focus_to_levelup_server.domain.character.enums.CharacterImageType;
+import com.studioedge.character.entity.CharacterImage;
+import com.studioedge.character.enums.CharacterImageType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

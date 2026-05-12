@@ -1,7 +1,7 @@
 package com.studioedge.event.entity;
 
-import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
+import com.studioedge.common.entity.BaseEntity;
+import com.studioedge.common.enums.CategoryMainType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

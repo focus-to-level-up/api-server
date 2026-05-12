@@ -1,6 +1,6 @@
 package com.studioedge.event.repository;
 
-import com.studioedge.focus_to_levelup_server.domain.event.entity.School;
+import com.studioedge.event.entity.School;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

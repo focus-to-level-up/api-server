@@ -1,7 +1,7 @@
 package com.studioedge.guild.repository;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
+import com.studioedge.guild.entity.GuildMember;
+import com.studioedge.guild.enums.GuildRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

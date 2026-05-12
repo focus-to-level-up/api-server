@@ -16,7 +16,7 @@ public class AdvertisementReader {
     private final AdvertisementRepository advertisementRepository;
 
     public Advertisement findOne(Long id) {
-        log.info("Advertisement find one");
+        log.info("Advertisement findOne: id={}", id);
         return advertisementRepository.findById(id)
                 .orElseThrow(AdvertisementNotFoundException::new);
     }

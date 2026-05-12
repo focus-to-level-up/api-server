@@ -1,7 +1,6 @@
 package com.studioedge.item.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.store.entity.ItemDetail;
-import com.studioedge.focus_to_levelup_server.domain.store.enums.ItemType;
+import com.studioedge.item.enums.ItemType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

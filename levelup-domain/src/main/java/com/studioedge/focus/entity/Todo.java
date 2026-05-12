@@ -1,8 +1,6 @@
 package com.studioedge.focus.entity;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateTodoRequest;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
-import com.studioedge.focus_to_levelup_server.global.common.BaseEntity;
+import com.studioedge.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -39,8 +37,8 @@ public class Todo extends BaseEntity {
         this.content = content;
     }
 
-    public void update(CreateTodoRequest request) {
-        this.content = request.content();
+    public void update(String content) {
+        this.content = content;
     }
 
     public boolean changeStatus() {

@@ -1,6 +1,6 @@
 package com.studioedge.domain.character.response;
 
-import com.studioedge.focus_to_levelup_server.domain.character.dto.response.MemberCharacterResponse;
+import com.studioedge.character.entity.MemberCharacter;
 import lombok.Builder;
 
 import java.util.List;
@@ -12,9 +12,13 @@ import java.util.List;
 public record MemberCharacterListResponse(
         List<MemberCharacterResponse> characters
 ) {
-    public static MemberCharacterListResponse from(List<MemberCharacterResponse> characters) {
+    public static MemberCharacterListResponse from(List<MemberCharacter> memberCharacters) {
+        List<MemberCharacterResponse> memberCharacterResponses = memberCharacters.stream()
+                .map(MemberCharacterResponse::from)
+                .toList();
+
         return MemberCharacterListResponse.builder()
-                .characters(characters)
+                .characters(memberCharacterResponses)
                 .build();
     }
 }

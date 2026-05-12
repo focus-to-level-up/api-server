@@ -1,7 +1,7 @@
 package com.studioedge.event.repository;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.PhoneNumberVerification;
+import com.studioedge.event.entity.PhoneNumberVerification;
+import com.studioedge.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

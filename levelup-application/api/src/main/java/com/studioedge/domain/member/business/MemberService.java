@@ -1,7 +1,7 @@
 package com.studioedge.domain.member.business;
 
-import com.studioedge.asset.exception.AssetUnauthorizedException;
-import com.studioedge.asset.repository.MemberAssetRepository;
+import com.studioedge.system.exception.AssetUnauthorizedException;
+import com.studioedge.system.repository.MemberAssetRepository;
 import com.studioedge.common.enums.CategoryMainType;
 import com.studioedge.common.enums.CategorySubType;
 import com.studioedge.domain.member.request.*;

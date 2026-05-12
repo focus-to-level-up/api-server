@@ -1,7 +1,7 @@
 package com.studioedge.domain.event.business;
 
 import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterRepository;
-import com.studioedge.focus_to_levelup_server.domain.character.service.CharacterCommandService;
+import com.studioedge.domain.character.business.MemberCharacterCommandService;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
 import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
@@ -40,7 +40,7 @@ public class PreRegistrationService {
     private final MemberRepository memberRepository;
     private final MemberInfoRepository memberInfoRepository;
     private final CharacterRepository characterRepository;
-    private final CharacterCommandService characterCommandService;
+    private final MemberCharacterCommandService memberCharacterCommandService;
     private final MailRepository mailRepository;
     private final PhoneNumberVerificationRepository phoneNumberVerificationRepository;
     private final RevenueCatApiService revenueCatApiService;
