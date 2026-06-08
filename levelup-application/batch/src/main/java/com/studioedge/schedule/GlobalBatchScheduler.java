@@ -3,6 +3,7 @@ package com.studioedge.schedule;
 import com.studioedge.ranking.repository.SeasonRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Profile({"dev", "prod"})
 public class GlobalBatchScheduler {
+
     private final JobLauncher jobLauncher;
     private final SeasonRepository seasonRepository;
 
@@ -43,7 +45,7 @@ public class GlobalBatchScheduler {
      * 순서: Daily -> Monthly(1일) -> SeasonEnd(시즌종료주) or Weekly(월요일)
      */
     @Scheduled(cron = "0 0 4 * * ?", zone = "Asia/Seoul")
-//    @SchedulerLock(name = "runBatchJobs", lockAtMostFor = "PT30M")
+    @SchedulerLock(name = "runBatchJobs", lockAtMostFor = "PT2H")
     public void runBatchJobs() {
         LocalDate today = LocalDate.now();
         LocalDateTime runTime = LocalDateTime.now();
