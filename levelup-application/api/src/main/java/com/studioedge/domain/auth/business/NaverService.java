@@ -1,10 +1,10 @@
 package com.studioedge.domain.auth.business;
 
 import com.google.gson.Gson;
-import com.studioedge.focus_to_levelup_server.domain.auth.dto.NaverTokenResponse;
-import com.studioedge.focus_to_levelup_server.domain.auth.dto.NaverUserInfo;
-import com.studioedge.focus_to_levelup_server.domain.auth.exception.InvalidSocialTokenException;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.domain.auth.dto.NaverTokenResponse;
+import com.studioedge.domain.auth.dto.NaverUserInfo;
+import com.studioedge.domain.auth.exception.InvalidSocialTokenException;
+import com.studioedge.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

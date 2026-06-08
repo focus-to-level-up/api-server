@@ -1,8 +1,8 @@
 package com.studioedge.domain.mail.response;
 
 import com.studioedge.domain.system.dto.response.CharacterRewardInfo;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.AssetRewardInfo;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.SubscriptionInfo;
+import com.studioedge.domain.system.dto.response.AssetRewardInfo;
+import com.studioedge.domain.mail.response.SubscriptionInfo;
 import lombok.Builder;
 
 /**

@@ -1,16 +1,16 @@
 package com.studioedge.domain.system.service;
 
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.GiftResponse;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
-import com.studioedge.focus_to_levelup_server.domain.system.exception.InsufficientBonusTicketException;
-import com.studioedge.focus_to_levelup_server.domain.system.exception.ReceiverNotFoundException;
+import com.studioedge.member.repository.MemberInfoRepository;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.member.exception.MemberInfoInvalidException;
+import com.studioedge.mail.repository.MailRepository;
+import com.studioedge.domain.system.dto.response.GiftResponse;
+import com.studioedge.mail.entity.Mail;
+import com.studioedge.mail.enums.MailType;
+import com.studioedge.system.exception.InsufficientBonusTicketException;
+import com.studioedge.system.exception.ReceiverNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,7 +39,7 @@ public class GiftService {
 
         // 2. 보내는 사람의 보너스 티켓 잔액 확인 및 차감
         MemberInfo senderInfo = memberInfoRepository.findByMemberId(senderId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
 
         if (senderInfo.getBonusTicketCount() < ticketCount) {
             throw new InsufficientBonusTicketException();

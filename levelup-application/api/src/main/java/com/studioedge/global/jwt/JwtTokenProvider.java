@@ -1,10 +1,15 @@
 package com.studioedge.global.jwt;
 
-import com.studioedge.focus_to_levelup_server.domain.auth.exception.WithdrawnMemberException;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
-import com.studioedge.focus_to_levelup_server.global.jwt.TokenType;
+import com.studioedge.domain.auth.exception.WithdrawnMemberException;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.enums.MemberStatus;
+import com.studioedge.global.jwt.TokenType;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;

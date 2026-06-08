@@ -1,0 +1,37 @@
+# application-local.yml (로컬 개발용)
+spring:
+  datasource-data:
+    jdbc-url: jdbc:mysql://localhost:13307/focus_db?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    username: focus
+    password: focus
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  datasource-meta:
+    jdbc-url: jdbc:mysql://localhost:13307/focus_meta_db?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    username: focus
+    password: focus
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: update
+
+  batch:
+    jdbc:
+      schema: classpath:org/springframework/batch/core/schema-mysql.sql
+      initialize-schema: always
+
+  sql:
+    init:
+      mode: always
+      data-locations: ${MASTER_DATA_PATH:classpath:db/data/*_data.sql}
+      encoding: UTF-8
+      continue-on-error: false
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.orm.jdbc.bind: TRACE

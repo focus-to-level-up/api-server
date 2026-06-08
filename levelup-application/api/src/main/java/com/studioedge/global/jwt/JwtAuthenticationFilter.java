@@ -1,7 +1,7 @@
 package com.studioedge.global.jwt;
 
-import com.studioedge.focus_to_levelup_server.domain.auth.exception.WithdrawnMemberException;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.domain.auth.exception.WithdrawnMemberException;
+import com.studioedge.member.entity.Member;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

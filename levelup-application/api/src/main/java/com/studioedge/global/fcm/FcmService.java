@@ -1,10 +1,16 @@
 package com.studioedge.global.fcm;
 
-import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
-import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.fcm.exception.EmptyFcmTokenListException;
-import com.studioedge.focus_to_levelup_server.global.fcm.exception.FcmSendException;
+import com.google.firebase.messaging.BatchResponse;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.MulticastMessage;
+import com.google.firebase.messaging.Notification;
+import com.studioedge.character.repository.MemberCharacterRepository;
+import com.studioedge.character.entity.MemberCharacter;
+import com.studioedge.member.entity.Member;
+import com.studioedge.global.fcm.exception.EmptyFcmTokenListException;
+import com.studioedge.global.fcm.exception.FcmSendException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

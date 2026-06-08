@@ -1,5 +1,6 @@
 package com.studioedge.advertisement.entity;
 
+import com.studioedge.common.enums.CategorySubType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

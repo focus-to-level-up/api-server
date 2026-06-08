@@ -1,21 +1,21 @@
 package com.studioedge.domain.payment.service.refund;
 
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
-import com.studioedge.focus_to_levelup_server.domain.payment.dao.PaymentLogRepository;
-import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.refund.RefundRequest;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.refund.RefundResponse;
-import com.studioedge.focus_to_levelup_server.domain.payment.entity.PaymentLog;
-import com.studioedge.focus_to_levelup_server.domain.payment.entity.Product;
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.ProductType;
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
-import com.studioedge.focus_to_levelup_server.domain.payment.exception.PurchaseNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.payment.exception.RefundNotAllowedException;
-import com.studioedge.focus_to_levelup_server.domain.payment.exception.UnauthorizedRefundException;
+import com.studioedge.member.repository.MemberInfoRepository;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.member.exception.MemberInfoInvalidException;
+import com.studioedge.payment.repository.PaymentLogRepository;
+import com.studioedge.payment.repository.SubscriptionRepository;
+import com.studioedge.domain.payment.dto.refund.RefundRequest;
+import com.studioedge.domain.payment.dto.refund.RefundResponse;
+import com.studioedge.payment.entity.PaymentLog;
+import com.studioedge.payment.entity.Product;
+import com.studioedge.payment.enums.ProductType;
+import com.studioedge.payment.enums.SubscriptionType;
+import com.studioedge.payment.exception.PurchaseNotFoundException;
+import com.studioedge.payment.exception.RefundNotAllowedException;
+import com.studioedge.payment.exception.UnauthorizedRefundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -61,7 +61,7 @@ public class RefundService {
 
         // 3. MemberInfo 조회
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
 
         // 4. 상품 타입에 따른 환불 처리
         Product product = paymentLog.getProduct();
@@ -115,7 +115,7 @@ public class RefundService {
      */
     private RefundResult handleSubscriptionRefund(Long memberId, PaymentLog paymentLog, MemberInfo memberInfo) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
 
         Product product = paymentLog.getProduct();
         SubscriptionType subscriptionType = product.getType() == ProductType.BASIC_SUBSCRIPTION

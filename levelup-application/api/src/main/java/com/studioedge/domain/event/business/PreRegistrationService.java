@@ -1,22 +1,22 @@
 package com.studioedge.domain.event.business;
 
-import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterRepository;
+import com.studioedge.character.repository.CharacterRepository;
 import com.studioedge.domain.character.business.MemberCharacterCommandService;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
-import com.studioedge.focus_to_levelup_server.domain.payment.service.revenuecat.RevenueCatApiService;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.PhoneNumberVerificationRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.PreRegistrationCheckResponse;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.PreRegistrationData;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.PreRegistrationRewardResponse;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.PhoneNumberVerification;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
-import com.studioedge.focus_to_levelup_server.global.common.enums.Rarity;
-import com.studioedge.focus_to_levelup_server.global.firebase.FirebaseService;
+import com.studioedge.member.repository.MemberInfoRepository;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.exception.MemberInfoInvalidException;
+import com.studioedge.domain.payment.service.revenuecat.RevenueCatApiService;
+import com.studioedge.mail.repository.MailRepository;
+import com.studioedge.event.repository.PhoneNumberVerificationRepository;
+import com.studioedge.domain.event.response.PreRegistrationCheckResponse;
+import com.studioedge.domain.event.response.PreRegistrationData;
+import com.studioedge.domain.event.response.PreRegistrationRewardResponse;
+import com.studioedge.mail.entity.Mail;
+import com.studioedge.event.entity.PhoneNumberVerification;
+import com.studioedge.mail.enums.MailType;
+import com.studioedge.character.enums.Rarity;
+import com.studioedge.global.firebase.FirebaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -55,7 +55,7 @@ public class PreRegistrationService {
     @Transactional
     public PreRegistrationCheckResponse checkAndSavePhoneNumber(Long memberId, String phoneNumber) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
 
         // 1. 전화번호 해시 처리
         String hashedPhoneNumber = hashPhoneNumber(phoneNumber);
@@ -114,7 +114,7 @@ public class PreRegistrationService {
     public PreRegistrationRewardResponse claimPreRegistrationReward(Long memberId) {
         // 1. Member 조회 및 검증
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
 
         // 이미 보상 받았는지 확인
         if (member.getIsPreRegistrationRewarded()) {

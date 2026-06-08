@@ -1,10 +1,10 @@
 package com.studioedge.step.weekly;
 
 
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.store.dao.MemberItemRepository;
+import com.studioedge.guild.repository.GuildMemberRepository;
+import com.studioedge.guild.repository.GuildRepository;
+import com.studioedge.item.repository.MemberItemRepository;
+import com.studioedge.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Step;

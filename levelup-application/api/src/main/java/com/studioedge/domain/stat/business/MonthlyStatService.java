@@ -1,12 +1,12 @@
 package com.studioedge.domain.stat.business;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
-import com.studioedge.focus_to_levelup_server.domain.stat.dao.MonthlyStatRepository;
-import com.studioedge.focus_to_levelup_server.domain.stat.dto.MonthlyDetailResponse;
-import com.studioedge.focus_to_levelup_server.domain.stat.dto.MonthlyStatListResponse;
-import com.studioedge.focus_to_levelup_server.domain.stat.dto.MonthlyStatResponse;
-import com.studioedge.focus_to_levelup_server.domain.stat.entity.MonthlyStat;
+import com.studioedge.focus.repository.DailyGoalRepository;
+import com.studioedge.focus.entity.DailyGoal;
+import com.studioedge.stat.repository.MonthlyStatRepository;
+import com.studioedge.domain.stat.response.MonthlyDetailResponse;
+import com.studioedge.domain.stat.response.MonthlyStatListResponse;
+import com.studioedge.domain.stat.response.MonthlyStatResponse;
+import com.studioedge.stat.entity.MonthlyStat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
+import static com.studioedge.AppConstants.getServiceDate;
 
 @Service
 @RequiredArgsConstructor

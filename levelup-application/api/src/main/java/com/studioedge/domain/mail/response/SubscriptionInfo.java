@@ -1,7 +1,7 @@
 package com.studioedge.domain.mail.response;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.entity.Subscription;
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
+import com.studioedge.payment.entity.Subscription;
+import com.studioedge.payment.enums.SubscriptionType;
 import lombok.Builder;
 
 import java.time.LocalDate;

@@ -1,6 +1,6 @@
 package com.studioedge.global.jwt;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.member.entity.Member;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 

@@ -1,11 +1,11 @@
 package com.studioedge.domain.auth.business;
 
 import com.google.gson.Gson;
-import com.studioedge.focus_to_levelup_server.domain.auth.dto.ApplePublicKey;
-import com.studioedge.focus_to_levelup_server.domain.auth.dto.ApplePublicKeys;
-import com.studioedge.focus_to_levelup_server.domain.auth.dto.AppleTokenResponse;
-import com.studioedge.focus_to_levelup_server.domain.auth.exception.InvalidAppleTokenException;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.domain.auth.dto.ApplePublicKey;
+import com.studioedge.domain.auth.dto.ApplePublicKeys;
+import com.studioedge.domain.auth.dto.AppleTokenResponse;
+import com.studioedge.domain.auth.exception.InvalidAppleTokenException;
+import com.studioedge.member.entity.Member;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;

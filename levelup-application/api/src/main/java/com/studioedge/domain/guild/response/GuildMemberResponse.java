@@ -1,7 +1,7 @@
 package com.studioedge.domain.guild.response;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
+import com.studioedge.guild.entity.GuildMember;
+import com.studioedge.guild.enums.GuildRole;
 
 import java.time.LocalDateTime;
 import java.util.List;

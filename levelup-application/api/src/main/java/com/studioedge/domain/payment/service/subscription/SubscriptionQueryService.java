@@ -1,8 +1,8 @@
 package com.studioedge.domain.payment.service.subscription;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.dao.SubscriptionRepository;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.subscription.SubscriptionDetailResponse;
-import com.studioedge.focus_to_levelup_server.domain.payment.entity.Subscription;
+import com.studioedge.payment.repository.SubscriptionRepository;
+import com.studioedge.domain.payment.dto.subscription.SubscriptionDetailResponse;
+import com.studioedge.payment.entity.Subscription;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

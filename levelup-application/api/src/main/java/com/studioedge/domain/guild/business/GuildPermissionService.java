@@ -1,8 +1,8 @@
 package com.studioedge.domain.guild.business;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
-import com.studioedge.focus_to_levelup_server.domain.guild.exception.InsufficientGuildPermissionException;
+import com.studioedge.guild.entity.GuildMember;
+import com.studioedge.guild.enums.GuildRole;
+import com.studioedge.guild.exception.InsufficientGuildPermissionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +46,7 @@ public class GuildPermissionService {
 
     /**
      * 길드원 여부 확인 (모든 역할 허용)
-     * @throws com.studioedge.focus_to_levelup_server.domain.guild.exception.NotGuildMemberException 길드원이 아닐 경우
+     * @throws com.studioedge.guild.exception.NotGuildMemberException 길드원이 아닐 경우
      */
     public void validateGuildMember(Long guildId, Long memberId) {
         // findGuildMember 메서드에서 NotGuildMemberException을 던지므로, 호출만 하면 됨

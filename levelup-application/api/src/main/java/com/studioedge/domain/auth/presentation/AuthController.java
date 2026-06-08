@@ -1,11 +1,16 @@
 package com.studioedge.domain.auth.presentation;
 
+import com.studioedge.domain.auth.business.AuthService;
+import com.studioedge.domain.auth.dto.HeartbeatResponse;
+import com.studioedge.domain.auth.dto.LoginRequest;
+import com.studioedge.domain.auth.dto.LoginResponse;
+import com.studioedge.domain.auth.dto.SignUpRequest;
 import com.studioedge.domain.auth.dto.SignUpResponse;
-import com.studioedge.focus_to_levelup_server.domain.auth.service.AuthService;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
-import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
+import com.studioedge.domain.auth.dto.TokenRefreshResponse;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.enums.SocialType;
+import com.studioedge.response.CommonResponse;
+import com.studioedge.global.response.HttpResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,7 +24,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController

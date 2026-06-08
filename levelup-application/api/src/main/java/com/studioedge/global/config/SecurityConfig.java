@@ -1,7 +1,7 @@
 package com.studioedge.global.config;
 
-import com.studioedge.focus_to_levelup_server.global.jwt.CustomJwtAuthenticationEntryPoint;
-import com.studioedge.focus_to_levelup_server.global.jwt.JwtAuthenticationFilter;
+import com.studioedge.global.jwt.CustomJwtAuthenticationEntryPoint;
+import com.studioedge.global.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;

@@ -1,6 +1,6 @@
 package com.studioedge.step.daily;
 
-import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
+import com.studioedge.mail.repository.MailRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Step;

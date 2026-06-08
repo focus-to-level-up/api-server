@@ -6,18 +6,22 @@ import com.studioedge.promotion.exception.AttendanceAlreadyCheckedException;
 import com.studioedge.promotion.repository.AttendanceRepository;
 import com.studioedge.domain.promotion.response.AttendanceCheckResponse;
 import com.studioedge.domain.promotion.response.AttendanceInfoResponse;
-import com.studioedge.domain.payment.dao.SubscriptionRepository;
-import com.studioedge.domain.payment.enums.SubscriptionType;
 import com.studioedge.member.entity.Member;
 import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.member.exception.MemberInfoInvalidException;
 import com.studioedge.member.exception.MemberNotFoundException;
 import com.studioedge.member.repository.MemberInfoRepository;
 import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.payment.entity.Subscription;
+import com.studioedge.payment.enums.SubscriptionType;
+import com.studioedge.payment.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+
+import static com.studioedge.AppConstants.getServiceDate;
 
 
 @Service
@@ -63,7 +67,7 @@ public class AttendanceService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
         Attendance attendance = attendanceRepository.findByMemberId(memberId)
                 .orElseGet(() -> {
                     Attendance newAtt = Attendance.builder().member(member).build();

@@ -1,8 +1,8 @@
 package com.studioedge.step.daily;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus.repository.DailyGoalRepository;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.entity.Member;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

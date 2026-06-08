@@ -1,6 +1,6 @@
 package com.studioedge.domain.auth.dto;
 
-import com.studioedge.focus_to_levelup_server.domain.auth.dto.ApplePublicKey;
+import com.studioedge.domain.auth.dto.ApplePublicKey;
 import lombok.Data;
 
 import java.util.List;

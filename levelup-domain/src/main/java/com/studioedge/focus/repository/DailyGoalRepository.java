@@ -15,6 +15,12 @@ public interface DailyGoalRepository extends JpaRepository<DailyGoal, Long> {
         Integer getTotalSeconds();
     }
 
+    interface DailyStat {
+        LocalDate getDate();
+        Integer getTotalFocusSeconds();
+        Integer getMaxConsecutiveSeconds();
+    }
+
     /**
      * 특정 유저의 특정 날짜 DailyGoal 조회
      */
@@ -77,15 +83,15 @@ public interface DailyGoalRepository extends JpaRepository<DailyGoal, Long> {
     @Query("SELECT AVG(d.maxConsecutiveSeconds) FROM DailyGoal d WHERE d.member.id = :memberId")
     Double getAverageMaxConsecutiveFocusTimeByMemberId(@Param("memberId") Long memberId);
 
-    @Query("SELECT new com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminDailyStatResponse(" +
-            "d.dailyGoalDate, " +
-            "d.currentSeconds, " +
-            "d.maxConsecutiveSeconds) " +
+    @Query("SELECT " +
+            "d.dailyGoalDate as date, " +
+            "d.currentSeconds as totalFocusSeconds, " +
+            "d.maxConsecutiveSeconds as maxConsecutiveSeconds " +
             "FROM DailyGoal d " +
             "WHERE d.member.id = :memberId " +
             "AND d.dailyGoalDate BETWEEN :startDate AND :endDate " +
             "ORDER BY d.dailyGoalDate ASC")
-    List<AdminDailyStatResponse> findDailyStatsByMemberIdAndDateRange(
+    List<DailyStat> findDailyStatsByMemberIdAndDateRange(
             @Param("memberId") Long memberId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate

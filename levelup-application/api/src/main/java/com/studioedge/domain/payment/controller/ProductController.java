@@ -1,9 +1,9 @@
 package com.studioedge.domain.payment.controller;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.response.ProductListResponse;
-import com.studioedge.focus_to_levelup_server.domain.payment.service.ProductQueryService;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
-import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
+import com.studioedge.domain.payment.dto.response.ProductListResponse;
+import com.studioedge.domain.payment.service.ProductQueryService;
+import com.studioedge.response.CommonResponse;
+import com.studioedge.global.response.HttpResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

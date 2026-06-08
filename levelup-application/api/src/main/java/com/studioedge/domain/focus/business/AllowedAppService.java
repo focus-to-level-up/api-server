@@ -1,14 +1,14 @@
 package com.studioedge.domain.focus.business;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.AllowedAppRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveAllowedAppRequest;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.AllowedApp;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.AllowedAppNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.member.dto.AllowedAppsDto;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus.repository.AllowedAppRepository;
+import com.studioedge.focus.repository.DailyGoalRepository;
+import com.studioedge.domain.focus.request.SaveAllowedAppRequest;
+import com.studioedge.focus.entity.AllowedApp;
+import com.studioedge.focus.entity.DailyGoal;
+import com.studioedge.focus.exception.AllowedAppNotFoundException;
+import com.studioedge.focus.exception.DailyGoalNotFoundException;
+import com.studioedge.domain.member.response.AllowedAppsDto;
+import com.studioedge.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

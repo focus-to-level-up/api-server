@@ -1,11 +1,19 @@
 package com.studioedge.domain.stat.presentation;
 
+import com.studioedge.domain.stat.response.DailyStatListResponse;
 import com.studioedge.domain.stat.response.MonthlyDetailResponse;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.stat.service.StatQueryService;
-import com.studioedge.focus_to_levelup_server.domain.stat.service.TotalStatService;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
-import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
+import com.studioedge.domain.stat.response.MonthlyStatListResponse;
+import com.studioedge.domain.stat.response.MonthlyStatResponse;
+import com.studioedge.domain.stat.response.SubjectStatResponse;
+import com.studioedge.domain.stat.response.TotalStatResponse;
+import com.studioedge.domain.stat.response.UpdateTotalStatColorRequest;
+import com.studioedge.domain.stat.response.WeeklyStatListResponse;
+import com.studioedge.domain.stat.response.WeeklyStatResponse;
+import com.studioedge.member.entity.Member;
+import com.studioedge.domain.stat.business.StatQueryService;
+import com.studioedge.domain.stat.business.TotalStatService;
+import com.studioedge.response.CommonResponse;
+import com.studioedge.global.response.HttpResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,7 +25,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.List;

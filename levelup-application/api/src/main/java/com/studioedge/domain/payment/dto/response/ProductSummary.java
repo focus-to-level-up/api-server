@@ -1,7 +1,7 @@
 package com.studioedge.domain.payment.dto.response;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.entity.Product;
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.ProductType;
+import com.studioedge.payment.entity.Product;
+import com.studioedge.payment.enums.ProductType;
 
 public record ProductSummary(
         Long productId,

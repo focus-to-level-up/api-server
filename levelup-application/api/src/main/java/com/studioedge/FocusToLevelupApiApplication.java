@@ -4,10 +4,14 @@ import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 @SpringBootApplication
 public class FocusToLevelupApiApplication {
     public static void main(String[] args) {
         Dotenv dotenv = Dotenv.configure()
+                .directory(findDotenvDirectory())
                 .ignoreIfMissing()
                 .load();
 
@@ -16,5 +20,19 @@ public class FocusToLevelupApiApplication {
         );
 
         SpringApplication.run(FocusToLevelupApiApplication.class, args);
+    }
+
+    private static String findDotenvDirectory() {
+        Path current = Path.of("").toAbsolutePath();
+
+        while (current != null) {
+            if (Files.exists(current.resolve(".env"))) {
+                return current.toString();
+            }
+
+            current = current.getParent();
+        }
+
+        return Path.of("").toAbsolutePath().toString();
     }
 }

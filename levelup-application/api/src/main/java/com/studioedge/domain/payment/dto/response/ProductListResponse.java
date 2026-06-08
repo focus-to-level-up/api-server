@@ -1,6 +1,6 @@
 package com.studioedge.domain.payment.dto.response;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.response.ProductSummary;
+import com.studioedge.domain.payment.dto.response.ProductSummary;
 
 import java.util.List;
 

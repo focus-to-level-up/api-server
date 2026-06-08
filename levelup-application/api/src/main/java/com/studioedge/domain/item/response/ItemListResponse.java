@@ -1,7 +1,7 @@
 package com.studioedge.domain.item.response;
 
-import com.studioedge.focus_to_levelup_server.domain.store.dto.response.ItemResponse;
-import com.studioedge.focus_to_levelup_server.domain.store.entity.Item;
+import com.studioedge.domain.item.response.ItemResponse;
+import com.studioedge.item.entity.Item;
 import lombok.Builder;
 
 import java.util.List;

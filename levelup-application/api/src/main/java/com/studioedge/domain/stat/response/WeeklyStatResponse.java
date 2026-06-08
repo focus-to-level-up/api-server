@@ -1,6 +1,6 @@
 package com.studioedge.domain.stat.response;
 
-import com.studioedge.focus_to_levelup_server.domain.stat.entity.WeeklyStat;
+import com.studioedge.stat.entity.WeeklyStat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 

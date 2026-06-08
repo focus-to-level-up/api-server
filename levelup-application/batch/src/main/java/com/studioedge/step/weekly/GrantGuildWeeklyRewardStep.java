@@ -1,15 +1,15 @@
 package com.studioedge.step.weekly;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildWeeklyRewardRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildWeeklyReward;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
+import com.studioedge.guild.repository.GuildMemberRepository;
+import com.studioedge.guild.repository.GuildRepository;
+import com.studioedge.guild.repository.GuildWeeklyRewardRepository;
+import com.studioedge.guild.entity.Guild;
+import com.studioedge.guild.entity.GuildMember;
+import com.studioedge.guild.entity.GuildWeeklyReward;
+import com.studioedge.member.entity.Member;
+import com.studioedge.mail.repository.MailRepository;
+import com.studioedge.mail.entity.Mail;
+import com.studioedge.mail.enums.MailType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.SkipListener;

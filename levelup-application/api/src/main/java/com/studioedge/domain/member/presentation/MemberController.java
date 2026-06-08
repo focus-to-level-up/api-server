@@ -1,9 +1,19 @@
 package com.studioedge.domain.member.presentation;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.service.MemberService;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
-import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
+import com.studioedge.domain.member.business.MemberService;
+import com.studioedge.domain.member.request.CompleteSignUpRequest;
+import com.studioedge.domain.member.request.ReportMemberRequest;
+import com.studioedge.domain.member.request.UpdateCategoryRequest;
+import com.studioedge.domain.member.request.UpdateNicknameRequest;
+import com.studioedge.domain.member.request.UpdateProfileRequest;
+import com.studioedge.domain.member.request.UpdateSchoolRequest;
+import com.studioedge.domain.member.response.GetProfileResponse;
+import com.studioedge.domain.member.response.MemberCurrencyResponse;
+import com.studioedge.domain.member.response.MemberSettingDto;
+import com.studioedge.domain.member.response.ProfileAssetResponse;
+import com.studioedge.global.response.HttpResponseUtil;
+import com.studioedge.member.entity.Member;
+import com.studioedge.response.CommonResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,7 +26,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Member")
 @RestController

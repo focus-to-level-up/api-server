@@ -1,16 +1,16 @@
 package com.studioedge.domain.guild.business;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildWeeklyRewardRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildListResponse;
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildResponse;
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildSearchResponse;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildWeeklyReward;
-import com.studioedge.focus_to_levelup_server.domain.guild.exception.GuildNotFoundException;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
+import com.studioedge.guild.repository.GuildMemberRepository;
+import com.studioedge.guild.repository.GuildRepository;
+import com.studioedge.guild.repository.GuildWeeklyRewardRepository;
+import com.studioedge.domain.guild.response.GuildListResponse;
+import com.studioedge.domain.guild.response.GuildResponse;
+import com.studioedge.domain.guild.response.GuildSearchResponse;
+import com.studioedge.guild.entity.Guild;
+import com.studioedge.guild.entity.GuildMember;
+import com.studioedge.guild.entity.GuildWeeklyReward;
+import com.studioedge.guild.exception.GuildNotFoundException;
+import com.studioedge.common.enums.CategorySubType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

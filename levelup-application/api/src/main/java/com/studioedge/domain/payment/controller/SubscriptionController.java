@@ -1,19 +1,23 @@
 package com.studioedge.domain.payment.controller;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.subscription.SubscriptionDetailResponse;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.subscription.UpdateGuildBoostRequest;
-import com.studioedge.focus_to_levelup_server.domain.payment.service.subscription.SubscriptionCommandService;
-import com.studioedge.focus_to_levelup_server.domain.payment.service.subscription.SubscriptionQueryService;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
-import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
+import com.studioedge.member.entity.Member;
+import com.studioedge.domain.payment.dto.subscription.SubscriptionDetailResponse;
+import com.studioedge.domain.payment.dto.subscription.UpdateGuildBoostRequest;
+import com.studioedge.domain.payment.service.subscription.SubscriptionCommandService;
+import com.studioedge.domain.payment.service.subscription.SubscriptionQueryService;
+import com.studioedge.response.CommonResponse;
+import com.studioedge.global.response.HttpResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/members/me/subscriptions")

@@ -1,7 +1,7 @@
 package com.studioedge.domain.system.dto.response;
 
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Coupon;
-import com.studioedge.focus_to_levelup_server.global.common.enums.RewardType;
+import com.studioedge.promotion.entity.Coupon;
+import com.studioedge.common.enums.RewardType;
 import lombok.Builder;
 
 import java.time.LocalDateTime;

@@ -1,8 +1,8 @@
 package com.studioedge.domain.mail.response;
 
-import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
+import com.studioedge.ranking.enums.Tier;
+import com.studioedge.mail.entity.Mail;
+import com.studioedge.mail.enums.MailType;
 import lombok.Builder;
 
 import java.time.LocalDate;

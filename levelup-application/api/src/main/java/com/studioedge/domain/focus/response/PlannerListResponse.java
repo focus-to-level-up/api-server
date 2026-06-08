@@ -1,6 +1,6 @@
 package com.studioedge.domain.focus.response;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.PlannerResponse;
+import com.studioedge.domain.focus.response.PlannerResponse;
 import lombok.Builder;
 
 import java.util.List;

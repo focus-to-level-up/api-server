@@ -1,6 +1,6 @@
 package com.studioedge.domain.event.response;
 
-import com.studioedge.focus_to_levelup_server.domain.event.entity.School;
+import com.studioedge.event.entity.School;
 import lombok.Builder;
 
 @Builder

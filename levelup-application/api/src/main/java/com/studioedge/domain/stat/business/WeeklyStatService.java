@@ -1,28 +1,28 @@
 package com.studioedge.domain.stat.business;
 
-import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterImageRepository;
-import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
-import com.studioedge.focus_to_levelup_server.domain.character.entity.CharacterImage;
-import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
-import com.studioedge.focus_to_levelup_server.domain.character.enums.CharacterImageType;
-import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailySubject;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
-import com.studioedge.focus_to_levelup_server.domain.stat.dao.WeeklyStatRepository;
-import com.studioedge.focus_to_levelup_server.domain.stat.dao.WeeklySubjectStatRepository;
-import com.studioedge.focus_to_levelup_server.domain.stat.dto.SubjectStatResponse;
-import com.studioedge.focus_to_levelup_server.domain.stat.dto.WeeklyStatListResponse;
-import com.studioedge.focus_to_levelup_server.domain.stat.dto.WeeklyStatResponse;
-import com.studioedge.focus_to_levelup_server.domain.stat.entity.WeeklyStat;
-import com.studioedge.focus_to_levelup_server.domain.stat.entity.WeeklySubjectStat;
-import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
+import com.studioedge.character.repository.CharacterImageRepository;
+import com.studioedge.character.repository.MemberCharacterRepository;
+import com.studioedge.character.entity.CharacterImage;
+import com.studioedge.character.entity.MemberCharacter;
+import com.studioedge.character.enums.CharacterImageType;
+import com.studioedge.character.exception.CharacterDefaultNotFoundException;
+import com.studioedge.focus.repository.DailyGoalRepository;
+import com.studioedge.focus.repository.DailySubjectRepository;
+import com.studioedge.focus.entity.DailyGoal;
+import com.studioedge.focus.entity.DailySubject;
+import com.studioedge.focus.entity.Subject;
+import com.studioedge.member.repository.MemberInfoRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.member.exception.MemberInfoInvalidException;
+import com.studioedge.stat.repository.WeeklyStatRepository;
+import com.studioedge.stat.repository.WeeklySubjectStatRepository;
+import com.studioedge.domain.stat.response.SubjectStatResponse;
+import com.studioedge.domain.stat.response.WeeklyStatListResponse;
+import com.studioedge.domain.stat.response.WeeklyStatResponse;
+import com.studioedge.stat.entity.WeeklyStat;
+import com.studioedge.stat.entity.WeeklySubjectStat;
+import com.studioedge.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +30,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -156,7 +160,7 @@ public class WeeklyStatService {
 
         // 유저 정보 조회 (레벨, 이미지)
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
         MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefaultTrue(memberId)
                 .orElseThrow(CharacterDefaultNotFoundException::new);
         String imageUrl = characterImageRepository.findByCharacterIdAndEvolutionAndImageType(

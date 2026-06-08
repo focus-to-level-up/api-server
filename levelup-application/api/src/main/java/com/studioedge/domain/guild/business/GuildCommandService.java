@@ -1,23 +1,30 @@
 package com.studioedge.domain.guild.business;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildWeeklyRewardRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildCreateRequest;
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildResponse;
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildUpdateRequest;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildWeeklyReward;
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
-import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildQueryService;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.fcm.FcmService;
-import com.studioedge.guild.exception.*;
+import com.studioedge.guild.repository.GuildMemberRepository;
+import com.studioedge.guild.repository.GuildRepository;
+import com.studioedge.guild.repository.GuildWeeklyRewardRepository;
+import com.studioedge.domain.guild.request.GuildCreateRequest;
+import com.studioedge.domain.guild.response.GuildResponse;
+import com.studioedge.domain.guild.request.GuildUpdateRequest;
+import com.studioedge.guild.exception.AlreadyJoinedGuildException;
+import com.studioedge.guild.exception.CannotDeleteGuildWithMembersException;
+import com.studioedge.guild.exception.FocusRequestCooldownException;
+import com.studioedge.guild.exception.GuildFullException;
+import com.studioedge.guild.exception.InvalidGuildPasswordException;
+import com.studioedge.guild.exception.LeaderCannotLeaveException;
+import com.studioedge.guild.exception.MaxGuildMembershipExceededException;
+import com.studioedge.guild.exception.NotGuildMemberException;
+import com.studioedge.guild.entity.Guild;
+import com.studioedge.guild.entity.GuildMember;
+import com.studioedge.guild.entity.GuildWeeklyReward;
+import com.studioedge.guild.enums.GuildRole;
+import com.studioedge.domain.guild.business.GuildQueryService;
+import com.studioedge.infra.redis.cache.GuildCacheClient;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.global.fcm.FcmService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,10 +47,9 @@ public class GuildCommandService {
     private final MemberRepository memberRepository;
     private final GuildQueryService guildQueryService;
     private final FcmService fcmService;
-    private final StringRedisTemplate redisTemplate;
+    private final GuildCacheClient guildCacheClient;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    private static final String FOCUS_REQUEST_KEY_PREFIX = "focus-request:";
     private static final Duration FOCUS_REQUEST_COOLDOWN = Duration.ofHours(1);
 
     /**
@@ -298,8 +304,7 @@ public class GuildCommandService {
      */
     public void sendFocusRequest(Long guildId, Long requesterId, Long targetMemberId) {
         // 쿨다운 체크
-        String cooldownKey = buildFocusRequestKey(guildId, requesterId, targetMemberId);
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(cooldownKey))) {
+        if (guildCacheClient.isFocusRequestCooldownActive(guildId, requesterId, targetMemberId)) {
             throw new FocusRequestCooldownException();
         }
 
@@ -329,15 +334,11 @@ public class GuildCommandService {
             );
 
             // 성공 시 쿨다운 설정
-            redisTemplate.opsForValue().set(cooldownKey, "1", FOCUS_REQUEST_COOLDOWN);
+            guildCacheClient.markFocusRequestSent(guildId, requesterId, targetMemberId, FOCUS_REQUEST_COOLDOWN);
 
             log.info(">> Focus request sent from member {} to member {} in guild {}", requesterId, targetMemberId, guildId);
         } catch (Exception e) {
             log.error(">> Failed to send focus request FCM from {} to {}", requesterId, targetMemberId, e);
         }
-    }
-
-    private String buildFocusRequestKey(Long guildId, Long requesterId, Long targetMemberId) {
-        return FOCUS_REQUEST_KEY_PREFIX + guildId + ":" + requesterId + ":" + targetMemberId;
     }
 }

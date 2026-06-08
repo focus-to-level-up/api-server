@@ -1,9 +1,9 @@
 package com.studioedge.domain.payment.dto.history;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.entity.PaymentLog;
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.PaymentPlatform;
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.ProductType;
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.PurchaseStatus;
+import com.studioedge.payment.entity.PaymentLog;
+import com.studioedge.payment.enums.PaymentPlatform;
+import com.studioedge.payment.enums.ProductType;
+import com.studioedge.payment.enums.PurchaseStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

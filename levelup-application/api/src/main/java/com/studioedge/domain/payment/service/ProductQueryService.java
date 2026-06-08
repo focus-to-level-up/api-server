@@ -1,10 +1,10 @@
 package com.studioedge.domain.payment.service;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.dao.ProductRepository;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.response.ProductListResponse;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.response.ProductSummary;
-import com.studioedge.focus_to_levelup_server.domain.payment.entity.Product;
-import com.studioedge.focus_to_levelup_server.domain.payment.exception.ProductNotFoundException;
+import com.studioedge.payment.repository.ProductRepository;
+import com.studioedge.domain.payment.dto.response.ProductListResponse;
+import com.studioedge.domain.payment.dto.response.ProductSummary;
+import com.studioedge.payment.entity.Product;
+import com.studioedge.payment.exception.ProductNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

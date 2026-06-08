@@ -1,9 +1,8 @@
 package com.studioedge.global.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.studioedge.focus_to_levelup_server.domain.auth.exception.WithdrawnMemberException;
-import com.studioedge.focus_to_levelup_server.global.exception.ExceptionResponse;
-import com.studioedge.focus_to_levelup_server.global.exception.ExceptionSituation;
+import com.studioedge.domain.auth.exception.WithdrawnMemberException;
+import com.studioedge.global.exception.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -36,19 +35,14 @@ public class CustomJwtAuthenticationEntryPoint implements AuthenticationEntryPoi
 
         ExceptionResponse errorResponse;
 
-        if (exception instanceof WithdrawnMemberException) {
+        if (exception instanceof WithdrawnMemberException withdrawnMemberException) {
             log.error("WithdrawnMemberException detected in EntryPoint");
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            errorResponse = ExceptionResponse.from(
-                    ExceptionSituation.of("탈퇴한 회원입니다. 재가입이 필요합니다.", HttpStatus.FORBIDDEN)
-            );
+            response.setStatus(withdrawnMemberException.getStatus());
+            errorResponse = ExceptionResponse.of(withdrawnMemberException.getStatus(), withdrawnMemberException.getMessage());
         } else {
             log.error("Unauthorized error: {}", authException.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-
-            errorResponse = ExceptionResponse.from(
-                    ExceptionSituation.of("인증이 필요합니다.", HttpStatus.UNAUTHORIZED)
-            );
+            errorResponse = ExceptionResponse.of(HttpStatus.UNAUTHORIZED, "인증이 필요합니다.");
         }
 
         String jsonResponse = objectMapper.writeValueAsString(errorResponse);

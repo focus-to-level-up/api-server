@@ -1,14 +1,14 @@
 package com.studioedge.step.daily;
 
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberSettingRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
-import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
+import com.studioedge.member.repository.MemberSettingRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.entity.MemberSetting;
+import com.studioedge.ranking.repository.LeagueRepository;
+import com.studioedge.ranking.repository.RankingRepository;
+import com.studioedge.ranking.entity.League;
+import com.studioedge.ranking.entity.Ranking;
+import com.studioedge.ranking.enums.Tier;
+import com.studioedge.common.enums.CategoryMainType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Step;

@@ -1,16 +1,16 @@
 package com.studioedge.step.weekly;
 
-import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterImageRepository;
-import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
-import com.studioedge.focus_to_levelup_server.domain.character.entity.CharacterImage;
-import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
-import com.studioedge.focus_to_levelup_server.domain.character.enums.CharacterImageType;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.WeeklyRewardRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.WeeklyReward;
+import com.studioedge.character.repository.CharacterImageRepository;
+import com.studioedge.character.repository.MemberCharacterRepository;
+import com.studioedge.character.entity.CharacterImage;
+import com.studioedge.character.entity.MemberCharacter;
+import com.studioedge.character.enums.CharacterImageType;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.enums.MemberStatus;
+import com.studioedge.ranking.entity.Ranking;
+import com.studioedge.system.repository.WeeklyRewardRepository;
+import com.studioedge.system.entity.WeeklyReward;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.SkipListener;

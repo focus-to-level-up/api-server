@@ -1,12 +1,12 @@
 package com.studioedge.domain.payment.service.history;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.dao.PaymentLogRepository;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.history.PaymentHistoryListResponse;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.history.PaymentHistoryResponse;
-import com.studioedge.focus_to_levelup_server.domain.payment.dto.purchase.DiamondPackPurchaseStatusResponse;
-import com.studioedge.focus_to_levelup_server.domain.payment.entity.PaymentLog;
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.ProductType;
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.PurchaseStatus;
+import com.studioedge.payment.repository.PaymentLogRepository;
+import com.studioedge.domain.payment.dto.history.PaymentHistoryListResponse;
+import com.studioedge.domain.payment.dto.history.PaymentHistoryResponse;
+import com.studioedge.domain.payment.dto.purchase.DiamondPackPurchaseStatusResponse;
+import com.studioedge.payment.entity.PaymentLog;
+import com.studioedge.payment.enums.ProductType;
+import com.studioedge.payment.enums.PurchaseStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

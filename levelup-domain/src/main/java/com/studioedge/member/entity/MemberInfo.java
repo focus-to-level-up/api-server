@@ -166,9 +166,9 @@ public class MemberInfo {
         this.diamond -= amount;
     }
 
-    public void updateCategory(UpdateCategoryRequest request) {
-        this.categoryMain = request.categoryMain();
-        this.categorySub = request.categorySub();
+    public void updateCategory(CategoryMainType categoryMain, CategorySubType categorySub) {
+        this.categoryMain = categoryMain;
+        this.categorySub = categorySub;
         this.categoryUpdatedAt = LocalDateTime.now();
         this.school = "없음";
         this.schoolAddress = "없음";
@@ -289,9 +289,9 @@ public class MemberInfo {
         this.schoolAddress = schoolAddress != null ? schoolAddress : "없음";
     }
 
-    public void updateSchool(UpdateSchoolRequest request) {
-        this.school = request.schoolName();
-        this.schoolAddress = request.schoolRegion();
+    public void updateSchool(String school, String schoolAddress) {
+        this.school = school;
+        this.schoolAddress = schoolAddress;
         this.schoolUpdatedAt = LocalDateTime.now();
     }
 

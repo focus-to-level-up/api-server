@@ -1,0 +1,93 @@
+# application.yml (공통 설정)
+spring:
+  application:
+    name: focus-to-levelup-api
+
+  profiles:
+    active: ${SPRING_PROFILE:local}
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  jpa:
+    show-sql: true
+    open-in-view: false
+    generate-ddl: true
+    database-platform: org.hibernate.dialect.MySQLDialect
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        implicit_naming_strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+        physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+        hbm2ddl:
+          auto: update
+        format_sql: true
+
+jwt:
+  secret: ${JWT_SECRET}
+
+apple:
+  client-id: ${APPLE_CLIENT_ID}
+  team-id: ${APPLE_TEAM_ID}
+  key-id: ${APPLE_KEY_ID}
+  private-key: ${APPLE_PRIVATE_KEY}
+
+kakao:
+  client-id: ${KAKAO_CLIENT_ID}
+  client-secret: ${KAKAO_CLIENT_SECRET}
+
+naver:
+  client-id: ${NAVER_CLIENT_ID}
+  client-secret: ${NAVER_CLIENT_SECRET}
+  redirect-uri: ${NAVER_REDIRECT_URI}
+
+google:
+  client-id: ${GOOGLE_CLIENT_ID}
+  client-secret: ${GOOGLE_CLIENT_SECRET}
+  redirect-uri: ${GOOGLE_REDIRECT_URI}
+
+revenuecat:
+  enabled: ${REVENUECAT_ENABLED:true}
+  api-key:
+    apple: ${REVENUECAT_API_KEY_APPLE:}
+    google: ${REVENUECAT_API_KEY_GOOGLE:}
+  secret-key: ${REVENUECAT_API_KEY:}
+  webhook-auth-header: ${REVENUECAT_WEBHOOK_AUTH_HEADER:}
+  base-url: https://api.revenuecat.com/v1
+  project-id: ${REVENUECAT_PROJECT_ID:}
+  entitlement-id:
+    premium: ${REVENUECAT_PREMIUM_ENTITLEMENT_ID:premium_subscription}
+  free-trial:
+    duration: ${REVENUECAT_FREE_TRIAL_DURATION:P14D}
+
+firebase:
+  service-account-json: ${FIREBASE_SERVICE_ACCOUNT_JSON}
+  pre-registration:
+    service-account-json: ${FIREBASE_PRE_REGISTRATION_JSON:}
+
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_S3_BUCKET}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+    region:
+      static: ${AWS_REGION}
+    stack:
+      auto: false
+
+sentry:
+  dsn: ${SENTRY_DSN:}
+  send-default-pii: true
+  traces-sample-rate: 1.0
+  environment: ${SENTRY_ENVIRONMENT:local}
+  release: ${SENTRY_RELEASE:focus-to-levelup-v1}
+  exception-resolver-order: -2147483647
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+    com.studioedge.global.jwt: DEBUG

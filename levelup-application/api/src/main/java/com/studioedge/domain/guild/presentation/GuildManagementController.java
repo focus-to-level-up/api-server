@@ -1,12 +1,18 @@
 package com.studioedge.domain.guild.presentation;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.*;
-import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildCommandService;
-import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildMemberCommandService;
-import com.studioedge.focus_to_levelup_server.domain.guild.service.GuildPermissionService;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
-import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
+import com.studioedge.domain.guild.business.GuildCommandService;
+import com.studioedge.domain.guild.business.GuildMemberCommandService;
+import com.studioedge.domain.guild.business.GuildPermissionService;
+import com.studioedge.domain.guild.request.GuildCreateRequest;
+import com.studioedge.domain.guild.request.GuildPasswordChangeRequest;
+import com.studioedge.domain.guild.request.GuildRoleUpdateRequest;
+import com.studioedge.domain.guild.request.GuildUpdateRequest;
+import com.studioedge.domain.guild.request.TransferLeaderAndLeaveRequest;
+import com.studioedge.domain.guild.response.GuildMemberResponse;
+import com.studioedge.domain.guild.response.GuildResponse;
+import com.studioedge.global.response.HttpResponseUtil;
+import com.studioedge.member.entity.Member;
+import com.studioedge.response.CommonResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,7 +22,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 길드 관리자 기능 Controller

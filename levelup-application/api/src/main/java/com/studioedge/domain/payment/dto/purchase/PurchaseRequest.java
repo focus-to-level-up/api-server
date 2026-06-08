@@ -1,6 +1,6 @@
 package com.studioedge.domain.payment.dto.purchase;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.PaymentPlatform;
+import com.studioedge.payment.enums.PaymentPlatform;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "인앱결제 구매 요청")

@@ -1,7 +1,7 @@
 package com.studioedge.domain.member.response;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.AllowedApp;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus.entity.AllowedApp;
+import com.studioedge.member.entity.Member;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 

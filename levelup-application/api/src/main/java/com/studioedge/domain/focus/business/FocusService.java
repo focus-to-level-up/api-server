@@ -1,44 +1,44 @@
 package com.studioedge.domain.focus.business;
 
-import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
-import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
-import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.character.service.TrainingRewardService;
-import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.PlannerRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.SaveFocusRequest;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.StartFocusRequest;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.FocusModeImageResponse;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.MonsterAnimationResponse;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailySubject;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.Planner;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.DailyGoalNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectUnAuthorizedException;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberSettingRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.store.service.ItemAchievementService;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.BackgroundRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.MonsterImageRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Background;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Monster;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.MonsterImage;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.MonsterImageType;
-import com.studioedge.focus_to_levelup_server.domain.system.exception.BackgroundNotFoundException;
-import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
+import com.studioedge.character.repository.MemberCharacterRepository;
+import com.studioedge.character.entity.MemberCharacter;
+import com.studioedge.character.exception.CharacterDefaultNotFoundException;
+import com.studioedge.domain.character.business.TrainingRewardCommandService;
+import com.studioedge.event.repository.SchoolRepository;
+import com.studioedge.focus.repository.DailyGoalRepository;
+import com.studioedge.focus.repository.DailySubjectRepository;
+import com.studioedge.focus.repository.PlannerRepository;
+import com.studioedge.focus.repository.SubjectRepository;
+import com.studioedge.domain.focus.request.SaveFocusRequest;
+import com.studioedge.domain.focus.request.StartFocusRequest;
+import com.studioedge.domain.focus.response.FocusModeImageResponse;
+import com.studioedge.domain.focus.response.MonsterAnimationResponse;
+import com.studioedge.focus.entity.DailyGoal;
+import com.studioedge.focus.entity.DailySubject;
+import com.studioedge.focus.entity.Planner;
+import com.studioedge.focus.entity.Subject;
+import com.studioedge.focus.exception.DailyGoalNotFoundException;
+import com.studioedge.focus.exception.SubjectNotFoundException;
+import com.studioedge.focus.exception.SubjectUnAuthorizedException;
+import com.studioedge.guild.repository.GuildMemberRepository;
+import com.studioedge.guild.entity.GuildMember;
+import com.studioedge.member.repository.MemberInfoRepository;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.repository.MemberSettingRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.member.exception.MemberInfoInvalidException;
+import com.studioedge.member.exception.MemberNotFoundException;
+import com.studioedge.domain.item.business.ItemAchievementService;
+import com.studioedge.system.repository.BackgroundRepository;
+import com.studioedge.system.repository.MonsterImageRepository;
+import com.studioedge.system.entity.Background;
+import com.studioedge.system.entity.Monster;
+import com.studioedge.system.entity.MonsterImage;
+import com.studioedge.system.enums.MonsterImageType;
+import com.studioedge.system.exception.BackgroundNotFoundException;
+import com.studioedge.AppConstants;
+import com.studioedge.common.enums.CategorySubType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
+import static com.studioedge.AppConstants.getServiceDate;
 
 @Service
 @RequiredArgsConstructor
@@ -68,7 +68,7 @@ public class FocusService {
     private final MonsterImageRepository monsterImageRepository;
     private final BackgroundRepository backgroundRepository;
     private final ItemAchievementService itemAchievementService;
-    private final TrainingRewardService trainingRewardService;
+    private final TrainingRewardCommandService trainingRewardService;
     private final PlannerRepository plannerRepository;
 
     @Transactional
@@ -109,7 +109,7 @@ public class FocusService {
         Member member = memberRepository.findById(m.getId())
                 .orElseThrow(MemberNotFoundException::new);
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(m.getId())
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
         DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), serviceDate)
                 .orElseThrow(DailyGoalNotFoundException::new);
         Subject subject = this.subjectRepository.findByIdAndDeleteAtIsNull(subjectId)

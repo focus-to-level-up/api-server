@@ -1,7 +1,7 @@
 package com.studioedge.domain.focus.request;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.Todo;
+import com.studioedge.focus.entity.Subject;
+import com.studioedge.focus.entity.Todo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 

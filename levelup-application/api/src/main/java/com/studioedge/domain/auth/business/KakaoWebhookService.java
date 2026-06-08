@@ -1,9 +1,9 @@
 package com.studioedge.domain.auth.business;
 
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;
-import com.studioedge.focus_to_levelup_server.domain.webhook.dto.KakaoUnlinkRequest;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.enums.SocialType;
+import com.studioedge.domain.auth.dto.KakaoUnlinkRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

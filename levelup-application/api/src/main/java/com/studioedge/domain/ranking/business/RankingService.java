@@ -1,14 +1,14 @@
 package com.studioedge.domain.ranking.business;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dto.RankingResponse;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
-import com.studioedge.focus_to_levelup_server.domain.ranking.exception.LeagueNotFoundException;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
+import com.studioedge.focus.entity.DailyGoal;
+import com.studioedge.member.entity.Member;
+import com.studioedge.ranking.repository.LeagueRepository;
+import com.studioedge.ranking.repository.RankingRepository;
+import com.studioedge.domain.ranking.response.RankingResponse;
+import com.studioedge.ranking.entity.League;
+import com.studioedge.ranking.entity.Ranking;
+import com.studioedge.ranking.exception.LeagueNotFoundException;
+import com.studioedge.common.enums.CategoryMainType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
+import static com.studioedge.AppConstants.getServiceDate;
 
 
 @Service

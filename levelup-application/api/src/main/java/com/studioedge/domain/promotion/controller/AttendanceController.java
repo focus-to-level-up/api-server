@@ -1,11 +1,11 @@
 package com.studioedge.domain.promotion.controller;
 
-import com.studioedge.focus_to_levelup_server.domain.attendance.dto.AttendanceCheckResponse;
-import com.studioedge.focus_to_levelup_server.domain.attendance.dto.AttendanceInfoResponse;
-import com.studioedge.focus_to_levelup_server.domain.attendance.service.AttendanceService;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
-import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
+import com.studioedge.domain.promotion.response.AttendanceCheckResponse;
+import com.studioedge.domain.promotion.response.AttendanceInfoResponse;
+import com.studioedge.domain.promotion.service.AttendanceService;
+import com.studioedge.global.response.HttpResponseUtil;
+import com.studioedge.member.entity.Member;
+import com.studioedge.response.CommonResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

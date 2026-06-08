@@ -1,7 +1,7 @@
 package com.studioedge.domain.character.response;
 
-import com.studioedge.focus_to_levelup_server.domain.character.entity.CharacterImage;
-import com.studioedge.focus_to_levelup_server.domain.character.enums.CharacterImageType;
+import com.studioedge.character.entity.CharacterImage;
+import com.studioedge.character.enums.CharacterImageType;
 import lombok.Builder;
 
 /**

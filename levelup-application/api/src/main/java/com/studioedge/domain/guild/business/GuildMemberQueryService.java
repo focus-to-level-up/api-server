@@ -1,15 +1,15 @@
 package com.studioedge.domain.guild.business;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildWeeklyRewardRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildListResponse;
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildMemberResponse;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildWeeklyReward;
-import com.studioedge.focus_to_levelup_server.domain.guild.exception.NotGuildMemberException;
+import com.studioedge.focus.repository.DailyGoalRepository;
+import com.studioedge.focus.entity.DailyGoal;
+import com.studioedge.guild.repository.GuildMemberRepository;
+import com.studioedge.guild.repository.GuildWeeklyRewardRepository;
+import com.studioedge.domain.guild.response.GuildListResponse;
+import com.studioedge.domain.guild.response.GuildMemberResponse;
+import com.studioedge.guild.entity.Guild;
+import com.studioedge.guild.entity.GuildMember;
+import com.studioedge.guild.entity.GuildWeeklyReward;
+import com.studioedge.guild.exception.NotGuildMemberException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
+import static com.studioedge.AppConstants.getServiceDate;
 
 /**
  * 길드원 조회 서비스

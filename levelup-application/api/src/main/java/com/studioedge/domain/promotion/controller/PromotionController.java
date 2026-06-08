@@ -1,12 +1,12 @@
 package com.studioedge.domain.promotion.controller;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.promotion.dto.ReferralInfoResponse;
-import com.studioedge.focus_to_levelup_server.domain.promotion.dto.RegisterCodeRequest;
-import com.studioedge.focus_to_levelup_server.domain.promotion.dto.RouletteSpinResponse;
-import com.studioedge.focus_to_levelup_server.domain.promotion.service.PromotionService;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
-import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
+import com.studioedge.domain.promotion.service.PromotionService;
+import com.studioedge.domain.promotion.request.RegisterCodeRequest;
+import com.studioedge.domain.promotion.response.ReferralInfoResponse;
+import com.studioedge.domain.promotion.response.RouletteSpinResponse;
+import com.studioedge.global.response.HttpResponseUtil;
+import com.studioedge.member.entity.Member;
+import com.studioedge.response.CommonResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,7 +17,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Promotion", description = "친구 초대 및 룰렛 이벤트 API")
 @RestController

@@ -1,6 +1,6 @@
 package com.studioedge.domain.guild.request;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
+import com.studioedge.guild.enums.GuildRole;
 import jakarta.validation.constraints.NotNull;
 
 public record GuildRoleUpdateRequest(

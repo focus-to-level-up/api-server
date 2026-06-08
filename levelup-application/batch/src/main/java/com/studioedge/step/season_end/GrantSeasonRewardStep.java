@@ -1,14 +1,14 @@
 package com.studioedge.step.season_end;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
-import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
+import com.studioedge.member.entity.Member;
+import com.studioedge.ranking.repository.LeagueRepository;
+import com.studioedge.ranking.entity.League;
+import com.studioedge.ranking.entity.Ranking;
+import com.studioedge.ranking.enums.Tier;
+import com.studioedge.mail.repository.MailRepository;
+import com.studioedge.mail.entity.Mail;
+import com.studioedge.mail.enums.MailType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Step;

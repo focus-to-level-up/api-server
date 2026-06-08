@@ -37,8 +37,8 @@ out/
 .vscode/
 
 ### Docker volumes ###
-mysql/
-redis/
+/mysql/
+/redis/
 
 ### Environment & Secrets ###
 .env

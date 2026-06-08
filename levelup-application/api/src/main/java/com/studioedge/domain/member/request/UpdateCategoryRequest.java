@@ -1,7 +1,7 @@
 package com.studioedge.domain.member.request;
 
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
+import com.studioedge.common.enums.CategoryMainType;
+import com.studioedge.common.enums.CategorySubType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 

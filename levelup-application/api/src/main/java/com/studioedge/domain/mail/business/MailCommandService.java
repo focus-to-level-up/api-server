@@ -1,29 +1,29 @@
 package com.studioedge.domain.mail.business;
 
-import com.studioedge.focus_to_levelup_server.domain.character.dao.CharacterRepository;
-import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
-import com.studioedge.focus_to_levelup_server.domain.character.entity.Character;
-import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
-import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterNotFoundException;
+import com.studioedge.character.repository.CharacterRepository;
+import com.studioedge.character.repository.MemberCharacterRepository;
+import com.studioedge.character.entity.Character;
+import com.studioedge.character.entity.MemberCharacter;
+import com.studioedge.character.exception.CharacterNotFoundException;
 import com.studioedge.domain.character.business.MemberCharacterCommandService;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberAssetRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.AssetRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.AssetRewardInfo;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.CharacterRewardInfo;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.MailAcceptResponse;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.MemberAsset;
-import com.studioedge.focus_to_levelup_server.domain.system.exception.MailAlreadyReceivedException;
-import com.studioedge.focus_to_levelup_server.domain.system.exception.MailExpiredException;
-import com.studioedge.focus_to_levelup_server.domain.system.exception.MailNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.system.exception.UnauthorizedMailAccessException;
+import com.studioedge.system.repository.MemberAssetRepository;
+import com.studioedge.member.repository.MemberInfoRepository;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.member.exception.MemberInfoInvalidException;
+import com.studioedge.system.repository.AssetRepository;
+import com.studioedge.mail.repository.MailRepository;
+import com.studioedge.domain.system.dto.response.AssetRewardInfo;
+import com.studioedge.domain.system.dto.response.CharacterRewardInfo;
+import com.studioedge.domain.mail.response.MailAcceptResponse;
+import com.studioedge.system.entity.Asset;
+import com.studioedge.mail.entity.Mail;
+import com.studioedge.system.entity.MemberAsset;
+import com.studioedge.mail.exception.MailAlreadyReceivedException;
+import com.studioedge.mail.exception.MailExpiredException;
+import com.studioedge.mail.exception.MailNotFoundException;
+import com.studioedge.mail.exception.UnauthorizedMailAccessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -96,7 +96,7 @@ public class MailCommandService {
     private MailAcceptResponse handleAdminRewardMail(Mail mail, Long memberId) {
         // MemberInfo 조회
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
 
         // 다이아 지급
         Integer diamondAmount = mail.getDiamondAmount();
@@ -139,7 +139,7 @@ public class MailCommandService {
     private MailAcceptResponse handleDiamondMail(Mail mail, Long memberId) {
         // MemberInfo 조회
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
 
         // 다이아 지급
         int diamondReward = mail.getReward();
@@ -172,7 +172,7 @@ public class MailCommandService {
 
         // Member 조회
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
 
         // 이미 보유 중인지 확인 후 지급
         if (!memberAssetRepository.existsByMemberIdAndAssetId(memberId, asset.getId())) {
@@ -203,7 +203,7 @@ public class MailCommandService {
     private MailAcceptResponse handlePurchaseMail(Mail mail, Long memberId) {
         // MemberInfo 조회
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
 
         // 다이아 지급
         int diamondReward = mail.getReward();
@@ -246,7 +246,7 @@ public class MailCommandService {
 
         // Member 조회
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
 
         // 캐릭터 지급 (공통 서비스 사용 - 중복 체크 및 자동 층수 배치 포함)
         MemberCharacter memberCharacter = memberCharacterCommandService.grantCharacter(member, character);
@@ -296,7 +296,7 @@ public class MailCommandService {
 
         // Member 조회
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
 
         // 중복 보유 검증
         boolean alreadyOwned = memberCharacterRepository.existsByMemberIdAndCharacterId(

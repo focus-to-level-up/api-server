@@ -1,13 +1,13 @@
 package com.studioedge.domain.stat.business;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberSettingRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
-import com.studioedge.focus_to_levelup_server.domain.stat.dto.TotalStatResponse;
-import com.studioedge.focus_to_levelup_server.domain.stat.dto.UpdateTotalStatColorRequest;
+import com.studioedge.focus.repository.DailyGoalRepository;
+import com.studioedge.focus.entity.DailyGoal;
+import com.studioedge.member.repository.MemberSettingRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.entity.MemberSetting;
+import com.studioedge.member.exception.MemberInfoInvalidException;
+import com.studioedge.domain.stat.response.TotalStatResponse;
+import com.studioedge.domain.stat.response.UpdateTotalStatColorRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,7 +66,7 @@ public class TotalStatService {
     @Transactional
     public void changeColor(Member member, UpdateTotalStatColorRequest request) {
         MemberSetting memberSetting = memberSettingRepository.findByMemberId(member.getId())
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
         memberSetting.updateTotalStatColor(request.color());
     }
 }

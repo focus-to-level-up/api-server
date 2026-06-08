@@ -1,19 +1,24 @@
 package com.studioedge.domain.mail.presentation;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.request.MailAcceptRequest;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.MailAcceptResponse;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.MailListResponse;
-import com.studioedge.focus_to_levelup_server.domain.system.service.MailCommandService;
-import com.studioedge.focus_to_levelup_server.domain.system.service.MailQueryService;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
-import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
+import com.studioedge.member.entity.Member;
+import com.studioedge.domain.mail.request.MailAcceptRequest;
+import com.studioedge.domain.mail.response.MailAcceptResponse;
+import com.studioedge.domain.mail.response.MailListResponse;
+import com.studioedge.domain.mail.business.MailCommandService;
+import com.studioedge.domain.mail.business.MailQueryService;
+import com.studioedge.response.CommonResponse;
+import com.studioedge.global.response.HttpResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 우편함 API

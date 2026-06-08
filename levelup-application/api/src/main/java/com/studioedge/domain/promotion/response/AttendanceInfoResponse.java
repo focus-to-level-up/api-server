@@ -1,7 +1,7 @@
 package com.studioedge.domain.promotion.response;
 
-import com.studioedge.focus_to_levelup_server.domain.attendance.entity.Attendance;
-import com.studioedge.focus_to_levelup_server.domain.attendance.enums.AttendanceCycleReward;
+import com.studioedge.promotion.entity.Attendance;
+import com.studioedge.promotion.enums.AttendanceCycleReward;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 

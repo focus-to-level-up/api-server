@@ -1,17 +1,17 @@
 package com.studioedge.domain.focus.business;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.TodoRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateSubjectRequest;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetSubjectResponse;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetTodoResponse;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailySubject;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.Todo;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectUnAuthorizedException;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus.repository.DailySubjectRepository;
+import com.studioedge.focus.repository.SubjectRepository;
+import com.studioedge.focus.repository.TodoRepository;
+import com.studioedge.domain.focus.request.CreateSubjectRequest;
+import com.studioedge.domain.focus.response.GetSubjectResponse;
+import com.studioedge.domain.focus.response.GetTodoResponse;
+import com.studioedge.focus.entity.DailySubject;
+import com.studioedge.focus.entity.Subject;
+import com.studioedge.focus.entity.Todo;
+import com.studioedge.focus.exception.SubjectNotFoundException;
+import com.studioedge.focus.exception.SubjectUnAuthorizedException;
+import com.studioedge.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
+import static com.studioedge.AppConstants.getServiceDate;
 
 @Service
 @RequiredArgsConstructor
@@ -69,7 +69,7 @@ public class SubjectService {
             Subject newSubject = CreateSubjectRequest.from(member, request);
             subjectRepository.save(newSubject);
         } else {
-            targetSubject.update(request);
+            targetSubject.update(request.name(), request.color());
         }
     }
 
@@ -79,7 +79,7 @@ public class SubjectService {
                 .orElseThrow(SubjectNotFoundException::new);
         if (!subject.getMember().getId().equals(member.getId()))
             throw new SubjectUnAuthorizedException();
-        subject.update(request);
+        subject.update(request.name(), request.color());
     }
 
     @Transactional

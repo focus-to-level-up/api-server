@@ -1,6 +1,6 @@
 package com.studioedge.domain.payment.dto.refund;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.entity.PaymentLog;
+import com.studioedge.payment.entity.PaymentLog;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

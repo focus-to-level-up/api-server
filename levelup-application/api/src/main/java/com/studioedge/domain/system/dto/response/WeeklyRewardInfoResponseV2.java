@@ -1,8 +1,8 @@
 package com.studioedge.domain.system.dto.response;
 
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.WeeklyReward;
-import com.studioedge.focus_to_levelup_server.global.common.enums.Rarity;
+import com.studioedge.payment.enums.SubscriptionType;
+import com.studioedge.system.entity.WeeklyReward;
+import com.studioedge.character.enums.Rarity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 

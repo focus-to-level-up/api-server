@@ -1,14 +1,19 @@
 package com.studioedge.domain.member.request;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.member.enums.Gender;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.MemberAsset;
-import com.studioedge.focus_to_levelup_server.global.common.enums.AssetType;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.member.enums.Gender;
+import com.studioedge.system.entity.MemberAsset;
+import com.studioedge.common.enums.AssetType;
+import com.studioedge.common.enums.CategoryMainType;
+import com.studioedge.common.enums.CategorySubType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 

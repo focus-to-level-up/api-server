@@ -1,6 +1,6 @@
 package com.studioedge.global.config;
 
-import com.studioedge.focus_to_levelup_server.global.serializer.KstDeserializer;
+import com.studioedge.global.serializer.KstDeserializer;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

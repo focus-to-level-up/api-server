@@ -1,23 +1,23 @@
 package com.studioedge.domain.promotion.service;
 
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.promotion.dao.ReferralRepository;
-import com.studioedge.focus_to_levelup_server.domain.promotion.dto.ReferralInfoResponse;
-import com.studioedge.focus_to_levelup_server.domain.promotion.dto.RegisterCodeRequest;
-import com.studioedge.focus_to_levelup_server.domain.promotion.dto.RouletteSpinResponse;
-import com.studioedge.focus_to_levelup_server.domain.promotion.entity.Referral;
-import com.studioedge.focus_to_levelup_server.domain.promotion.enums.RouletteReward;
-import com.studioedge.focus_to_levelup_server.domain.promotion.exception.AlreadyRegisterReferralCodeException;
-import com.studioedge.focus_to_levelup_server.domain.promotion.exception.ReferralCodeNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.promotion.exception.SelfReferralCodeException;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
+import com.studioedge.domain.promotion.request.RegisterCodeRequest;
+import com.studioedge.domain.promotion.response.ReferralInfoResponse;
+import com.studioedge.domain.promotion.response.RouletteSpinResponse;
+import com.studioedge.mail.entity.Mail;
+import com.studioedge.mail.enums.MailType;
+import com.studioedge.mail.repository.MailRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.member.exception.MemberInfoInvalidException;
+import com.studioedge.member.exception.MemberNotFoundException;
+import com.studioedge.member.repository.MemberInfoRepository;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.promotion.entity.Referral;
+import com.studioedge.promotion.enums.RouletteReward;
+import com.studioedge.promotion.exception.AlreadyRegisterReferralCodeException;
+import com.studioedge.promotion.exception.ReferralCodeNotFoundException;
+import com.studioedge.promotion.exception.SelfReferralCodeException;
+import com.studioedge.promotion.repository.ReferralRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -46,7 +46,7 @@ public class PromotionService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
 
         // 1. 코드가 없으면 생성 (최초 1회)
         if (member.getReferralCode() == null) {
@@ -100,7 +100,7 @@ public class PromotionService {
 
         // 5. 초대자(B)에게 룰렛 티켓 지급
         MemberInfo inviterInfo = memberInfoRepository.findByMemberId(inviter.getId())
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
         inviterInfo.addRouletteTicket(1);
     }
 
@@ -109,7 +109,7 @@ public class PromotionService {
      */
     public RouletteSpinResponse spinRoulette(Long memberId) {
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
 
         // 1. 티켓 소모
         memberInfo.useRouletteTicket();

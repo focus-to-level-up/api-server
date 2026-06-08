@@ -1,12 +1,12 @@
 package com.studioedge.domain.guild.business;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildMemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildMemberResponse;
-import com.studioedge.focus_to_levelup_server.domain.guild.dto.GuildRoleUpdateRequest;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
-import com.studioedge.focus_to_levelup_server.domain.guild.exception.GuildRoleUnAuthorizedException;
+import com.studioedge.guild.repository.GuildMemberRepository;
+import com.studioedge.domain.guild.response.GuildMemberResponse;
+import com.studioedge.domain.guild.request.GuildRoleUpdateRequest;
+import com.studioedge.guild.entity.Guild;
+import com.studioedge.guild.entity.GuildMember;
+import com.studioedge.guild.enums.GuildRole;
+import com.studioedge.guild.exception.GuildRoleUnAuthorizedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,16 +1,16 @@
 package com.studioedge.domain.focus.business;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.SubjectRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.TodoRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.request.CreateTodoRequest;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.GetTodoResponse;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.Todo;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.SubjectUnAuthorizedException;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.TodoNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.TodoUnAuthorizedException;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus.repository.SubjectRepository;
+import com.studioedge.focus.repository.TodoRepository;
+import com.studioedge.domain.focus.request.CreateTodoRequest;
+import com.studioedge.domain.focus.response.GetTodoResponse;
+import com.studioedge.focus.entity.Subject;
+import com.studioedge.focus.entity.Todo;
+import com.studioedge.focus.exception.SubjectNotFoundException;
+import com.studioedge.focus.exception.SubjectUnAuthorizedException;
+import com.studioedge.focus.exception.TodoNotFoundException;
+import com.studioedge.focus.exception.TodoUnAuthorizedException;
+import com.studioedge.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,7 +52,7 @@ public class TodoService {
                 .orElseThrow(TodoNotFoundException::new);
         if (!todo.getSubject().getMember().getId().equals(member.getId()))
             throw new TodoUnAuthorizedException();
-        todo.update(request);
+        todo.update(request.content());
     }
 
     @Transactional

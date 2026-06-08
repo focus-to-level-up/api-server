@@ -3,50 +3,48 @@ package com.studioedge.domain.advertisement.business;
 import com.studioedge.advertisement.component.AdvertisementReader;
 import com.studioedge.advertisement.component.AdvertisementWriter;
 import com.studioedge.advertisement.entity.Advertisement;
+import com.studioedge.common.enums.CategorySubType;
 import com.studioedge.domain.advertisement.response.AdvertisementResponse;
+import com.studioedge.infra.redis.cache.AdvertisementCacheClient;
 import com.studioedge.member.entity.Member;
 import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.member.exception.MemberInfoInvalidException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class AdvertisementService {
 
+    private static final Duration AD_COOLDOWN = Duration.ofHours(3);
+
     private final AdvertisementReader advertisementReader;
     private final AdvertisementWriter advertisementWriter;
-    private final StringRedisTemplate redisTemplate;
-
-    // Redis Key Prefix 정의
-    private static final String AD_EXPOSURE_KEY_PREFIX = "ad:exposure:member:";
-    private static final long AD_COOLDOWN_HOURS = 3L;
+    private final AdvertisementCacheClient advertisementCacheClient;
 
     /**
      * 앱 실행 시 노출할 광고 1개 조회
      */
     @Transactional
     public AdvertisementResponse getAdvertisement(Member member) {
-        String redisKey = AD_EXPOSURE_KEY_PREFIX + member.getId();
-        String hasViewed = redisTemplate.opsForValue().get(redisKey);
-
-        if (hasViewed != null) {
+        if (advertisementCacheClient.hasViewed(member.getId())) {
             return null;
         }
 
         // 1. 유저의 Sub 카테고리 확인
         MemberInfo memberInfo = member.getMemberInfo();
         if (memberInfo == null || memberInfo.getCategorySub() == null) {
-            throw new InvalidMemberException();
+            throw new MemberInfoInvalidException();
         }
         CategorySubType subCategory = memberInfo.getCategorySub();
 
         // 2. 해당 카테고리에서 노출 횟수가 가장 적은 광고 조회 (균등 노출)
         Optional<Advertisement> adOptional = advertisementReader
-                .findFirstByCategorySubsContainsAndIsActiveTrueOrderByViewCountAsc(subCategory);
+                .findFirstActiveByCategorySubOrderByViewCount(subCategory);
 
         // 3. 광고가 없으면 null 반환 (클라이언트에서 노출 안 함 처리)
         if (adOptional.isEmpty()) {
@@ -58,7 +56,7 @@ public class AdvertisementService {
         // 4. 노출 수(View Count) 증가 (DB 직접 업데이트로 동시성 방어)
         advertisementWriter.increaseViewCount(advertisement.getId());
 
-        redisTemplate.opsForValue().set(redisKey, "true", AD_COOLDOWN_HOURS, TimeUnit.HOURS);
+        advertisementCacheClient.markViewed(member.getId(), AD_COOLDOWN);
 
         // 5. 응답 반환
         return AdvertisementResponse.from(advertisement);

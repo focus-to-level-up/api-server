@@ -1,7 +1,7 @@
 package com.studioedge.domain.auth.presentation;
 
-import com.studioedge.focus_to_levelup_server.domain.webhook.dto.KakaoUnlinkRequest;
-import com.studioedge.focus_to_levelup_server.domain.webhook.service.KakaoWebhookService;
+import com.studioedge.domain.auth.dto.KakaoUnlinkRequest;
+import com.studioedge.domain.auth.business.KakaoWebhookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

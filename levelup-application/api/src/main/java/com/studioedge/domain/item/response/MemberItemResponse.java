@@ -1,7 +1,7 @@
 package com.studioedge.domain.item.response;
 
-import com.studioedge.focus_to_levelup_server.domain.store.entity.MemberItem;
-import com.studioedge.focus_to_levelup_server.domain.store.enums.ItemType;
+import com.studioedge.item.entity.MemberItem;
+import com.studioedge.item.enums.ItemType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 

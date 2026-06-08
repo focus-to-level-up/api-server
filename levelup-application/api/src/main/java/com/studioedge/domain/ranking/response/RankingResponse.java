@@ -1,10 +1,10 @@
 package com.studioedge.domain.ranking.response;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
-import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
+import com.studioedge.focus.entity.DailyGoal;
+import com.studioedge.member.entity.Member;
+import com.studioedge.ranking.entity.League;
+import com.studioedge.ranking.entity.Ranking;
+import com.studioedge.ranking.enums.Tier;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 

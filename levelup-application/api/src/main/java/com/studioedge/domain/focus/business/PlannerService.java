@@ -1,12 +1,12 @@
 package com.studioedge.domain.focus.business;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.PlannerRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.PlannerListResponse;
-import com.studioedge.focus_to_levelup_server.domain.focus.dto.response.PlannerResponse;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.Planner;
-import com.studioedge.focus_to_levelup_server.domain.focus.exception.PlannerNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
+import com.studioedge.focus.repository.PlannerRepository;
+import com.studioedge.domain.focus.response.PlannerListResponse;
+import com.studioedge.domain.focus.response.PlannerResponse;
+import com.studioedge.focus.entity.Planner;
+import com.studioedge.focus.exception.PlannerNotFoundException;
+import com.studioedge.member.entity.Member;
+import com.studioedge.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

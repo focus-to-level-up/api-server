@@ -1,0 +1,60 @@
+spring:
+  profiles:
+    active: test
+
+  datasource-data:
+    jdbc-url: jdbc:h2:mem:focus_db;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  datasource-meta:
+    jdbc-url: jdbc:h2:mem:focus_meta_db;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: create-drop
+
+  sql:
+    init:
+      mode: never
+
+  batch:
+    jdbc:
+      initialize-schema: never
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+jwt:
+  secret: test-secret-key-test-secret-key-test-secret-key
+
+firebase:
+  service-account-json: '{}'
+  pre-registration:
+    service-account-json: ''
+
+cloud:
+  aws:
+    s3:
+      bucket: test-bucket
+    credentials:
+      access-key: test
+      secret-key: test
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+sentry:
+  dsn:

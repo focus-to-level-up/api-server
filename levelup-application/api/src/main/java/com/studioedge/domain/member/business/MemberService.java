@@ -1,26 +1,64 @@
 package com.studioedge.domain.member.business;
 
+import com.studioedge.AppConstants;
+import com.studioedge.character.exception.CharacterNotFoundException;
 import com.studioedge.system.exception.AssetUnauthorizedException;
+import com.studioedge.system.entity.Asset;
+import com.studioedge.system.entity.MemberAsset;
+import com.studioedge.system.repository.AssetRepository;
 import com.studioedge.system.repository.MemberAssetRepository;
+import com.studioedge.system.repository.ReportLogRepository;
+import com.studioedge.character.entity.Character;
+import com.studioedge.character.entity.MemberCharacter;
+import com.studioedge.character.repository.CharacterRepository;
+import com.studioedge.character.repository.MemberCharacterRepository;
 import com.studioedge.common.enums.CategoryMainType;
 import com.studioedge.common.enums.CategorySubType;
-import com.studioedge.domain.member.request.*;
+import com.studioedge.domain.member.request.CompleteSignUpRequest;
+import com.studioedge.domain.member.request.ReportMemberRequest;
+import com.studioedge.domain.member.request.UpdateCategoryRequest;
+import com.studioedge.domain.member.request.UpdateNicknameRequest;
+import com.studioedge.domain.member.request.UpdateProfileRequest;
+import com.studioedge.domain.member.request.UpdateSchoolRequest;
 import com.studioedge.domain.member.response.GetProfileResponse;
 import com.studioedge.domain.member.response.MemberCurrencyResponse;
 import com.studioedge.domain.member.response.MemberSettingDto;
 import com.studioedge.domain.member.response.ProfileAssetResponse;
+import com.studioedge.event.entity.School;
+import com.studioedge.event.repository.SchoolRepository;
+import com.studioedge.focus.entity.Subject;
+import com.studioedge.focus.repository.DailyGoalRepository;
+import com.studioedge.focus.repository.SubjectRepository;
+import com.studioedge.guild.entity.GuildMember;
+import com.studioedge.guild.enums.GuildRole;
+import com.studioedge.guild.repository.GuildMemberRepository;
 import com.studioedge.member.entity.Member;
 import com.studioedge.member.entity.MemberInfo;
 import com.studioedge.member.entity.MemberSetting;
 import com.studioedge.member.enums.MemberStatus;
+import com.studioedge.member.exception.MemberCategoryUpdateException;
+import com.studioedge.member.exception.MemberInfoInvalidException;
+import com.studioedge.member.exception.MemberInvalidSignUpException;
 import com.studioedge.member.exception.MemberNotFoundException;
+import com.studioedge.member.exception.MemberNicknameDuplicatedException;
+import com.studioedge.member.exception.MemberNicknameUpdateException;
 import com.studioedge.member.repository.MemberInfoRepository;
 import com.studioedge.member.repository.MemberRepository;
 import com.studioedge.member.repository.MemberSettingRepository;
+import com.studioedge.payment.enums.SubscriptionType;
+import com.studioedge.payment.repository.SubscriptionRepository;
+import com.studioedge.ranking.entity.League;
+import com.studioedge.ranking.entity.Ranking;
+import com.studioedge.ranking.enums.Tier;
+import com.studioedge.ranking.exception.LeagueNotFoundException;
+import com.studioedge.ranking.repository.LeagueRepository;
+import com.studioedge.ranking.repository.RankingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -73,7 +111,7 @@ public class MemberService {
     @Transactional
     public void updateMemberProfile(Member member, UpdateProfileRequest request) {
         MemberInfo memberInfo = memberInfoRepository.findByMember(member)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
         MemberAsset newImage = memberAssetRepository.findById(request.profileImageId())
                 .orElseThrow(AssetUnauthorizedException::new);
         MemberAsset newBorder = memberAssetRepository.findById(request.profileBorderId())
@@ -94,9 +132,9 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public GetProfileResponse getMemberProfile(Long memberId) {
-        LocalDate today = getServiceDate();
+        LocalDate today = AppConstants.getServiceDate();
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
         SubscriptionState state = getSubscriptionState(memberId);
         String ranking = getMemberRanking(memberId);
 
@@ -137,10 +175,10 @@ public class MemberService {
     public void updateNickname(Member member, UpdateNicknameRequest request) {
         LocalDateTime updatedAt = member.getNicknameUpdatedAt();
         if (updatedAt != null && updatedAt.isAfter(LocalDateTime.now().minusMonths(1))) {
-            throw new NicknameUpdateException();
+            throw new MemberNicknameUpdateException();
         }
         if (memberRepository.existsByNickname(request.nickname())) {
-            throw new NicknameDuplicatedException();
+            throw new MemberNicknameDuplicatedException();
         }
         Member me = memberRepository.findById(member.getId())
                 .orElseThrow(MemberNotFoundException::new);
@@ -153,12 +191,12 @@ public class MemberService {
             throw new IllegalArgumentException("카테고리의 상하관계가 일치하지 않습니다.");
         }
         MemberInfo memberInfo = memberInfoRepository.findByMember(member)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
         LocalDateTime updatedAt = memberInfo.getCategoryUpdatedAt();
         if (updatedAt != null && updatedAt.isAfter(LocalDateTime.now().minusMonths(1))) {
-            throw new CategoryUpdateException();
+            throw new MemberCategoryUpdateException();
         }
-        memberInfo.updateCategory(request);
+        memberInfo.updateCategory(request.categoryMain(), request.categorySub());
 
         List<GuildMember> memberWithGuilds = guildMemberRepository.findAllByMemberIdWithGuild(member.getId());
         for (GuildMember guildMember : memberWithGuilds) {
@@ -171,19 +209,19 @@ public class MemberService {
     @Transactional
     public void updateSchool(Member member, UpdateSchoolRequest request) {
         MemberInfo memberInfo = memberInfoRepository.findByMember(member)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
         CategoryMainType mainType = memberInfo.getCategoryMain();
         CategorySubType subType = memberInfo.getCategorySub();
         LocalDateTime updatedAt = memberInfo.getSchoolUpdatedAt();
 
         if (!subType.getMainType().equals(mainType)) {
-            throw new InvalidSignUpException();
+            throw new MemberInvalidSignUpException();
         }
         if (updatedAt != null && updatedAt.isAfter(LocalDateTime.now().minusMonths(1))) {
-            throw new CategoryUpdateException();
+            throw new MemberCategoryUpdateException();
         }
 
-        memberInfo.updateSchool(request);
+        memberInfo.updateSchool(request.schoolName(), request.schoolRegion());
         if (AppConstants.SCHOOL_CATEGORIES.contains(mainType) &&
                 !subType.equals(CategorySubType.N_SU) &&
                 request.schoolName() != null) {
@@ -201,13 +239,19 @@ public class MemberService {
     @Transactional
     public void updateMemberSetting(Member member, MemberSettingDto request) {
         MemberSetting memberSetting = memberSettingRepository.findByMemberId(member.getId())
-                .orElseThrow(InvalidMemberException::new);
-        memberSetting.updateSetting(request);
+                .orElseThrow(MemberInfoInvalidException::new);
+        memberSetting.updateSetting(
+                request.alarmOn(),
+                request.isPomodoro(),
+                request.isAIPlanner(),
+                request.isSubscriptionMessageBlocked(),
+                request.totalStatColor()
+        );
     }
 
     public MemberSettingDto getMemberSetting(Member member) {
         MemberSetting memberSetting = memberSettingRepository.findByMemberId(member.getId())
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
         return MemberSettingDto.of(memberSetting);
     }
 
@@ -232,11 +276,11 @@ public class MemberService {
         }
         // 2. 카테고리 상-하위 관계 검사
         if (subCategory.getMainType() != mainCategory) {
-            throw new InvalidSignUpException();
+            throw new MemberInvalidSignUpException();
         }
 
         if (memberRepository.existsByNickname(request.nickname())) {
-            throw new NicknameDuplicatedException();
+            throw new MemberNicknameDuplicatedException();
         }
     }
 
@@ -327,7 +371,7 @@ public class MemberService {
                     Subject.builder()
                             .member(member)
                             .name("과목" + (i + 1))
-                            .color(INITIAL_SUBJECT_COLORS[i])
+                            .color(AppConstants.INITIAL_SUBJECT_COLORS[i])
                             .build()
             );
         }
@@ -351,7 +395,7 @@ public class MemberService {
     @Transactional(readOnly = true)
     public MemberCurrencyResponse getMemberCurrency(Member member) {
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(member.getId())
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
 
         return MemberCurrencyResponse.builder()
                 .level(member.getCurrentLevel())

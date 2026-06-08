@@ -1,10 +1,10 @@
 package com.studioedge.domain.ranking.presentation;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dto.RankingResponse;
-import com.studioedge.focus_to_levelup_server.domain.ranking.service.RankingService;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
-import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
+import com.studioedge.member.entity.Member;
+import com.studioedge.domain.ranking.response.RankingResponse;
+import com.studioedge.domain.ranking.business.RankingService;
+import com.studioedge.response.CommonResponse;
+import com.studioedge.global.response.HttpResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

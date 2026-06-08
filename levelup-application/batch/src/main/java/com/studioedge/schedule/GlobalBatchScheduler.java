@@ -1,6 +1,6 @@
 package com.studioedge.schedule;
 
-import com.studioedge.focus_to_levelup_server.domain.ranking.dao.SeasonRepository;
+import com.studioedge.ranking.repository.SeasonRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;

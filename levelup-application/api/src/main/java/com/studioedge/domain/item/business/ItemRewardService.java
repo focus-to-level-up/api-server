@@ -1,21 +1,21 @@
 package com.studioedge.domain.item.business;
 
-import com.studioedge.focus_to_levelup_server.domain.character.dao.MemberCharacterRepository;
-import com.studioedge.focus_to_levelup_server.domain.character.entity.MemberCharacter;
-import com.studioedge.focus_to_levelup_server.domain.character.exception.CharacterDefaultNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.store.dao.ItemDetailRepository;
-import com.studioedge.focus_to_levelup_server.domain.store.dao.MemberItemRepository;
-import com.studioedge.focus_to_levelup_server.domain.store.entity.ItemDetail;
-import com.studioedge.focus_to_levelup_server.domain.store.entity.MemberItem;
-import com.studioedge.focus_to_levelup_server.domain.store.exception.ItemNotCompletedException;
-import com.studioedge.focus_to_levelup_server.domain.store.exception.MemberItemNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.store.exception.RewardAlreadyReceivedException;
+import com.studioedge.character.repository.MemberCharacterRepository;
+import com.studioedge.character.entity.MemberCharacter;
+import com.studioedge.character.exception.CharacterDefaultNotFoundException;
+import com.studioedge.member.repository.MemberInfoRepository;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.member.exception.MemberInfoInvalidException;
+import com.studioedge.member.exception.MemberNotFoundException;
+import com.studioedge.item.repository.ItemDetailRepository;
+import com.studioedge.item.repository.MemberItemRepository;
+import com.studioedge.item.entity.ItemDetail;
+import com.studioedge.item.entity.MemberItem;
+import com.studioedge.item.exception.ItemNotCompletedException;
+import com.studioedge.item.exception.MemberItemNotFoundException;
+import com.studioedge.item.exception.RewardAlreadyReceivedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -62,7 +62,7 @@ public class ItemRewardService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
         MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-                .orElseThrow(InvalidMemberException::new);
+                .orElseThrow(MemberInfoInvalidException::new);
 
         // ItemDetail 조회하여 rewardLevel 가져오기
         ItemDetail itemDetail = itemDetailRepository.findByItemIdAndParameter(

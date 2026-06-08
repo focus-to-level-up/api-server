@@ -1,12 +1,12 @@
 package com.studioedge.domain.item.business;
 
-import com.studioedge.focus_to_levelup_server.domain.store.dao.ItemDetailRepository;
-import com.studioedge.focus_to_levelup_server.domain.store.dao.MemberItemRepository;
-import com.studioedge.focus_to_levelup_server.domain.store.dto.response.MemberItemListResponse;
-import com.studioedge.focus_to_levelup_server.domain.store.dto.response.MemberItemResponse;
-import com.studioedge.focus_to_levelup_server.domain.store.entity.ItemDetail;
-import com.studioedge.focus_to_levelup_server.domain.store.entity.MemberItem;
-import com.studioedge.focus_to_levelup_server.domain.store.exception.InvalidItemOptionException;
+import com.studioedge.item.repository.ItemDetailRepository;
+import com.studioedge.item.repository.MemberItemRepository;
+import com.studioedge.domain.item.response.MemberItemListResponse;
+import com.studioedge.domain.item.response.MemberItemResponse;
+import com.studioedge.item.entity.ItemDetail;
+import com.studioedge.item.entity.MemberItem;
+import com.studioedge.item.exception.InvalidItemOptionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

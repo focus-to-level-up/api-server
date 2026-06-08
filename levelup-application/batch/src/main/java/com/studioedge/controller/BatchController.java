@@ -1,7 +1,6 @@
 package com.studioedge.controller;
 
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
-import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
+import com.studioedge.response.CommonResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -136,7 +135,7 @@ public class BatchController {
             String resultMessage = String.format("%s finished with status: %s", jobName, execution.getStatus());
             log.info(">>> {}", resultMessage);
 
-            return HttpResponseUtil.ok(resultMessage);
+            return ResponseEntity.ok(CommonResponse.ok(resultMessage));
 
         } catch (Exception e) {
             log.error(">>> Failed to run {}", jobName, e);

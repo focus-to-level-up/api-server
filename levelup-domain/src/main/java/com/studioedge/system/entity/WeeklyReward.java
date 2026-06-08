@@ -1,5 +1,6 @@
 package com.studioedge.system.entity;
 
+import com.studioedge.character.entity.Character;
 import com.studioedge.common.entity.BaseEntity;
 import com.studioedge.member.entity.Member;
 import jakarta.persistence.*;

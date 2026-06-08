@@ -1,7 +1,7 @@
 package com.studioedge.domain.mail.response;
 
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.MailInfo;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
+import com.studioedge.domain.mail.response.MailInfo;
+import com.studioedge.mail.entity.Mail;
 import lombok.Builder;
 
 import java.util.List;

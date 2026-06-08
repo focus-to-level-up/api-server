@@ -1,12 +1,12 @@
 package com.studioedge.step.daily;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailySubject;
-import com.studioedge.focus_to_levelup_server.domain.store.dao.MemberItemRepository;
-import com.studioedge.focus_to_levelup_server.domain.store.entity.MemberItem;
+import com.studioedge.focus.entity.DailyGoal;
+import com.studioedge.focus.entity.DailySubject;
+import com.studioedge.focus.repository.DailyGoalRepository;
+import com.studioedge.focus.repository.DailySubjectRepository;
+import com.studioedge.item.entity.MemberItem;
+import com.studioedge.item.repository.MemberItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Step;
@@ -24,8 +24,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
-import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.toServiceMinutes;
+import static com.studioedge.AppConstants.getServiceDate;
+import static com.studioedge.AppConstants.toServiceMinutes;
 
 /**
  * "휴식은 사치" 미션 성공 판정 배치 Step

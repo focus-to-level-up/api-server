@@ -1,7 +1,7 @@
 package com.studioedge.domain.promotion.response;
 
-import com.studioedge.focus_to_levelup_server.domain.promotion.enums.RouletteReward;
-import com.studioedge.focus_to_levelup_server.global.common.enums.RewardType;
+import com.studioedge.promotion.enums.RouletteReward;
+import com.studioedge.common.enums.RewardType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 

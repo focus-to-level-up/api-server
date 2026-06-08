@@ -1,8 +1,8 @@
 package com.studioedge.domain.mail.business;
 
-import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.MailListResponse;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
+import com.studioedge.mail.repository.MailRepository;
+import com.studioedge.domain.mail.response.MailListResponse;
+import com.studioedge.mail.entity.Mail;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

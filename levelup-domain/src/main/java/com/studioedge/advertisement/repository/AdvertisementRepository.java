@@ -1,6 +1,7 @@
 package com.studioedge.advertisement.repository;
 
 import com.studioedge.advertisement.entity.Advertisement;
+import com.studioedge.common.enums.CategorySubType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

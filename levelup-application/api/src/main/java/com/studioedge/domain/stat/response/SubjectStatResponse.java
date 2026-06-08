@@ -1,6 +1,6 @@
 package com.studioedge.domain.stat.response;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
+import com.studioedge.focus.entity.Subject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 

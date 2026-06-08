@@ -1,11 +1,11 @@
 package com.studioedge.step.monthly;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.Subject;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.stat.dao.MonthlySubjectStatRepository;
-import com.studioedge.focus_to_levelup_server.domain.stat.entity.MonthlySubjectStat;
+import com.studioedge.focus.repository.DailySubjectRepository;
+import com.studioedge.focus.entity.Subject;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.stat.repository.MonthlySubjectStatRepository;
+import com.studioedge.stat.entity.MonthlySubjectStat;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Step;

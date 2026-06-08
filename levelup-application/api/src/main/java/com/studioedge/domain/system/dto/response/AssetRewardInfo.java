@@ -1,6 +1,6 @@
 package com.studioedge.domain.system.dto.response;
 
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Asset;
+import com.studioedge.system.entity.Asset;
 import lombok.Builder;
 
 @Builder

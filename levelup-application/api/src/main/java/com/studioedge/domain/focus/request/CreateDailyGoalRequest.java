@@ -1,7 +1,7 @@
 package com.studioedge.domain.focus.request;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
+import com.studioedge.focus.entity.DailyGoal;
+import com.studioedge.member.entity.Member;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

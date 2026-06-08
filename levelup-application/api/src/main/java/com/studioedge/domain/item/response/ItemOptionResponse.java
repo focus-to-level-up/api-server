@@ -1,6 +1,6 @@
 package com.studioedge.domain.item.response;
 
-import com.studioedge.focus_to_levelup_server.domain.store.entity.ItemDetail;
+import com.studioedge.item.entity.ItemDetail;
 import lombok.Builder;
 
 /**

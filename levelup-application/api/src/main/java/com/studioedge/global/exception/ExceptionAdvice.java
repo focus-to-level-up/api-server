@@ -39,7 +39,7 @@ public class ExceptionAdvice {
         exceptionLog.warn(e.getMessage(), e);
 
         return ResponseEntity.status(e.getStatus())
-                .body(new ExceptionResponse(e.getMessage()));
+                .body(ExceptionResponse.of(e.getStatus(), e.getMessage()));
     }
 
     @ExceptionHandler({
@@ -75,7 +75,7 @@ public class ExceptionAdvice {
         exceptionLog.warn("Validation failed", ex);
 
         return ResponseEntity.badRequest()
-                .body(new ExceptionResponse(message));
+                .body(ExceptionResponse.of(HttpStatus.BAD_REQUEST, message));
     }
 
     @ExceptionHandler(Exception.class)
@@ -83,14 +83,13 @@ public class ExceptionAdvice {
         if (e instanceof NoResourceFoundException) {
             defaultLog.info(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ExceptionResponse(e.getMessage()));
+                    .body(ExceptionResponse.of(HttpStatus.NOT_FOUND, e.getMessage()));
         }
 
         defaultLog.error(e.getMessage());
         exceptionLog.error(e.getMessage(), e);
 
         return ResponseEntity.internalServerError()
-                .body(new ExceptionResponse(e.getMessage()));
+                .body(ExceptionResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()));
     }
 }
-

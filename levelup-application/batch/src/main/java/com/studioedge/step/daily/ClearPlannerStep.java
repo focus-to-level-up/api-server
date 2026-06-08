@@ -1,6 +1,6 @@
 package com.studioedge.step.daily;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.PlannerRepository;
+import com.studioedge.focus.repository.PlannerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Step;

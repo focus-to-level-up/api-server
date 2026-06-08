@@ -1,13 +1,13 @@
 package com.studioedge.domain.event.business;
 
-import com.studioedge.focus_to_levelup_server.domain.event.dao.SchoolRepository;
-import com.studioedge.focus_to_levelup_server.domain.event.dto.SchoolResponse;
-import com.studioedge.focus_to_levelup_server.domain.event.exception.EventUnAuthorizedException;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.InvalidMemberException;
-import com.studioedge.focus_to_levelup_server.global.common.AppConstants;
+import com.studioedge.event.repository.SchoolRepository;
+import com.studioedge.domain.event.response.SchoolResponse;
+import com.studioedge.event.exception.EventUnAuthorizedException;
+import com.studioedge.member.repository.MemberInfoRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.member.exception.MemberInfoInvalidException;
+import com.studioedge.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,7 +24,7 @@ public class SchoolService {
 
     @Transactional(readOnly = true)
     public Page<SchoolResponse> getRankingList(Member member, Pageable pageable) {
-        MemberInfo memberInfo = memberInfoRepository.findByMember(member).orElseThrow(InvalidMemberException::new);
+        MemberInfo memberInfo = memberInfoRepository.findByMember(member).orElseThrow(MemberInfoInvalidException::new);
         if (!AppConstants.SCHOOL_CATEGORIES.contains(memberInfo.getCategoryMain())) {
             throw new EventUnAuthorizedException();
         }

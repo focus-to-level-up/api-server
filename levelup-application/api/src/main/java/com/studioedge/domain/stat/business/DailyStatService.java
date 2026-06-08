@@ -1,9 +1,9 @@
 package com.studioedge.domain.stat.business;
 
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
-import com.studioedge.focus_to_levelup_server.domain.stat.dto.DailyStatListResponse;
-import com.studioedge.focus_to_levelup_server.domain.stat.dto.DailyStatResponse;
+import com.studioedge.focus.repository.DailyGoalRepository;
+import com.studioedge.focus.entity.DailyGoal;
+import com.studioedge.domain.stat.response.DailyStatListResponse;
+import com.studioedge.domain.stat.response.DailyStatResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

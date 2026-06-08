@@ -1,6 +1,6 @@
 package com.studioedge.domain.member.response;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
+import com.studioedge.member.entity.MemberSetting;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;

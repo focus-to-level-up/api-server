@@ -1,18 +1,22 @@
 package com.studioedge.domain.promotion.controller;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.CouponDetailResponse;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.CouponRedeemResponse;
-import com.studioedge.focus_to_levelup_server.domain.system.service.CouponCommandService;
-import com.studioedge.focus_to_levelup_server.domain.system.service.CouponQueryService;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
-import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
+import com.studioedge.domain.promotion.service.CouponCommandService;
+import com.studioedge.domain.promotion.service.CouponQueryService;
+import com.studioedge.domain.system.dto.response.CouponDetailResponse;
+import com.studioedge.domain.system.dto.response.CouponRedeemResponse;
+import com.studioedge.global.response.HttpResponseUtil;
+import com.studioedge.member.entity.Member;
+import com.studioedge.response.CommonResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 쿠폰 API

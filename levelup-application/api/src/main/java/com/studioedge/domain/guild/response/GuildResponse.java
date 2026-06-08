@@ -1,10 +1,10 @@
 package com.studioedge.domain.guild.response;
 
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildMember;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.GuildWeeklyReward;
-import com.studioedge.focus_to_levelup_server.domain.guild.enums.GuildRole;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
+import com.studioedge.guild.entity.Guild;
+import com.studioedge.guild.entity.GuildMember;
+import com.studioedge.guild.entity.GuildWeeklyReward;
+import com.studioedge.guild.enums.GuildRole;
+import com.studioedge.common.enums.CategorySubType;
 import lombok.Builder;
 
 import java.util.Optional;

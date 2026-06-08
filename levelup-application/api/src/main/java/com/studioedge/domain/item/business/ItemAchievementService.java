@@ -1,13 +1,12 @@
 package com.studioedge.domain.item.business;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailySubjectRepository;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailyGoal;
-import com.studioedge.focus_to_levelup_server.domain.focus.entity.DailySubject;
-import com.studioedge.focus_to_levelup_server.domain.store.dao.MemberItemRepository;
-import com.studioedge.focus_to_levelup_server.domain.store.entity.MemberItem;
-import com.studioedge.global.batch.step.daily.CheckRestIsLuxuryStep;
+import com.studioedge.focus.repository.DailyGoalRepository;
+import com.studioedge.focus.repository.DailySubjectRepository;
+import com.studioedge.focus.entity.DailyGoal;
+import com.studioedge.focus.entity.DailySubject;
+import com.studioedge.item.repository.MemberItemRepository;
+import com.studioedge.item.entity.MemberItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,11 +18,17 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.getServiceDate;
-import static com.studioedge.focus_to_levelup_server.global.common.AppConstants.toServiceMinutes;
+import static com.studioedge.AppConstants.getServiceDate;
+import static com.studioedge.AppConstants.toServiceMinutes;
 
 @Slf4j
 @Service
@@ -334,7 +339,7 @@ public class ItemAchievementService {
      * 집중 세션 종료 시에는 성공 판정을 하지 않고 progressData만 업데이트합니다.
      * 실제 성공 판정은 "오늘의 학습 종료" 시점 또는 새벽 4시 Daily Batch에서 수행됩니다.
      * @see #checkRestIsLuxuryOnStudyEnd(Long, LocalDate, DailyGoal)
-     * @see CheckRestIsLuxuryStep
+     * 관련 배치: levelup-application:batch CheckRestIsLuxuryStep
      */
     private boolean checkLimitedRest(MemberItem memberItem, Long memberId, LocalDate serviceDate, DailyGoal dailyGoal) {
         // progressData 업데이트는 updateLimitedRestProgress에서 수행

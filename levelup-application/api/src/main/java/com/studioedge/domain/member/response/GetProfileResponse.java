@@ -1,10 +1,10 @@
 package com.studioedge.domain.member.response;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.payment.enums.SubscriptionType;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.payment.enums.SubscriptionType;
+import com.studioedge.common.enums.CategoryMainType;
+import com.studioedge.common.enums.CategorySubType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 

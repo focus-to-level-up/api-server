@@ -1,10 +1,10 @@
 package com.studioedge.domain.promotion.service;
 
-import com.studioedge.focus_to_levelup_server.domain.system.dao.CouponLogRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.CouponRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.dto.response.CouponDetailResponse;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Coupon;
-import com.studioedge.focus_to_levelup_server.domain.system.exception.CouponNotFoundException;
+import com.studioedge.domain.system.dto.response.CouponDetailResponse;
+import com.studioedge.promotion.entity.Coupon;
+import com.studioedge.promotion.exception.CouponNotFoundException;
+import com.studioedge.promotion.repository.CouponLogRepository;
+import com.studioedge.promotion.repository.CouponRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
