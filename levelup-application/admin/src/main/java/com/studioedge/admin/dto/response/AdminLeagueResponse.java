@@ -1,8 +1,8 @@
 package com.studioedge.admin.dto.response;
 
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
-import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
+import com.studioedge.ranking.entity.League;
+import com.studioedge.ranking.enums.Tier;
+import com.studioedge.common.enums.CategoryMainType;
 import lombok.Builder;
 
 import java.time.LocalDate;

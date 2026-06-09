@@ -1,6 +1,6 @@
 package com.studioedge.admin.dto.response;
 
-import com.studioedge.focus_to_levelup_server.domain.member.enums.Gender;
+import com.studioedge.member.enums.Gender;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;

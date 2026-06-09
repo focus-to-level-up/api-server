@@ -1,9 +1,9 @@
 package com.studioedge.admin.service;
 
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminGuildResponse;
-import com.studioedge.focus_to_levelup_server.domain.guild.dao.GuildRepository;
-import com.studioedge.focus_to_levelup_server.domain.guild.entity.Guild;
-import com.studioedge.focus_to_levelup_server.domain.guild.exception.GuildNotFoundException;
+import com.studioedge.admin.dto.response.AdminGuildResponse;
+import com.studioedge.guild.repository.GuildRepository;
+import com.studioedge.guild.entity.Guild;
+import com.studioedge.guild.exception.GuildNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

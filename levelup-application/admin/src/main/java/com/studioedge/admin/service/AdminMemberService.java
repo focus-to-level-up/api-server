@@ -1,23 +1,27 @@
 package com.studioedge.admin.service;
 
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.request.AdminMemberStatsResponse;
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminDailyStatResponse;
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminMemberResponse;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberSetting;
-import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
-import com.studioedge.focus_to_levelup_server.domain.ranking.enums.Tier;
-import com.studioedge.focus_to_levelup_server.domain.ranking.exception.LeagueNotFoundException;
+import com.studioedge.admin.dto.request.AdminMemberStatsResponse;
+import com.studioedge.admin.dto.response.AdminDailyStatResponse;
+import com.studioedge.admin.dto.response.AdminMemberResponse;
+import com.studioedge.admin.exception.InvalidAdminMemberOperationException;
+import com.studioedge.focus.repository.DailyGoalRepository;
+import com.studioedge.member.repository.MemberInfoRepository;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.member.entity.MemberSetting;
+import com.studioedge.member.enums.MemberStatus;
+import com.studioedge.member.exception.MemberNotFoundException;
+import com.studioedge.ranking.repository.LeagueRepository;
+import com.studioedge.ranking.repository.RankingRepository;
+import com.studioedge.ranking.entity.League;
+import com.studioedge.ranking.entity.Ranking;
+import com.studioedge.ranking.enums.Tier;
+import com.studioedge.ranking.exception.LeagueNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,32 +46,13 @@ public class AdminMemberService {
     /**
      * 회원 검색 (ID 또는 닉네임 부분 일치)
      */
-    public List<AdminMemberResponse> searchMembers(String type, String keyword) {
-        List<Member> members;
-
-        if ("ID".equalsIgnoreCase(type)) {
-            try {
-                Long memberId = Long.parseLong(keyword);
-                members = memberRepository.findById(memberId)
-                        .map(List::of)
-                        .orElse(List.of());
-            } catch (NumberFormatException e) {
-                return List.of();
-            }
-        } else if (type.equals("STATUS")) {
-            try {
-                MemberStatus status = MemberStatus.valueOf(keyword.toUpperCase()); // 대소문자 무시 처리
-                members = memberRepository.findAllByStatus(status);
-            } catch (IllegalArgumentException e) {
-                return List.of(); // 잘못된 상태 값이면 빈 리스트 반환
-            }
-        } else {
-            members = memberRepository.findByNicknameContaining(keyword);
-        }
-
-        return members.stream()
-                .map(m -> AdminMemberResponse.from(m, m.getMemberInfo()))
-                .toList();
+    public Page<AdminMemberResponse> searchMembers(String type, String keyword, Pageable pageable) {
+        Page<Member> members = switch (type.toUpperCase()) {
+            case "ID" -> searchById(keyword, pageable);
+            case "STATUS" -> searchByStatus(keyword, pageable);
+            default -> memberRepository.findByNicknameContaining(keyword, pageable);
+        };
+        return members.map(member -> AdminMemberResponse.from(member, member.getMemberInfo()));
     }
 
     /**
@@ -79,7 +64,15 @@ public class AdminMemberService {
         Double avgMaxConsecutiveTime = dailyGoalRepository.getAverageMaxConsecutiveFocusTimeByMemberId(memberId);
 
         // 2. DB에서 해당 기간 데이터 조회
-        List<AdminDailyStatResponse> dbStats = dailyGoalRepository.findDailyStatsByMemberIdAndDateRange(memberId, startDate, endDate);
+        List<AdminDailyStatResponse> dbStats = dailyGoalRepository
+                .findDailyStatsByMemberIdAndDateRange(memberId, startDate, endDate)
+                .stream()
+                .map(stat -> new AdminDailyStatResponse(
+                        stat.getDate(),
+                        stat.getTotalFocusSeconds(),
+                        stat.getMaxConsecutiveSeconds()
+                ))
+                .toList();
 
         // 3. 빈 날짜 채우기 (Map으로 변환하여 빠른 조회)
         Map<LocalDate, AdminDailyStatResponse> statMap = dbStats.stream()
@@ -163,6 +156,9 @@ public class AdminMemberService {
     public void restoreMember(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
+        if (member.getStatus() != MemberStatus.RANKING_BANNED) {
+            throw new InvalidAdminMemberOperationException("랭킹 정지 회원만 복구할 수 있습니다.");
+        }
         MemberSetting memberSetting = member.getMemberSetting();
         Tier tier = memberSetting.getBannedTier() == null ? Tier.BRONZE : memberSetting.getBannedTier();
         League league = leagueRepository.findSmallestLeagueForCategoryAndTier(
@@ -179,5 +175,23 @@ public class AdminMemberService {
                         .member(member)
                         .build()
         );
+    }
+
+    private Page<Member> searchById(String keyword, Pageable pageable) {
+        try {
+            return memberRepository.findById(Long.parseLong(keyword))
+                    .<Page<Member>>map(member -> new PageImpl<>(List.of(member), pageable, 1))
+                    .orElseGet(() -> Page.empty(pageable));
+        } catch (NumberFormatException exception) {
+            return Page.empty(pageable);
+        }
+    }
+
+    private Page<Member> searchByStatus(String keyword, Pageable pageable) {
+        try {
+            return memberRepository.findAllByStatus(MemberStatus.valueOf(keyword.toUpperCase()), pageable);
+        } catch (IllegalArgumentException exception) {
+            return Page.empty(pageable);
+        }
     }
 }

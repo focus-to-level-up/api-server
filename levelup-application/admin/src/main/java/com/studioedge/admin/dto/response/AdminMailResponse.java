@@ -1,7 +1,7 @@
 package com.studioedge.admin.dto.response;
 
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
+import com.studioedge.mail.entity.Mail;
+import com.studioedge.mail.enums.MailType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;

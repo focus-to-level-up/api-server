@@ -1,10 +1,10 @@
 package com.studioedge.admin.service;
 
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminReportResponse;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.ReportLogRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.ReportLog;
+import com.studioedge.admin.dto.response.AdminReportResponse;
+import com.studioedge.member.repository.MemberInfoRepository;
+import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.system.repository.ReportLogRepository;
+import com.studioedge.system.entity.ReportLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

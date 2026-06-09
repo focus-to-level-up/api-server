@@ -1,13 +1,13 @@
 package com.studioedge.admin.service;
 
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.request.AdminSendMailRequest;
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminMailResponse;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
+import com.studioedge.admin.dto.request.AdminSendMailRequest;
+import com.studioedge.admin.dto.response.AdminMailResponse;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.exception.MemberNotFoundException;
+import com.studioedge.mail.repository.MailRepository;
+import com.studioedge.mail.entity.Mail;
+import com.studioedge.mail.enums.MailType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

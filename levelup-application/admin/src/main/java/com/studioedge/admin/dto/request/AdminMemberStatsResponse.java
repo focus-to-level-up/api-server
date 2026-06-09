@@ -1,6 +1,6 @@
 package com.studioedge.admin.dto.request;
 
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminDailyStatResponse;
+import com.studioedge.admin.dto.response.AdminDailyStatResponse;
 import lombok.Builder;
 
 import java.util.List;

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Focus Admin 로그인</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body class="login-body">
+<main class="login-panel">
+    <div class="brand">
+        <span class="brand-mark">F</span>
+        <div>
+            <h1>Focus Admin</h1>
+            <p>관리자 로그인</p>
+        </div>
+    </div>
+
+    <div class="alert error" th:if="${param.error}">아이디 또는 비밀번호를 확인해주세요.</div>
+    <div class="alert success" th:if="${param.logout}">로그아웃되었습니다.</div>
+
+    <form method="post" th:action="@{/login}" class="form-stack">
+        <label>
+            관리자 아이디
+            <input type="text" name="username" autocomplete="username" autofocus required>
+        </label>
+        <label>
+            비밀번호
+            <input type="password" name="password" autocomplete="current-password" required>
+        </label>
+        <button type="submit" class="primary-button">로그인</button>
+    </form>
+</main>
+</body>
+</html>

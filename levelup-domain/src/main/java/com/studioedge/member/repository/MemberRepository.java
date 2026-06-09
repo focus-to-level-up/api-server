@@ -31,11 +31,15 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     List<Member> findByNicknameContaining(String nickname);
 
+    Page<Member> findByNicknameContaining(String nickname, Pageable pageable);
+
     Page<Member> findAllByIsFocusingIsTrue(Pageable pageable);
 
     Page<Member> findAllByStatusIn(List<MemberStatus> statuses, Pageable pageable);
 
     List<Member> findAllByStatus(MemberStatus status);
+
+    Page<Member> findAllByStatus(MemberStatus status, Pageable pageable);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Member m SET m.currentLevel = 1, m.currentExp = 0")

@@ -1,114 +1,218 @@
 package com.studioedge.admin.controller;
 
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.request.AdminMemberStatsResponse;
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.request.AdminUpdateNicknameRequest;
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.request.AdminUpdateProfileMessageRequest;
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.request.AdminUpdateSchoolRequest;
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminMemberResponse;
-import com.studioedge.focus_to_levelup_server.domain.admin.service.AdminAuthService;
-import com.studioedge.focus_to_levelup_server.domain.admin.service.AdminMemberService;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.global.response.CommonResponse;
-import com.studioedge.focus_to_levelup_server.global.response.HttpResponseUtil;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.studioedge.admin.dto.request.AdminUpdateNicknameRequest;
+import com.studioedge.admin.dto.request.AdminUpdateProfileMessageRequest;
+import com.studioedge.admin.dto.request.AdminUpdateSchoolRequest;
+import com.studioedge.admin.dto.response.AdminMemberResponse;
+import com.studioedge.admin.exception.InvalidAdminMemberOperationException;
+import com.studioedge.admin.service.AdminMemberService;
+import com.studioedge.admin.service.AdminRankingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.security.Principal;
 import java.time.LocalDate;
-import java.util.List;
-
-@Tag(name = "Admin - Member", description = "관리자 회원 관리 API")
-@RestController
-@RequestMapping("/api/v1/admin/members")
+@Controller
+@RequestMapping("/members")
 @RequiredArgsConstructor
 public class AdminMemberController {
 
-    private final AdminAuthService adminAuthService;
+    private static final int PAGE_SIZE = 30;
+
     private final AdminMemberService adminMemberService;
+    private final AdminRankingService adminRankingService;
 
-    @GetMapping("/search")
-    @Operation(summary = "회원 검색", description = "닉네임 또는 회원 ID로 회원을 검색합니다. (부분 일치)")
-    public ResponseEntity<CommonResponse<List<AdminMemberResponse>>> searchMember(
-            @AuthenticationPrincipal Member member,
-            @Parameter(description = "검색 유형 (NICKNAME, ID)") @RequestParam String type,
-            @Parameter(description = "검색 키워드") @RequestParam String keyword
+    @GetMapping
+    public String members(
+            Principal principal,
+            @RequestParam(defaultValue = "NICKNAME") String type,
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) Long memberId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            Model model
     ) {
-        adminAuthService.validateAdminAccess(member.getId());
-        return HttpResponseUtil.ok(adminMemberService.searchMembers(type, keyword));
+        LocalDate statsEndDate = endDate == null ? LocalDate.now() : endDate;
+        if (statsEndDate.isAfter(LocalDate.now())) {
+            model.addAttribute("error", "통계 종료일은 오늘 이후로 선택할 수 없습니다.");
+            statsEndDate = LocalDate.now();
+        }
+
+        model.addAttribute("currentAdmin", principal.getName());
+        model.addAttribute("searchType", type);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("endDate", statsEndDate);
+        PageRequest pageable = PageRequest.of(Math.max(page, 0), PAGE_SIZE, Sort.by(Sort.Direction.DESC, "id"));
+        model.addAttribute("memberPage", search(type, keyword, pageable));
+
+        if (memberId != null) {
+            addSelectedMember(model, memberId, statsEndDate);
+        }
+
+        return "members/index";
     }
 
-    @GetMapping("/{memberId}/stats")
-    @Operation(summary = "회원 통계 조회", description = "특정 기간(기본: 최근 7일)의 일별 통계를 조회합니다.")
-    public ResponseEntity<CommonResponse<AdminMemberStatsResponse>> getMemberStats(
-            @AuthenticationPrincipal Member member,
-            @Parameter(description = "조회할 회원 ID") @PathVariable Long memberId,
-            @Parameter(description = "시작 날짜 (yyyy-MM-dd)") @RequestParam(required = false) LocalDate startDate,
-            @Parameter(description = "종료 날짜 (yyyy-MM-dd)") @RequestParam(required = false) LocalDate endDate
+    @PostMapping("/{memberId}/nickname")
+    public String updateNickname(
+            @PathVariable Long memberId,
+            @Valid @ModelAttribute("nicknameRequest") AdminUpdateNicknameRequest request,
+            BindingResult bindingResult,
+            @RequestParam(defaultValue = "NICKNAME") String type,
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            RedirectAttributes redirectAttributes
     ) {
-        adminAuthService.validateAdminAccess(member.getId());
-
-        LocalDate end = (endDate != null) ? endDate : LocalDate.now();
-        LocalDate start = (startDate != null) ? startDate : end.minusDays(6);
-
-        return HttpResponseUtil.ok(adminMemberService.getMemberStats(memberId, start, end));
+        if (bindingResult.hasErrors()) {
+            addValidationError(bindingResult, redirectAttributes);
+        } else {
+            adminMemberService.updateNickname(memberId, request.nickname());
+            redirectAttributes.addFlashAttribute("message", "닉네임을 변경했습니다.");
+        }
+        return redirectToMember(type, keyword, page, memberId, endDate);
     }
 
-    @GetMapping("/{memberId}")
-    @Operation(summary = "회원 ID로 조회", description = "회원 ID로 상세 정보를 조회합니다.")
-    public ResponseEntity<CommonResponse<AdminMemberResponse>> getMember(
-            @AuthenticationPrincipal Member member,
-            @Parameter(description = "조회할 회원 ID") @PathVariable Long memberId
+    @PostMapping("/{memberId}/profile-message")
+    public String updateProfileMessage(
+            @PathVariable Long memberId,
+            @Valid @ModelAttribute("profileMessageRequest") AdminUpdateProfileMessageRequest request,
+            BindingResult bindingResult,
+            @RequestParam(defaultValue = "NICKNAME") String type,
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            RedirectAttributes redirectAttributes
     ) {
-        adminAuthService.validateAdminAccess(member.getId());
-        return HttpResponseUtil.ok(adminMemberService.getMemberById(memberId));
+        if (bindingResult.hasErrors()) {
+            addValidationError(bindingResult, redirectAttributes);
+        } else {
+            adminMemberService.updateProfileMessage(memberId, request.profileMessage());
+            redirectAttributes.addFlashAttribute("message", "상태 메시지를 변경했습니다.");
+        }
+        return redirectToMember(type, keyword, page, memberId, endDate);
     }
 
-    @PutMapping("/{memberId}/nickname")
-    @Operation(summary = "닉네임 변경", description = "회원의 닉네임을 변경합니다. (1달 제한 무시)")
-    public ResponseEntity<CommonResponse<AdminMemberResponse>> updateNickname(
-            @AuthenticationPrincipal Member member,
-            @Parameter(description = "변경할 회원 ID") @PathVariable Long memberId,
-            @Valid @RequestBody AdminUpdateNicknameRequest request
+    @PostMapping("/{memberId}/school")
+    public String updateSchool(
+            @PathVariable Long memberId,
+            @Valid @ModelAttribute("schoolRequest") AdminUpdateSchoolRequest request,
+            BindingResult bindingResult,
+            @RequestParam(defaultValue = "NICKNAME") String type,
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            RedirectAttributes redirectAttributes
     ) {
-        adminAuthService.validateAdminAccess(member.getId());
-        return HttpResponseUtil.ok(adminMemberService.updateNickname(memberId, request.nickname()));
+        if (bindingResult.hasErrors()) {
+            addValidationError(bindingResult, redirectAttributes);
+        } else {
+            adminMemberService.updateSchool(memberId, request.school(), request.schoolAddress());
+            redirectAttributes.addFlashAttribute("message", "학교 정보를 변경했습니다.");
+        }
+        return redirectToMember(type, keyword, page, memberId, endDate);
     }
 
-    @PutMapping("/{memberId}/profile-message")
-    @Operation(summary = "상태메시지 변경", description = "회원의 상태메시지를 변경합니다.")
-    public ResponseEntity<CommonResponse<AdminMemberResponse>> updateProfileMessage(
-            @AuthenticationPrincipal Member member,
-            @Parameter(description = "변경할 회원 ID") @PathVariable Long memberId,
-            @Valid @RequestBody AdminUpdateProfileMessageRequest request
+    @PostMapping("/{memberId}/ranking-ban")
+    public String excludeFromRanking(
+            @PathVariable Long memberId,
+            @RequestParam(defaultValue = "NICKNAME") String type,
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            RedirectAttributes redirectAttributes
     ) {
-        adminAuthService.validateAdminAccess(member.getId());
-        return HttpResponseUtil.ok(adminMemberService.updateProfileMessage(memberId, request.profileMessage()));
+        return executeMemberAction(
+                () -> adminRankingService.excludeMemberFromRanking(memberId),
+                "회원을 랭킹에서 정지했습니다.",
+                type, keyword, page, memberId, endDate, redirectAttributes
+        );
     }
 
-    @PutMapping("/{memberId}/school")
-    @Operation(summary = "학교 정보 변경", description = "회원의 학교 정보를 변경합니다.")
-    public ResponseEntity<CommonResponse<AdminMemberResponse>> updateSchool(
-            @AuthenticationPrincipal Member member,
-            @Parameter(description = "변경할 회원 ID") @PathVariable Long memberId,
-            @Valid @RequestBody AdminUpdateSchoolRequest request
+    @PostMapping("/{memberId}/restore")
+    public String restoreMember(
+            @PathVariable Long memberId,
+            @RequestParam(defaultValue = "NICKNAME") String type,
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            RedirectAttributes redirectAttributes
     ) {
-        adminAuthService.validateAdminAccess(member.getId());
-        return HttpResponseUtil.ok(adminMemberService.updateSchool(memberId, request.school(), request.schoolAddress()));
+        return executeMemberAction(
+                () -> adminMemberService.restoreMember(memberId),
+                "회원의 랭킹 참여를 복구했습니다.",
+                type, keyword, page, memberId, endDate, redirectAttributes
+        );
     }
 
-    @PutMapping("/{memberId}/restore")
-    @Operation(summary = "유저 상태 활성화", description = "유저의 상태를 `ACTIVE`로 변경합니다.")
-    public ResponseEntity<CommonResponse<AdminMemberResponse>> restoreMember(
-            @AuthenticationPrincipal Member member,
-            @Parameter(description = "변경할 회원 ID") @PathVariable Long memberId
+    private Page<AdminMemberResponse> search(String type, String keyword, PageRequest pageable) {
+        if (keyword == null || keyword.isBlank()) {
+            return Page.empty(pageable);
+        }
+        return adminMemberService.searchMembers(type, keyword.trim(), pageable);
+    }
+
+    private void addSelectedMember(Model model, Long memberId, LocalDate endDate) {
+        AdminMemberResponse member = adminMemberService.getMemberById(memberId);
+        model.addAttribute("selectedMember", member);
+        model.addAttribute("memberStats", adminMemberService.getMemberStats(memberId, endDate.minusDays(6), endDate));
+        model.addAttribute("nicknameRequest", new AdminUpdateNicknameRequest(member.nickname()));
+        model.addAttribute("profileMessageRequest", new AdminUpdateProfileMessageRequest(member.profileMessage()));
+        model.addAttribute("schoolRequest", new AdminUpdateSchoolRequest(member.school(), member.schoolAddress()));
+    }
+
+    private void addValidationError(BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+        String message = bindingResult.getAllErrors().get(0).getDefaultMessage();
+        redirectAttributes.addFlashAttribute("error", message);
+    }
+
+    private String executeMemberAction(
+            Runnable action,
+            String successMessage,
+            String type,
+            String keyword,
+            int page,
+            Long memberId,
+            LocalDate endDate,
+            RedirectAttributes redirectAttributes
     ) {
-        adminAuthService.validateAdminAccess(member.getId());
-        adminMemberService.restoreMember(memberId);
-        return HttpResponseUtil.ok(null);
+        try {
+            action.run();
+            redirectAttributes.addFlashAttribute("message", successMessage);
+        } catch (InvalidAdminMemberOperationException exception) {
+            redirectAttributes.addFlashAttribute("error", exception.getMessage());
+        }
+        return redirectToMember(type, keyword, page, memberId, endDate);
+    }
+
+    private String redirectToMember(String type, String keyword, int page, Long memberId, LocalDate endDate) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/members")
+                .queryParam("type", type)
+                .queryParam("keyword", keyword)
+                .queryParam("memberId", memberId);
+        if (page > 0) {
+            builder.queryParam("page", page);
+        }
+        if (endDate != null) {
+            builder.queryParam("endDate", endDate);
+        }
+        String path = builder.build()
+                .encode()
+                .toUriString();
+        return "redirect:" + path;
     }
 }

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Focus Admin 오류</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body class="error-body">
+<main class="error-panel">
+    <span class="error-code">500</span>
+    <h1>요청을 처리하지 못했습니다.</h1>
+    <p th:text="${message}">요청을 처리하는 중 문제가 발생했습니다.</p>
+    <a class="primary-button button-link" th:href="@{/dashboard}">대시보드로 이동</a>
+</main>
+</body>
+</html>

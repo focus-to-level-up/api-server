@@ -1,12 +1,12 @@
 package com.studioedge.admin.service;
 
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.CategoryDistributionResponse;
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.FocusTimeDistributionResponse;
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.GenderDistributionResponse;
-import com.studioedge.focus_to_levelup_server.domain.focus.dao.DailyGoalRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberInfoRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.enums.Gender;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
+import com.studioedge.admin.dto.response.CategoryDistributionResponse;
+import com.studioedge.admin.dto.response.FocusTimeDistributionResponse;
+import com.studioedge.admin.dto.response.GenderDistributionResponse;
+import com.studioedge.focus.repository.DailyGoalRepository;
+import com.studioedge.member.repository.MemberInfoRepository;
+import com.studioedge.member.enums.Gender;
+import com.studioedge.common.enums.CategorySubType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

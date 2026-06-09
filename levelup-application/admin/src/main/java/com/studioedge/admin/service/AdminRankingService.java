@@ -1,18 +1,20 @@
 package com.studioedge.admin.service;
 
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminMemberResponse;
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminRankingResponse;
-import com.studioedge.focus_to_levelup_server.domain.member.dao.MemberRepository;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.exception.MemberNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dao.RankingRepository;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.Ranking;
-import com.studioedge.focus_to_levelup_server.domain.ranking.exception.LeagueNotFoundException;
-import com.studioedge.focus_to_levelup_server.domain.system.dao.MailRepository;
-import com.studioedge.focus_to_levelup_server.domain.system.entity.Mail;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.MailType;
+import com.studioedge.admin.dto.response.AdminMemberResponse;
+import com.studioedge.admin.dto.response.AdminRankingResponse;
+import com.studioedge.admin.exception.InvalidAdminMemberOperationException;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.enums.MemberStatus;
+import com.studioedge.member.exception.MemberNotFoundException;
+import com.studioedge.ranking.repository.LeagueRepository;
+import com.studioedge.ranking.repository.RankingRepository;
+import com.studioedge.ranking.entity.League;
+import com.studioedge.ranking.entity.Ranking;
+import com.studioedge.ranking.exception.LeagueNotFoundException;
+import com.studioedge.mail.repository.MailRepository;
+import com.studioedge.mail.entity.Mail;
+import com.studioedge.mail.enums.MailType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +42,9 @@ public class AdminRankingService {
     public AdminMemberResponse excludeMemberFromRanking(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
+        if (member.getStatus() != MemberStatus.ACTIVE) {
+            throw new InvalidAdminMemberOperationException("활성 회원만 랭킹에서 정지할 수 있습니다.");
+        }
         Ranking ranking = rankingRepository.findByMemberId(member.getId())
                 .orElseThrow(MemberNotFoundException::new);
 

@@ -1,11 +1,11 @@
 package com.studioedge.admin.dto.response;
 
-import com.studioedge.focus_to_levelup_server.domain.member.entity.Member;
-import com.studioedge.focus_to_levelup_server.domain.member.entity.MemberInfo;
-import com.studioedge.focus_to_levelup_server.domain.member.enums.MemberStatus;
-import com.studioedge.focus_to_levelup_server.domain.member.enums.SocialType;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategoryMainType;
-import com.studioedge.focus_to_levelup_server.global.common.enums.CategorySubType;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.member.enums.MemberStatus;
+import com.studioedge.member.enums.SocialType;
+import com.studioedge.common.enums.CategoryMainType;
+import com.studioedge.common.enums.CategorySubType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;

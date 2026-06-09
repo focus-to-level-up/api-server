@@ -1,7 +1,7 @@
 package com.studioedge.admin.dto.response;
 
-import com.studioedge.focus_to_levelup_server.domain.system.entity.ReportLog;
-import com.studioedge.focus_to_levelup_server.domain.system.enums.ReportType;
+import com.studioedge.system.entity.ReportLog;
+import com.studioedge.system.enums.ReportType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;

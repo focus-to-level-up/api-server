@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="sidebar" th:fragment="sidebar(active)">
+    <div class="sidebar-brand">
+        <strong>Focus Admin</strong>
+        <span>관리자 페이지</span>
+    </div>
+    <nav>
+        <a th:href="@{/dashboard}" th:classappend="${active == 'dashboard'} ? ' active'">대시보드</a>
+        <a th:href="@{/admins}" th:classappend="${active == 'admins'} ? ' active'">관리자 계정</a>
+        <span class="nav-section">업무 화면</span>
+        <a th:href="@{/members}" th:classappend="${active == 'members'} ? ' active'">회원 관리</a>
+        <a class="disabled">리그 · 랭킹</a>
+        <a class="disabled">우편 발송</a>
+        <a class="disabled">길드 관리</a>
+        <a class="disabled">통계</a>
+        <a class="disabled">신고 목록</a>
+    </nav>
+    <div class="sidebar-footer">
+        <span th:text="${currentAdmin}">admin</span>
+        <form method="post" th:action="@{/logout}">
+            <button type="submit">로그아웃</button>
+        </form>
+    </div>
+</aside>
+</body>
+</html>

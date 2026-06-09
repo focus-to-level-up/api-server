@@ -1,8 +1,8 @@
 package com.studioedge.admin.service;
 
-import com.studioedge.focus_to_levelup_server.domain.admin.dto.response.AdminLeagueResponse;
-import com.studioedge.focus_to_levelup_server.domain.ranking.dao.LeagueRepository;
-import com.studioedge.focus_to_levelup_server.domain.ranking.entity.League;
+import com.studioedge.admin.dto.response.AdminLeagueResponse;
+import com.studioedge.ranking.repository.LeagueRepository;
+import com.studioedge.ranking.entity.League;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

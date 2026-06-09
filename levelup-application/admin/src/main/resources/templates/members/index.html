@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Focus Admin 회원 관리</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('members')}"></aside>
+    <main class="content">
+        <header class="page-header">
+            <div>
+                <h1>회원 관리</h1>
+                <p>회원 정보와 집중 통계를 조회하고 운영상 필요한 정보를 수정합니다.</p>
+            </div>
+        </header>
+
+        <div class="alert success" th:if="${message}" th:text="${message}"></div>
+        <div class="alert error" th:if="${error}" th:text="${error}"></div>
+
+        <section class="panel search-panel">
+            <form method="get" th:action="@{/members}" class="search-form">
+                <label>
+                    <span>검색 기준</span>
+                    <select name="type">
+                        <option value="NICKNAME" th:selected="${searchType == 'NICKNAME'}">닉네임</option>
+                        <option value="ID" th:selected="${searchType == 'ID'}">회원 ID</option>
+                        <option value="STATUS" th:selected="${searchType == 'STATUS'}">회원 상태</option>
+                    </select>
+                </label>
+                <label class="search-keyword">
+                    <span>검색어</span>
+                    <input name="keyword" th:value="${keyword}" placeholder="닉네임, ID 또는 ACTIVE">
+                </label>
+                <button type="submit" class="primary-button">검색</button>
+            </form>
+        </section>
+
+        <section class="member-layout">
+            <article class="panel result-panel">
+                <div class="panel-heading">
+                    <h2>검색 결과</h2>
+                    <span th:text="|총 ${memberPage.totalElements}명|">0명</span>
+                </div>
+                <div class="empty-state" th:if="${#strings.isEmpty(keyword)}">
+                    검색 기준과 검색어를 입력하세요.
+                </div>
+                <div class="empty-state" th:if="${!#strings.isEmpty(keyword) and memberPage.empty}">
+                    조건에 맞는 회원이 없습니다.
+                </div>
+                <div class="table-scroll" th:if="${!memberPage.empty}">
+                    <table>
+                        <thead>
+                        <tr><th>ID</th><th>닉네임</th><th>상태</th><th>레벨</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="member : ${memberPage.content}"
+                            th:classappend="${selectedMember != null and selectedMember.memberId == member.memberId} ? ' selected-row'">
+                            <td>
+                                <a th:href="@{/members(type=${searchType}, keyword=${keyword}, page=${memberPage.number}, memberId=${member.memberId}, endDate=${endDate})}"
+                                   th:text="${member.memberId}">1</a>
+                            </td>
+                            <td th:text="${member.nickname}">닉네임</td>
+                            <td><span class="badge" th:classappend="| status-${member.status}|"
+                                      th:text="${member.status}">ACTIVE</span></td>
+                            <td th:text="${member.currentLevel}">1</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <nav class="pagination" th:if="${memberPage.totalPages > 1}" aria-label="회원 검색 페이지">
+                    <a th:if="${memberPage.hasPrevious()}"
+                       th:href="@{/members(type=${searchType}, keyword=${keyword}, page=${memberPage.number - 1}, endDate=${endDate})}">이전</a>
+                    <span th:text="|${memberPage.number + 1} / ${memberPage.totalPages}|">1 / 1</span>
+                    <a th:if="${memberPage.hasNext()}"
+                       th:href="@{/members(type=${searchType}, keyword=${keyword}, page=${memberPage.number + 1}, endDate=${endDate})}">다음</a>
+                </nav>
+            </article>
+
+            <div class="member-detail-stack">
+                <article class="panel empty-state detail-placeholder" th:if="${selectedMember == null}">
+                    검색 결과에서 회원을 선택하면 상세 정보와 수정 기능이 표시됩니다.
+                </article>
+
+                <th:block th:if="${selectedMember != null}">
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h2 th:text="${selectedMember.nickname}">닉네임</h2>
+                                <span th:text="|회원 ID ${selectedMember.memberId}|">회원 ID 1</span>
+                            </div>
+                            <span class="badge" th:classappend="| status-${selectedMember.status}|"
+                                  th:text="${selectedMember.status}">ACTIVE</span>
+                        </div>
+                        <dl class="member-summary">
+                            <div><dt>소셜 로그인</dt><dd th:text="${selectedMember.socialType}">KAKAO</dd></div>
+                            <div><dt>레벨</dt><dd th:text="${selectedMember.currentLevel}">1</dd></div>
+                            <div><dt>카테고리</dt><dd th:text="${selectedMember.categoryMain ?: '-'}">-</dd></div>
+                            <div><dt>세부 카테고리</dt><dd th:text="${selectedMember.categorySub ?: '-'}">-</dd></div>
+                            <div><dt>골드</dt><dd th:text="${selectedMember.gold}">0</dd></div>
+                            <div><dt>다이아</dt><dd th:text="${selectedMember.diamond}">0</dd></div>
+                            <div><dt>가입일</dt><dd th:text="${selectedMember.createdAt ?: '-'}">-</dd></div>
+                            <div><dt>마지막 로그인</dt><dd th:text="${selectedMember.lastLoginDateTime ?: '-'}">-</dd></div>
+                        </dl>
+                        <div class="danger-actions">
+                            <form method="post" th:if="${selectedMember.status.name() == 'ACTIVE'}"
+                                  th:action="@{/members/{id}/ranking-ban(id=${selectedMember.memberId})}"
+                                  onsubmit="return confirm('이 회원을 랭킹에서 정지하시겠습니까? 경고 우편이 발송됩니다.')">
+                                <input type="hidden" name="type" th:value="${searchType}">
+                                <input type="hidden" name="keyword" th:value="${keyword}">
+                                <input type="hidden" name="page" th:value="${memberPage.number}">
+                                <input type="hidden" name="endDate" th:value="${endDate}">
+                                <button type="submit" class="danger-button">랭킹 정지</button>
+                            </form>
+                            <form method="post" th:if="${selectedMember.status.name() == 'RANKING_BANNED'}"
+                                  th:action="@{/members/{id}/restore(id=${selectedMember.memberId})}"
+                                  onsubmit="return confirm('이 회원의 랭킹 참여를 복구하시겠습니까?')">
+                                <input type="hidden" name="type" th:value="${searchType}">
+                                <input type="hidden" name="keyword" th:value="${keyword}">
+                                <input type="hidden" name="page" th:value="${memberPage.number}">
+                                <input type="hidden" name="endDate" th:value="${endDate}">
+                                <button type="submit" class="secondary-button">랭킹 복구</button>
+                            </form>
+                            <span class="muted" th:if="${selectedMember.status.name() != 'ACTIVE' and selectedMember.status.name() != 'RANKING_BANNED'}">
+                                현재 상태에서는 랭킹 정지 또는 복구 작업을 수행할 수 없습니다.
+                            </span>
+                        </div>
+                    </article>
+
+                    <article class="panel">
+                        <h2>회원 정보 수정</h2>
+                        <div class="edit-grid">
+                            <form method="post" class="form-stack"
+                                  th:action="@{/members/{id}/nickname(id=${selectedMember.memberId})}"
+                                  th:object="${nicknameRequest}">
+                                <input type="hidden" name="type" th:value="${searchType}">
+                                <input type="hidden" name="keyword" th:value="${keyword}">
+                                <input type="hidden" name="page" th:value="${memberPage.number}">
+                                <input type="hidden" name="endDate" th:value="${endDate}">
+                                <label>닉네임 <input type="text" th:field="*{nickname}" maxlength="16"></label>
+                                <button type="submit" class="secondary-button">닉네임 변경</button>
+                            </form>
+                            <form method="post" class="form-stack"
+                                  th:action="@{/members/{id}/profile-message(id=${selectedMember.memberId})}"
+                                  th:object="${profileMessageRequest}">
+                                <input type="hidden" name="type" th:value="${searchType}">
+                                <input type="hidden" name="keyword" th:value="${keyword}">
+                                <input type="hidden" name="page" th:value="${memberPage.number}">
+                                <input type="hidden" name="endDate" th:value="${endDate}">
+                                <label>상태 메시지 <input type="text" th:field="*{profileMessage}" maxlength="100"></label>
+                                <button type="submit" class="secondary-button">상태 메시지 변경</button>
+                            </form>
+                            <form method="post" class="form-stack"
+                                  th:action="@{/members/{id}/school(id=${selectedMember.memberId})}"
+                                  th:object="${schoolRequest}">
+                                <input type="hidden" name="type" th:value="${searchType}">
+                                <input type="hidden" name="keyword" th:value="${keyword}">
+                                <input type="hidden" name="page" th:value="${memberPage.number}">
+                                <input type="hidden" name="endDate" th:value="${endDate}">
+                                <label>학교명 <input type="text" th:field="*{school}" maxlength="100"></label>
+                                <label>학교 주소 <input type="text" th:field="*{schoolAddress}" maxlength="255"></label>
+                                <button type="submit" class="secondary-button">학교 정보 변경</button>
+                            </form>
+                        </div>
+                    </article>
+
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h2>최근 7일 집중 통계</h2>
+                                <span th:text="|${endDate.minusDays(6)} - ${endDate}|">기간</span>
+                            </div>
+                            <form method="get" th:action="@{/members}" class="date-form">
+                                <input type="hidden" name="type" th:value="${searchType}">
+                                <input type="hidden" name="keyword" th:value="${keyword}">
+                                <input type="hidden" name="page" th:value="${memberPage.number}">
+                                <input type="hidden" name="memberId" th:value="${selectedMember.memberId}">
+                                <input type="date" name="endDate" th:value="${endDate}" th:max="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}">
+                                <button type="submit" class="secondary-button">기간 조회</button>
+                            </form>
+                        </div>
+                        <div class="stat-summary">
+                            <div><span>전체 평균 집중</span><strong th:text="|${memberStats.totalAverageFocusSeconds}초|">0초</strong></div>
+                            <div><span>전체 평균 최대 연속 집중</span><strong th:text="|${memberStats.totalAverageMaxConsecutiveSeconds}초|">0초</strong></div>
+                        </div>
+                        <div class="table-scroll">
+                            <table>
+                                <thead><tr><th>날짜</th><th>총 집중 시간</th><th>최대 연속 집중</th></tr></thead>
+                                <tbody>
+                                <tr th:each="stat : ${memberStats.dailyStats}">
+                                    <td th:text="${stat.date}">2026-06-09</td>
+                                    <td th:text="|${stat.totalFocusSeconds}초|">0초</td>
+                                    <td th:text="|${stat.maxConsecutiveSeconds}초|">0초</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </article>
+                </th:block>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
