@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Focus Admin 신고 목록</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('reports')}"></aside>
+    <main class="content">
+        <header class="page-header">
+            <div>
+                <h1>신고 목록</h1>
+                <p>개별 신고 내역과 신고에 포함된 회원의 현재 정보를 확인합니다.</p>
+            </div>
+        </header>
+
+        <section class="panel search-panel">
+            <form method="get" th:action="@{/reports}" class="report-filter-form">
+                <label>
+                    <span>신고 유형</span>
+                    <select name="reportType">
+                        <option value="">전체 유형</option>
+                        <option th:each="type : ${reportTypes}"
+                                th:value="${type}"
+                                th:text="${type.name() == 'IMPROPER_NICKNAME' ? '부적절한 닉네임' : '부적절한 상태 메시지'}"
+                                th:selected="${selectedReportType == type}">신고 유형</option>
+                    </select>
+                </label>
+                <label>
+                    <span>회원 닉네임</span>
+                    <input name="keyword" th:value="${keyword}" placeholder="신고자 또는 피신고자 닉네임">
+                </label>
+                <button type="submit" class="primary-button">조회</button>
+            </form>
+        </section>
+
+        <section class="report-layout">
+            <article class="panel report-list-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>신고 내역</h2>
+                        <span>최신 신고순</span>
+                    </div>
+                    <strong th:text="|총 ${reportPage.totalElements}건|">0건</strong>
+                </div>
+                <div class="empty-state" th:if="${reportPage.empty}">
+                    조건에 맞는 신고 내역이 없습니다.
+                </div>
+                <div class="report-list" th:if="${!reportPage.empty}">
+                    <a class="report-list-item"
+                       th:each="report : ${reportPage.content}"
+                       th:classappend="${selectedReport != null and selectedReport.reportId == report.reportId} ? ' selected'"
+                       th:href="@{/reports(reportType=${selectedReportType}, keyword=${keyword}, page=${reportPage.number}, reportId=${report.reportId})}">
+                        <div class="report-list-heading">
+                            <strong th:text="${report.reportToNickname}">피신고자</strong>
+                            <span class="badge" th:classappend="| status-${report.reportToStatus}|"
+                                  th:text="${report.reportToStatus}">ACTIVE</span>
+                        </div>
+                        <div class="report-list-meta">
+                            <span th:text="${report.reportTypeName}">부적절한 닉네임</span>
+                            <span th:text="|누적 ${report.reportToTotalReportCount}회|">누적 1회</span>
+                        </div>
+                        <div class="report-list-meta">
+                            <span th:text="|신고자 ${report.reportFromNickname}|">신고자</span>
+                            <time th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}">2026-06-10 10:00</time>
+                        </div>
+                    </a>
+                </div>
+                <nav class="pagination" th:if="${reportPage.totalPages > 1}" aria-label="신고 목록 페이지">
+                    <a th:if="${reportPage.hasPrevious()}"
+                       th:href="@{/reports(reportType=${selectedReportType}, keyword=${keyword}, page=${reportPage.number - 1})}">이전</a>
+                    <span th:text="|${reportPage.number + 1} / ${reportPage.totalPages}|">1 / 1</span>
+                    <a th:if="${reportPage.hasNext()}"
+                       th:href="@{/reports(reportType=${selectedReportType}, keyword=${keyword}, page=${reportPage.number + 1})}">다음</a>
+                </nav>
+            </article>
+
+            <div class="report-detail-stack">
+                <article class="panel empty-state detail-placeholder" th:if="${selectedReport == null}">
+                    왼쪽 목록에서 신고를 선택하면 상세 정보가 표시됩니다.
+                </article>
+
+                <th:block th:if="${selectedReport != null}">
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h2 th:text="${selectedReport.reportToNickname}">피신고자</h2>
+                                <span th:text="|신고 ID ${selectedReport.reportId}|">신고 ID 1</span>
+                            </div>
+                            <span class="badge" th:classappend="| status-${selectedReport.reportToStatus}|"
+                                  th:text="${selectedReport.reportToStatus}">ACTIVE</span>
+                        </div>
+                        <div class="report-alert-summary">
+                            <span>누적 신고</span>
+                            <strong th:text="|${selectedReport.reportToTotalReportCount}회|">0회</strong>
+                            <p>닉네임과 상태 메시지는 신고 당시 값이 아닌 현재 값입니다.</p>
+                        </div>
+                        <dl class="member-summary">
+                            <div><dt>피신고자 ID</dt><dd th:text="${selectedReport.reportToId}">1</dd></div>
+                            <div><dt>현재 회원 상태</dt><dd th:text="${selectedReport.reportToStatus}">ACTIVE</dd></div>
+                            <div class="report-wide-detail">
+                                <dt>현재 상태 메시지</dt>
+                                <dd th:text="${selectedReport.reportToProfileMessage ?: '-'}">-</dd>
+                            </div>
+                        </dl>
+                        <a class="secondary-button button-link report-member-link"
+                           th:href="@{/members(type='ID', keyword=${selectedReport.reportToId}, memberId=${selectedReport.reportToId})}">
+                            회원 관리에서 확인
+                        </a>
+                    </article>
+
+                    <article class="panel">
+                        <h2>신고 내용</h2>
+                        <dl class="member-summary">
+                            <div><dt>신고 유형</dt><dd th:text="${selectedReport.reportTypeName}">부적절한 닉네임</dd></div>
+                            <div><dt>신고 일시</dt><dd th:text="${#temporals.format(selectedReport.createdAt, 'yyyy-MM-dd HH:mm')}">일시</dd></div>
+                            <div class="report-wide-detail"><dt>신고 사유</dt><dd th:text="${selectedReport.reason ?: '-'}">-</dd></div>
+                        </dl>
+                    </article>
+
+                    <article class="panel">
+                        <h2>신고자 정보</h2>
+                        <dl class="member-summary">
+                            <div><dt>신고자 ID</dt><dd th:text="${selectedReport.reportFromId}">1</dd></div>
+                            <div><dt>현재 닉네임</dt><dd th:text="${selectedReport.reportFromNickname}">신고자</dd></div>
+                        </dl>
+                        <a class="secondary-button button-link report-member-link"
+                           th:href="@{/members(type='ID', keyword=${selectedReport.reportFromId}, memberId=${selectedReport.reportFromId})}">
+                            회원 관리에서 확인
+                        </a>
+                    </article>
+                </th:block>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

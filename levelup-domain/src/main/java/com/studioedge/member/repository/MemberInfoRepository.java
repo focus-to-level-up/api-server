@@ -4,6 +4,7 @@ import com.studioedge.member.entity.Member;
 import com.studioedge.member.entity.MemberInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,4 +38,13 @@ public interface MemberInfoRepository extends JpaRepository<MemberInfo, Long> {
             "JOIN mi.member m WHERE m.status = 'ACTIVE' " +
             "GROUP BY mi.gender")
     List<Object[]> countByGender();
+
+    @Query("SELECT mi.member.id AS memberId, mi.profileMessage AS profileMessage " +
+            "FROM MemberInfo mi WHERE mi.member.id IN :memberIds")
+    List<MemberProfileMessageProjection> findProfileMessagesByMemberIds(@Param("memberIds") List<Long> memberIds);
+
+    interface MemberProfileMessageProjection {
+        Long getMemberId();
+        String getProfileMessage();
+    }
 }

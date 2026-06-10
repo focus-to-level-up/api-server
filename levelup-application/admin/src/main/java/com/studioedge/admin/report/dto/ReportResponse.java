@@ -2,6 +2,7 @@ package com.studioedge.admin.report.dto;
 
 import com.studioedge.system.entity.ReportLog;
 import com.studioedge.system.enums.ReportType;
+import com.studioedge.member.enums.MemberStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
@@ -35,6 +36,9 @@ public record ReportResponse(
         @Schema(description = "피신고자 상태메시지", example = "부적절한 메시지")
         String reportToProfileMessage,
 
+        @Schema(description = "피신고자 현재 회원 상태", example = "ACTIVE")
+        MemberStatus reportToStatus,
+
         @Schema(description = "피신고자가 받은 총 신고 수", example = "3")
         long reportToTotalReportCount,
 
@@ -52,6 +56,7 @@ public record ReportResponse(
                 reportLog.getReportTo().getId(),
                 reportLog.getReportTo().getNickname(),
                 profileMessage,
+                reportLog.getReportTo().getStatus(),
                 totalReportCount,
                 reportLog.getCreatedAt()
         );

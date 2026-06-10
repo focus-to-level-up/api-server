@@ -3,7 +3,14 @@ package com.studioedge.system.entity;
 import com.studioedge.common.entity.BaseEntity;
 import com.studioedge.member.entity.Member;
 import com.studioedge.system.enums.ReportType;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,7 +23,7 @@ import lombok.NoArgsConstructor;
 public class ReportLog extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "member_asset_id")
+    @Column(name = "report_log_id")
     private Long id;
 
     @ManyToOne

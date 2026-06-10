@@ -221,6 +221,38 @@ th { color: #64748b; font-weight: 600; }
 .compact-distribution-list .distribution-row {
     grid-template-columns: minmax(80px, 120px) minmax(100px, 1fr) 58px 50px;
 }
+.report-filter-form {
+    display: grid; grid-template-columns: 220px minmax(260px, 1fr) auto; align-items: end; gap: 12px;
+}
+.report-filter-form label { display: grid; gap: 7px; }
+.report-filter-form label span { color: #64748b; font-size: 13px; font-weight: 600; }
+.report-filter-form input, .report-filter-form select {
+    width: 100%; padding: 10px 11px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff;
+}
+.report-layout { display: grid; grid-template-columns: minmax(380px, .8fr) minmax(520px, 1.2fr); gap: 20px; align-items: start; }
+.report-list-panel { padding: 0; overflow: hidden; }
+.report-list-panel .panel-heading { margin: 0; padding: 20px 22px 12px; }
+.report-list { max-height: 720px; overflow-y: auto; border-top: 1px solid #e2e8f0; }
+.report-list-item {
+    display: grid; gap: 9px; padding: 15px 18px; border-bottom: 1px solid #e2e8f0;
+    color: #18212f; text-decoration: none;
+}
+.report-list-item:hover, .report-list-item.selected { background: #eff6ff; }
+.report-list-item.selected { box-shadow: inset 3px 0 #2563eb; }
+.report-list-heading, .report-list-meta {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.report-list-heading strong { font-size: 14px; }
+.report-list-meta { color: #64748b; font-size: 12px; }
+.report-detail-stack { display: grid; gap: 20px; }
+.report-alert-summary {
+    margin-bottom: 18px; padding: 16px; border: 1px solid #fecaca; border-radius: 6px; background: #fff1f2;
+}
+.report-alert-summary span { color: #be123c; font-size: 12px; font-weight: 700; }
+.report-alert-summary strong { display: block; margin-top: 4px; color: #9f1239; font-size: 22px; }
+.report-alert-summary p { margin: 8px 0 0; color: #64748b; font-size: 12px; }
+.report-wide-detail { grid-column: 1 / -1; }
+.report-member-link { margin-top: 18px; }
 
 @media (max-width: 900px) {
     .app-shell { grid-template-columns: 1fr; }
@@ -228,7 +260,7 @@ th { color: #64748b; font-weight: 600; }
     .sidebar nav { grid-template-columns: repeat(2, 1fr); }
     .sidebar-footer { margin-top: 0; }
     .status-grid, .two-column, .member-layout, .edit-grid, .league-layout, .league-filter-form,
-    .guild-layout, .guild-filter-form, .stats-distribution-grid { grid-template-columns: 1fr; }
+    .guild-layout, .guild-filter-form, .stats-distribution-grid, .report-layout, .report-filter-form { grid-template-columns: 1fr; }
     .edit-grid form:last-child { grid-column: auto; }
     .search-form { grid-template-columns: 1fr; }
     .member-summary, .stat-summary { grid-template-columns: 1fr; }
