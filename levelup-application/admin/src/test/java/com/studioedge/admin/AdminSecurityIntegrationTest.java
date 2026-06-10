@@ -64,4 +64,12 @@ class AdminSecurityIntegrationTest {
 
         assertThat(adminRepository.existsByUsername("operator")).isTrue();
     }
+
+    @Test
+    void authenticatedAdminCanOpenMailPage() throws Exception {
+        mockMvc.perform(get("/mails")
+                        .with(user("initial-admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("mails/index"));
+    }
 }

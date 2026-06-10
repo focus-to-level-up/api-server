@@ -2,6 +2,7 @@ package com.studioedge.mail.repository;
 
 import com.studioedge.mail.entity.Mail;
 import com.studioedge.mail.enums.MailType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -40,6 +41,10 @@ public interface MailRepository extends JpaRepository<Mail, Long> {
      * 특정 결제 로그와 연결된 우편 조회 (환불 시 사용)
      */
     List<Mail> findByPaymentLogId(Long paymentLogId);
+
+    @Query("SELECT m FROM Mail m JOIN FETCH m.receiver " +
+            "WHERE m.type = :type ORDER BY m.createdAt DESC")
+    List<Mail> findRecentByType(@Param("type") MailType type, Pageable pageable);
 
     // 여러 유저의 특정 타입 메일을 날짜 기준으로 조회
     @Query("SELECT m FROM Mail m " +

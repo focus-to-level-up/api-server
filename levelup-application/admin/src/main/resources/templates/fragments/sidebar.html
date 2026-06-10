@@ -12,7 +12,7 @@
         <span class="nav-section">업무 화면</span>
         <a th:href="@{/members}" th:classappend="${active == 'members'} ? ' active'">회원 관리</a>
         <a th:href="@{/leagues}" th:classappend="${active == 'leagues'} ? ' active'">리그 · 랭킹</a>
-        <a class="disabled">우편 발송</a>
+        <a th:href="@{/mails}" th:classappend="${active == 'mails'} ? ' active'">우편 발송</a>
         <a th:href="@{/guilds}" th:classappend="${active == 'guilds'} ? ' active'">길드 관리</a>
         <a th:href="@{/stats}" th:classappend="${active == 'stats'} ? ' active'">통계</a>
         <a th:href="@{/reports}" th:classappend="${active == 'reports'} ? ' active'">신고 목록</a>

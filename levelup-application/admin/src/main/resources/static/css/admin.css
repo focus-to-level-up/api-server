@@ -253,6 +253,30 @@ th { color: #64748b; font-weight: 600; }
 .report-alert-summary p { margin: 8px 0 0; color: #64748b; font-size: 12px; }
 .report-wide-detail { grid-column: 1 / -1; }
 .report-member-link { margin-top: 18px; }
+.mail-layout {
+    display: grid; grid-template-columns: minmax(360px, .75fr) minmax(560px, 1.25fr);
+    gap: 20px; align-items: start; margin-bottom: 20px;
+}
+.mail-compose-panel { min-width: 0; }
+.mail-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.reward-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.mail-confirmation {
+    display: grid; gap: 7px; padding: 16px; border: 1px solid #fbbf24;
+    border-radius: 6px; background: #fffbeb;
+}
+.mail-confirmation > span { color: #92400e; font-size: 12px; font-weight: 700; }
+.mail-confirmation > strong { color: #78350f; font-size: 16px; }
+.mail-confirmation p { margin: 0; color: #475569; font-size: 13px; }
+.confirmation-check {
+    display: flex !important; grid-auto-flow: column; justify-content: start;
+    align-items: center; gap: 8px !important; margin-top: 8px;
+}
+.confirmation-check input { width: 16px !important; height: 16px; margin: 0; }
+.pending-mail { background: #fef3c7; color: #92400e; }
+.recent-mail-panel { padding: 0; overflow: hidden; }
+.recent-mail-panel .panel-heading { margin: 0; padding: 20px 22px 12px; }
+.recent-mail-panel .table-scroll { max-height: 520px; overflow: auto; }
+.recent-mail-panel thead { position: sticky; top: 0; z-index: 1; background: #f8fafc; }
 
 @media (max-width: 900px) {
     .app-shell { grid-template-columns: 1fr; }
@@ -260,7 +284,8 @@ th { color: #64748b; font-weight: 600; }
     .sidebar nav { grid-template-columns: repeat(2, 1fr); }
     .sidebar-footer { margin-top: 0; }
     .status-grid, .two-column, .member-layout, .edit-grid, .league-layout, .league-filter-form,
-    .guild-layout, .guild-filter-form, .stats-distribution-grid, .report-layout, .report-filter-form { grid-template-columns: 1fr; }
+    .guild-layout, .guild-filter-form, .stats-distribution-grid, .report-layout, .report-filter-form,
+    .mail-layout, .mail-field-grid, .reward-fields { grid-template-columns: 1fr; }
     .edit-grid form:last-child { grid-column: auto; }
     .search-form { grid-template-columns: 1fr; }
     .member-summary, .stat-summary { grid-template-columns: 1fr; }

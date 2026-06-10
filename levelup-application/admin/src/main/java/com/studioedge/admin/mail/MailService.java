@@ -2,17 +2,20 @@ package com.studioedge.admin.mail;
 
 import com.studioedge.admin.mail.dto.MailResponse;
 import com.studioedge.admin.mail.dto.SendMailRequest;
-import com.studioedge.member.repository.MemberRepository;
-import com.studioedge.member.entity.Member;
-import com.studioedge.member.exception.MemberNotFoundException;
-import com.studioedge.mail.repository.MailRepository;
 import com.studioedge.mail.entity.Mail;
 import com.studioedge.mail.enums.MailType;
+import com.studioedge.mail.repository.MailRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.enums.MemberStatus;
+import com.studioedge.member.exception.MemberNotFoundException;
+import com.studioedge.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class MailService {
     public MailResponse sendRewardMail(SendMailRequest request) {
         Member receiver = memberRepository.findById(request.receiverId())
                 .orElseThrow(MemberNotFoundException::new);
+        validateReceiver(receiver);
 
         Mail mail = Mail.builder()
                 .receiver(receiver)
@@ -48,44 +52,15 @@ public class MailService {
         return MailResponse.from(savedMail);
     }
 
-    /**
-     * 사전예약 패키지 지급 (다이아 + 보너스 티켓 + 캐릭터 선택권)
-     */
-    @Transactional
-    public MailResponse sendPreRegistrationPackage(Long receiverId, String customTitle, String customDescription) {
-        Member receiver = memberRepository.findById(receiverId)
-                .orElseThrow(MemberNotFoundException::new);
+    public List<MailResponse> getRecentRewardMails(int limit) {
+        return mailRepository.findRecentByType(MailType.ADMIN_REWARD, PageRequest.of(0, limit)).stream()
+                .map(MailResponse::from)
+                .toList();
+    }
 
-        // 1. 다이아 + 보너스 티켓 우편
-        Mail rewardMail = Mail.builder()
-                .receiver(receiver)
-                .senderName("운영자")
-                .type(MailType.ADMIN_REWARD)
-                .title(customTitle != null ? customTitle : "사전예약 보상 지급")
-                .description(customDescription != null ? customDescription : "사전예약 보상이 지급되었습니다.")
-                .popupTitle("사전예약 보상")
-                .popupContent("사전예약에 참여해 주셔서 감사합니다!\n특별 보상이 지급되었습니다.")
-                .diamondAmount(3000)
-                .bonusTicketCount(0)
-                .expiredAt(LocalDate.now().plusDays(30))
-                .build();
-
-        // 2. 캐릭터 선택권 우편
-        Mail characterTicketMail = Mail.builder()
-                .receiver(receiver)
-                .senderName("운영자")
-                .type(MailType.CHARACTER_SELECTION_TICKET)
-                .title("캐릭터 선택권")
-                .description("원하는 캐릭터를 선택하세요!")
-                .popupTitle("캐릭터 선택권")
-                .popupContent("RARE 등급 이하의 캐릭터 중\n원하는 캐릭터를 선택하세요!")
-                .allowedRarity("RARE")
-                .expiredAt(LocalDate.now().plusDays(30))
-                .build();
-
-        mailRepository.save(rewardMail);
-        Mail savedTicketMail = mailRepository.save(characterTicketMail);
-
-        return MailResponse.from(savedTicketMail);
+    private void validateReceiver(Member receiver) {
+        if (receiver.getStatus() == MemberStatus.WITHDRAWN || receiver.getStatus() == MemberStatus.PENDING) {
+            throw new InvalidMailOperationException("탈퇴 또는 가입 미완료 회원에게는 우편을 발송할 수 없습니다.");
+        }
     }
 }
