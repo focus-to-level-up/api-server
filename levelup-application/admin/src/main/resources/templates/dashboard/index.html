@@ -10,28 +10,134 @@
 <div class="app-shell">
     <aside th:replace="~{fragments/sidebar :: sidebar('dashboard')}"></aside>
     <main class="content">
-        <header class="page-header">
+        <header class="page-header dashboard-header">
             <div>
                 <h1>대시보드</h1>
-                <p>관리자 서버의 독립 실행과 세션 인증 골격이 준비되었습니다.</p>
+                <p>서비스 활동과 회원 상태를 한눈에 확인합니다.</p>
+            </div>
+            <div class="service-date">
+                <span>서비스 날짜</span>
+                <strong th:text="${dashboard.serviceDate}">2026-06-10</strong>
+                <small>오전 4시 기준</small>
             </div>
         </header>
-        <section class="status-grid">
+
+        <section class="dashboard-summary-grid">
             <article class="status-card">
-                <span>인증 방식</span>
-                <strong>세션 로그인</strong>
-                <p>API JWT와 분리된 Admin 전용 인증입니다.</p>
+                <span>오늘 목표 생성 회원</span>
+                <strong th:text="|${dashboard.todayGoalMembers}명|">0명</strong>
+                <p>집중시간과 관계없이 오늘 목표를 만든 회원입니다.</p>
             </article>
             <article class="status-card">
-                <span>현재 관리자</span>
-                <strong th:text="${currentAdmin}">admin</strong>
-                <p>모든 관리자 계정은 동일한 권한을 가집니다.</p>
+                <span>현재 집중 중</span>
+                <strong th:text="|${dashboard.currentFocusingMembers}명|">0명</strong>
+                <p>회원의 실시간 집중 상태값을 기준으로 집계합니다.</p>
             </article>
             <article class="status-card">
-                <span>다음 화면</span>
-                <strong>회원 관리</strong>
-                <p>기존 Next.js 화면을 기준으로 순차 전환합니다.</p>
+                <span>오늘 총 집중시간</span>
+                <strong th:text="${dashboard.todayTotalFocusTime}">0분</strong>
+                <p th:text="|누적 ${dashboard.todayTotalFocusSeconds}초|">누적 0초</p>
             </article>
+            <article class="status-card">
+                <span>서비스 이용 가능 회원</span>
+                <strong th:text="|${dashboard.serviceAvailableMembers}명|">0명</strong>
+                <p>정상 및 랭킹 정지 상태의 회원을 포함합니다.</p>
+            </article>
+        </section>
+
+        <section class="dashboard-main-grid">
+            <article class="panel activity-trend-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>최근 7일 집중 활동</h2>
+                        <span>목표 생성 회원 수와 총 집중시간</span>
+                    </div>
+                    <a class="secondary-button button-link compact-button" th:href="@{/stats}">통계 보기</a>
+                </div>
+                <div class="activity-legend">
+                    <span><i class="member-legend"></i>목표 생성 회원</span>
+                    <span><i class="focus-legend"></i>총 집중시간</span>
+                </div>
+                <div class="activity-trend-list">
+                    <div class="activity-trend-row" th:each="activity : ${dashboard.activityTrend}">
+                        <time th:text="${#temporals.format(activity.date, 'MM-dd')}">06-10</time>
+                        <div class="activity-bars">
+                            <div class="activity-track">
+                                <span class="activity-fill member-activity-fill"
+                                      th:style="|--bar-size: ${activity.memberBarPercentage}%|"></span>
+                            </div>
+                            <div class="activity-track">
+                                <span class="activity-fill focus-activity-fill"
+                                      th:style="|--bar-size: ${activity.focusBarPercentage}%|"></span>
+                            </div>
+                        </div>
+                        <div class="activity-values">
+                            <strong th:text="|${activity.goalMemberCount}명|">0명</strong>
+                            <span th:text="${activity.totalFocusTime}">0분</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel member-status-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>회원 현황</h2>
+                        <span>모든 회원 상태 포함</span>
+                    </div>
+                    <strong th:text="|총 ${dashboard.totalMembers}명|">총 0명</strong>
+                </div>
+                <div class="member-status-list">
+                    <a th:each="item : ${dashboard.memberStatuses}"
+                       th:href="@{/members(type='STATUS', keyword=${item.status})}">
+                        <span>
+                            <i class="status-dot" th:classappend="| status-dot-${item.status}|"></i>
+                            <span th:text="${item.label}">정상</span>
+                        </span>
+                        <strong th:text="|${item.count}명|">0명</strong>
+                    </a>
+                </div>
+            </article>
+        </section>
+
+        <section class="panel recent-report-dashboard">
+            <div class="panel-heading">
+                <div>
+                    <h2>최근 신고</h2>
+                    <span>최근 접수된 신고 5건</span>
+                </div>
+                <a class="secondary-button button-link compact-button" th:href="@{/reports}">신고 목록 보기</a>
+            </div>
+            <div class="empty-state" th:if="${#lists.isEmpty(dashboard.recentReports)}">
+                접수된 신고가 없습니다.
+            </div>
+            <div class="table-scroll" th:if="${!#lists.isEmpty(dashboard.recentReports)}">
+                <table>
+                    <thead>
+                    <tr><th>접수 일시</th><th>유형</th><th>신고자</th><th>피신고자</th><th>현재 상태</th><th>확인</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="report : ${dashboard.recentReports}">
+                        <td th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}">일시</td>
+                        <td th:text="${report.reportTypeName}">부적절한 닉네임</td>
+                        <td>
+                            <strong th:text="${report.reportFromNickname}">신고자</strong>
+                            <div class="muted" th:text="|ID ${report.reportFromId}|">ID 1</div>
+                        </td>
+                        <td>
+                            <strong th:text="${report.reportToNickname}">피신고자</strong>
+                            <div class="muted" th:text="|ID ${report.reportToId}|">ID 2</div>
+                        </td>
+                        <td><span class="badge" th:classappend="| status-${report.reportToStatus}|"
+                                  th:text="${report.reportToStatus}">ACTIVE</span></td>
+                        <td>
+                            <a class="secondary-button button-link compact-button"
+                               th:href="@{/reports(reportId=${report.reportId})}">상세</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
     </main>
 </div>

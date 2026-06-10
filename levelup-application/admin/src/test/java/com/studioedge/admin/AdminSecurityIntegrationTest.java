@@ -44,6 +44,14 @@ class AdminSecurityIntegrationTest {
     }
 
     @Test
+    void authenticatedAdminCanOpenDashboard() throws Exception {
+        mockMvc.perform(get("/dashboard")
+                        .with(user("initial-admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("dashboard/index"));
+    }
+
+    @Test
     void authenticatesInitialAdmin() throws Exception {
         mockMvc.perform(formLogin("/login")
                         .user("initial-admin")

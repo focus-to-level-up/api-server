@@ -29,12 +29,6 @@ public class AccountController {
         return "auth/login";
     }
 
-    @GetMapping("/dashboard")
-    public String dashboard(Principal principal, Model model) {
-        model.addAttribute("currentAdmin", principal.getName());
-        return "dashboard/index";
-    }
-
     @GetMapping("/admins")
     public String admins(Principal principal, Model model) {
         model.addAttribute("currentAdmin", principal.getName());

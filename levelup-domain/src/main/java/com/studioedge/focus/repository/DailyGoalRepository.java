@@ -21,6 +21,12 @@ public interface DailyGoalRepository extends JpaRepository<DailyGoal, Long> {
         Integer getMaxConsecutiveSeconds();
     }
 
+    interface DailyActivityStat {
+        LocalDate getDate();
+        Long getGoalMemberCount();
+        Long getTotalFocusSeconds();
+    }
+
     /**
      * 특정 유저의 특정 날짜 DailyGoal 조회
      */
@@ -68,6 +74,16 @@ public interface DailyGoalRepository extends JpaRepository<DailyGoal, Long> {
      */
     @Query("SELECT dg.currentSeconds FROM DailyGoal dg WHERE dg.dailyGoalDate = :date")
     List<Integer> findAllDailySecondsByDate(@Param("date") LocalDate date);
+
+    @Query("SELECT dg.dailyGoalDate AS date, COUNT(dg) AS goalMemberCount, " +
+            "COALESCE(SUM(dg.currentSeconds), 0) AS totalFocusSeconds " +
+            "FROM DailyGoal dg " +
+            "WHERE dg.dailyGoalDate BETWEEN :startDate AND :endDate " +
+            "GROUP BY dg.dailyGoalDate ORDER BY dg.dailyGoalDate ASC")
+    List<DailyActivityStat> findDailyActivityBetween(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 
     /**
      * 주간: 날짜 범위의 유저별 집중시간(초) 합계 목록 조회

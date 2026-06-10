@@ -21,6 +21,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     long countByStatus(MemberStatus status);
 
+    long countByIsFocusingTrue();
+
     boolean existsByNickname(String nickname);
 
     boolean existsByReferralCode(String referralCode);
