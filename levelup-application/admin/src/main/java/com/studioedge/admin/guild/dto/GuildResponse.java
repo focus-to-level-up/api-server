@@ -29,6 +29,15 @@ public record GuildResponse(
         @Schema(description = "공개 여부", example = "true")
         Boolean isPublic,
 
+        @Schema(description = "목표 집중 시간(초)", example = "3600")
+        Integer targetFocusTime,
+
+        @Schema(description = "평균 집중 시간 집계값(초)", example = "7200")
+        Integer averageFocusTime,
+
+        @Schema(description = "지난주 다이아 보상", example = "10")
+        Integer lastWeekDiamondReward,
+
         @Schema(description = "생성일", example = "2024-01-15T10:30:00")
         LocalDateTime createdAt
 ) {
@@ -41,6 +50,9 @@ public record GuildResponse(
                 guild.getCurrentMembers(),
                 guild.getMaxMembers(),
                 guild.getIsPublic(),
+                guild.getTargetFocusTime(),
+                guild.getAverageFocusTime(),
+                guild.getLastWeekDiamondReward(),
                 guild.getCreatedAt()
         );
     }

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Focus Admin 길드 관리</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('guilds')}"></aside>
+    <main class="content">
+        <header class="page-header">
+            <div>
+                <h1>길드 관리</h1>
+                <p>전체 길드를 조회하고 운영상 필요한 이름과 설명을 수정합니다.</p>
+            </div>
+        </header>
+
+        <div class="alert success" th:if="${message}" th:text="${message}"></div>
+        <div class="alert error" th:if="${error}" th:text="${error}"></div>
+
+        <section class="panel search-panel">
+            <form method="get" th:action="@{/guilds}" class="guild-filter-form">
+                <label>
+                    <span>검색 기준</span>
+                    <select name="type">
+                        <option value="NAME" th:selected="${searchType == 'NAME'}">길드명</option>
+                        <option value="ID" th:selected="${searchType == 'ID'}">길드 ID</option>
+                    </select>
+                </label>
+                <label>
+                    <span>검색어</span>
+                    <input name="keyword" th:value="${keyword}" placeholder="검색어 없이 전체 조회">
+                </label>
+                <label>
+                    <span>카테고리</span>
+                    <select name="category">
+                        <option value="">전체 카테고리</option>
+                        <option th:each="category : ${categories}"
+                                th:value="${category}"
+                                th:text="${category}"
+                                th:selected="${selectedCategory == category}">OFFICE_WORKER</option>
+                    </select>
+                </label>
+                <button type="submit" class="primary-button">조회</button>
+            </form>
+        </section>
+
+        <section class="guild-layout">
+            <article class="panel result-panel">
+                <div class="panel-heading">
+                    <h2>길드 목록</h2>
+                    <span th:text="|총 ${guildPage.totalElements}개|">0개</span>
+                </div>
+                <div class="empty-state" th:if="${guildPage.empty}">
+                    조건에 맞는 길드가 없습니다.
+                </div>
+                <div class="table-scroll guild-table-scroll" th:if="${!guildPage.empty}">
+                    <table>
+                        <thead>
+                        <tr><th>ID</th><th>길드명</th><th>인원</th><th>카테고리</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="guild : ${guildPage.content}"
+                            th:classappend="${selectedGuild != null and selectedGuild.guildId == guild.guildId} ? ' selected-row'">
+                            <td>
+                                <a th:href="@{/guilds(type=${searchType}, keyword=${keyword}, category=${selectedCategory}, page=${guildPage.number}, guildId=${guild.guildId})}"
+                                   th:text="${guild.guildId}">1</a>
+                            </td>
+                            <td th:text="${guild.name}">길드명</td>
+                            <td th:text="|${guild.currentMembers} / ${guild.maxMembers}|">0 / 20</td>
+                            <td th:text="${guild.category}">OFFICE_WORKER</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <nav class="pagination" th:if="${guildPage.totalPages > 1}" aria-label="길드 목록 페이지">
+                    <a th:if="${guildPage.hasPrevious()}"
+                       th:href="@{/guilds(type=${searchType}, keyword=${keyword}, category=${selectedCategory}, page=${guildPage.number - 1})}">이전</a>
+                    <span th:text="|${guildPage.number + 1} / ${guildPage.totalPages}|">1 / 1</span>
+                    <a th:if="${guildPage.hasNext()}"
+                       th:href="@{/guilds(type=${searchType}, keyword=${keyword}, category=${selectedCategory}, page=${guildPage.number + 1})}">다음</a>
+                </nav>
+            </article>
+
+            <div class="guild-detail-stack">
+                <article class="panel empty-state detail-placeholder" th:if="${selectedGuild == null}">
+                    왼쪽 목록에서 길드를 선택하면 상세 정보와 수정 기능이 표시됩니다.
+                </article>
+
+                <th:block th:if="${selectedGuild != null}">
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h2 th:text="${selectedGuild.name}">길드명</h2>
+                                <span th:text="|길드 ID ${selectedGuild.guildId}|">길드 ID 1</span>
+                            </div>
+                            <span class="badge" th:text="${selectedGuild.isPublic ? '공개' : '비공개'}">공개</span>
+                        </div>
+                        <dl class="member-summary guild-summary">
+                            <div><dt>카테고리</dt><dd th:text="${selectedGuild.category}">OFFICE_WORKER</dd></div>
+                            <div><dt>인원</dt><dd th:text="|${selectedGuild.currentMembers} / ${selectedGuild.maxMembers}명|">0 / 20명</dd></div>
+                            <div><dt>목표 집중 시간</dt><dd th:text="|${selectedGuild.targetFocusTime}초|">0초</dd></div>
+                            <div><dt>평균 집중 집계값</dt><dd th:text="|${selectedGuild.averageFocusTime}초|">0초</dd></div>
+                            <div><dt>지난주 다이아 보상</dt><dd th:text="${selectedGuild.lastWeekDiamondReward}">0</dd></div>
+                            <div><dt>생성일</dt><dd th:text="${selectedGuild.createdAt ?: '-'}">-</dd></div>
+                            <div class="guild-description"><dt>설명</dt><dd th:text="${selectedGuild.description}">설명</dd></div>
+                        </dl>
+                    </article>
+
+                    <article class="panel">
+                        <h2>길드 정보 수정</h2>
+                        <div class="guild-edit-grid">
+                            <form method="post" class="form-stack"
+                                  th:action="@{/guilds/{id}/name(id=${selectedGuild.guildId})}"
+                                  th:object="${nameRequest}">
+                                <input type="hidden" name="type" th:value="${searchType}">
+                                <input type="hidden" name="keyword" th:value="${keyword}">
+                                <input type="hidden" name="category" th:value="${selectedCategory}">
+                                <input type="hidden" name="page" th:value="${guildPage.number}">
+                                <label>길드명 <input type="text" th:field="*{name}" maxlength="50"></label>
+                                <button type="submit" class="secondary-button">길드명 변경</button>
+                            </form>
+                            <form method="post" class="form-stack"
+                                  th:action="@{/guilds/{id}/description(id=${selectedGuild.guildId})}"
+                                  th:object="${descriptionRequest}">
+                                <input type="hidden" name="type" th:value="${searchType}">
+                                <input type="hidden" name="keyword" th:value="${keyword}">
+                                <input type="hidden" name="category" th:value="${selectedCategory}">
+                                <input type="hidden" name="page" th:value="${guildPage.number}">
+                                <label>길드 설명 <textarea th:field="*{description}" maxlength="500" rows="5"></textarea></label>
+                                <button type="submit" class="secondary-button">길드 설명 변경</button>
+                            </form>
+                        </div>
+                    </article>
+                </th:block>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
