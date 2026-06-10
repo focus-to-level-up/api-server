@@ -14,7 +14,7 @@
         <a th:href="@{/leagues}" th:classappend="${active == 'leagues'} ? ' active'">리그 · 랭킹</a>
         <a class="disabled">우편 발송</a>
         <a th:href="@{/guilds}" th:classappend="${active == 'guilds'} ? ' active'">길드 관리</a>
-        <a class="disabled">통계</a>
+        <a th:href="@{/stats}" th:classappend="${active == 'stats'} ? ' active'">통계</a>
         <a class="disabled">신고 목록</a>
     </nav>
     <div class="sidebar-footer">

@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -107,6 +108,7 @@ public class StatsService {
                             percentage
                     );
                 })
+                .sorted(Comparator.comparingLong(CategoryDistributionResponse.CategoryStats::userCount).reversed())
                 .toList();
 
         return new CategoryDistributionResponse(totalUsers, distribution);
@@ -127,11 +129,12 @@ public class StatsService {
                     double percentage = totalUsers > 0 ? Math.round(count * 1000.0 / totalUsers) / 10.0 : 0;
                     return new GenderDistributionResponse.GenderStats(
                             gender,
-                            gender == Gender.MALE ? "남성" : "여성",
+                            getGenderName(gender),
                             count,
                             percentage
                     );
                 })
+                .sorted(Comparator.comparingInt(stats -> getGenderOrder(stats.gender())))
                 .toList();
 
         return new GenderDistributionResponse(totalUsers, distribution);
@@ -155,5 +158,22 @@ public class StatsService {
             case JOB_SEEKER -> "취준생";
             case OFFICE_WORKER -> "직장인";
         };
+    }
+
+    private String getGenderName(Gender gender) {
+        if (gender == null) {
+            return "미설정";
+        }
+        return gender == Gender.MALE ? "남성" : "여성";
+    }
+
+    private int getGenderOrder(Gender gender) {
+        if (gender == Gender.MALE) {
+            return 0;
+        }
+        if (gender == Gender.FEMALE) {
+            return 1;
+        }
+        return 2;
     }
 }

@@ -1,63 +1,58 @@
 package com.studioedge.admin.stats;
 
-import com.studioedge.admin.stats.dto.CategoryDistributionResponse;
 import com.studioedge.admin.stats.dto.FocusTimeDistributionResponse;
-import com.studioedge.admin.stats.dto.GenderDistributionResponse;
-import com.studioedge.response.CommonResponse;
-import com.studioedge.admin.global.support.HttpResponseUtil;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 import static com.studioedge.AppConstants.getServiceDate;
 
-@Tag(name = "Admin - Stats", description = "관리자 통계 API")
-@RestController
-@RequestMapping("/api/v1/admin/stats")
+@Controller
+@RequestMapping("/stats")
 @RequiredArgsConstructor
 public class StatsController {
+
+    private static final String DAILY = "DAILY";
+    private static final String WEEKLY = "WEEKLY";
+
     private final StatsService statsService;
 
-    @GetMapping("/focus-time/daily")
-    @Operation(summary = "일간 집중시간 분포", description = "특정 날짜의 집중시간 분포를 조회합니다. (2시간 단위: 0~2, 2~4, 4~6, 6~8, 8~10, 10시간 이상)")
-    public ResponseEntity<CommonResponse<FocusTimeDistributionResponse>> getDailyFocusTimeDistribution(
-            @Parameter(description = "조회 날짜 (기본값: 오늘)", example = "2024-03-21")
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    @GetMapping
+    public String stats(
+            Principal principal,
+            @RequestParam(defaultValue = DAILY) String mode,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            Model model
     ) {
-        LocalDate targetDate = date != null ? date : getServiceDate();
-        return HttpResponseUtil.ok(statsService.getDailyFocusTimeDistribution(targetDate));
-    }
+        LocalDate serviceDate = getServiceDate();
+        LocalDate selectedDate = date == null ? serviceDate : date;
+        if (selectedDate.isAfter(serviceDate)) {
+            selectedDate = serviceDate;
+            model.addAttribute("error", "서비스 날짜 이후의 통계는 조회할 수 없습니다.");
+        }
 
-    @GetMapping("/focus-time/weekly")
-    @Operation(summary = "주간 집중시간 분포", description = "특정 날짜가 속한 주의 집중시간 분포를 조회합니다. (5시간 단위: 0~5, 5~10, ..., 50시간 이상)")
-    public ResponseEntity<CommonResponse<FocusTimeDistributionResponse>> getWeeklyFocusTimeDistribution(
-            @Parameter(description = "조회 기준 날짜 (해당 주 조회, 기본값: 오늘)", example = "2024-03-21")
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
-    ) {
-        LocalDate targetDate = date != null ? date : getServiceDate();
-        return HttpResponseUtil.ok(statsService.getWeeklyFocusTimeDistribution(targetDate));
-    }
+        String selectedMode = WEEKLY.equalsIgnoreCase(mode) ? WEEKLY : DAILY;
+        FocusTimeDistributionResponse focusStats = selectedMode.equals(WEEKLY)
+                ? statsService.getWeeklyFocusTimeDistribution(selectedDate)
+                : statsService.getDailyFocusTimeDistribution(selectedDate);
 
-    @GetMapping("/category")
-    @Operation(summary = "카테고리 분포", description = "카테고리별 유저 수 및 비율을 조회합니다.")
-    public ResponseEntity<CommonResponse<CategoryDistributionResponse>> getCategoryDistribution(
-    ) {
-        return HttpResponseUtil.ok(statsService.getCategoryDistribution());
-    }
-
-    @GetMapping("/gender")
-    @Operation(summary = "성별 분포", description = "성별 유저 수 및 비율을 조회합니다.")
-    public ResponseEntity<CommonResponse<GenderDistributionResponse>> getGenderDistribution(
-    ) {
-        return HttpResponseUtil.ok(statsService.getGenderDistribution());
+        model.addAttribute("currentAdmin", principal.getName());
+        model.addAttribute("mode", selectedMode);
+        model.addAttribute("selectedDate", selectedDate);
+        model.addAttribute("maxDate", serviceDate);
+        model.addAttribute("focusStats", focusStats);
+        model.addAttribute("categoryStats", statsService.getCategoryDistribution());
+        model.addAttribute("genderStats", statsService.getGenderDistribution());
+        model.addAttribute("weekStart", selectedDate.with(DayOfWeek.MONDAY));
+        model.addAttribute("weekEnd", selectedDate.with(DayOfWeek.SUNDAY));
+        return "stats/index";
     }
 }

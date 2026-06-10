@@ -182,6 +182,45 @@ th { color: #64748b; font-weight: 600; }
 .guild-table-scroll thead { position: sticky; top: 0; z-index: 1; background: #f8fafc; }
 .guild-summary .guild-description { grid-column: 1 / -1; }
 .guild-edit-grid { display: grid; gap: 20px; }
+.stats-control-panel {
+    display: flex; align-items: end; gap: 18px; margin-bottom: 20px;
+}
+.stats-control-panel > p { margin: 0 0 10px auto; color: #64748b; font-size: 13px; }
+.segmented-control { display: flex; padding: 4px; background: #e2e8f0; border-radius: 6px; }
+.segmented-control a {
+    min-width: 72px; padding: 8px 12px; border-radius: 4px;
+    color: #475569; font-size: 14px; font-weight: 700; text-align: center; text-decoration: none;
+}
+.segmented-control a.active { background: #fff; color: #2563eb; box-shadow: 0 1px 2px rgba(15, 23, 42, .12); }
+.stats-date-form { display: flex; align-items: end; gap: 10px; }
+.stats-date-form label { display: grid; gap: 7px; }
+.stats-date-form label span { color: #64748b; font-size: 13px; font-weight: 600; }
+.stats-date-form input {
+    padding: 10px 11px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff;
+}
+.stats-focus-panel { margin-bottom: 20px; }
+.stats-focus-panel .panel-heading strong, .stats-distribution-grid .panel-heading strong { white-space: nowrap; font-size: 19px; }
+.stats-distribution-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.distribution-list { display: grid; gap: 12px; }
+.distribution-row {
+    display: grid; grid-template-columns: minmax(90px, 140px) minmax(160px, 1fr) 64px 54px;
+    align-items: center; gap: 12px; font-size: 13px;
+}
+.distribution-label { color: #475569; overflow-wrap: anywhere; }
+.distribution-row strong { text-align: right; }
+.distribution-row > span:last-child { color: #64748b; text-align: right; }
+.distribution-track { height: 12px; overflow: hidden; background: #e2e8f0; border-radius: 4px; }
+.distribution-fill {
+    display: block; width: var(--bar-size); min-width: 0; height: 100%; border-radius: 4px;
+}
+.focus-fill { background: #2563eb; }
+.category-fill { background: #059669; }
+.gender-fill { background: #2563eb; }
+.gender-fill.female { background: #db2777; }
+.gender-fill.unset { background: #64748b; }
+.compact-distribution-list .distribution-row {
+    grid-template-columns: minmax(80px, 120px) minmax(100px, 1fr) 58px 50px;
+}
 
 @media (max-width: 900px) {
     .app-shell { grid-template-columns: 1fr; }
@@ -189,10 +228,16 @@ th { color: #64748b; font-weight: 600; }
     .sidebar nav { grid-template-columns: repeat(2, 1fr); }
     .sidebar-footer { margin-top: 0; }
     .status-grid, .two-column, .member-layout, .edit-grid, .league-layout, .league-filter-form,
-    .guild-layout, .guild-filter-form { grid-template-columns: 1fr; }
+    .guild-layout, .guild-filter-form, .stats-distribution-grid { grid-template-columns: 1fr; }
     .edit-grid form:last-child { grid-column: auto; }
     .search-form { grid-template-columns: 1fr; }
     .member-summary, .stat-summary { grid-template-columns: 1fr; }
     .ranking-heading { align-items: flex-start; flex-direction: column; }
+    .stats-control-panel, .stats-date-form { align-items: stretch; flex-direction: column; }
+    .stats-control-panel > p { margin: 0; }
+    .distribution-row, .compact-distribution-list .distribution-row {
+        grid-template-columns: minmax(80px, 110px) minmax(100px, 1fr) 54px;
+    }
+    .distribution-row > span:last-child { display: none; }
     .content { padding: 20px; }
 }

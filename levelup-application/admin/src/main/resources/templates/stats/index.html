@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Focus Admin 통계</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('stats')}"></aside>
+    <main class="content">
+        <header class="page-header">
+            <div>
+                <h1>통계</h1>
+                <p>집중 기록과 활성 회원 분포를 확인합니다.</p>
+            </div>
+        </header>
+
+        <div class="alert error" th:if="${error}" th:text="${error}"></div>
+
+        <section class="panel stats-control-panel">
+            <div class="segmented-control" aria-label="집중시간 통계 단위">
+                <a th:href="@{/stats(mode='DAILY', date=${selectedDate})}"
+                   th:classappend="${mode == 'DAILY'} ? ' active'">일간</a>
+                <a th:href="@{/stats(mode='WEEKLY', date=${selectedDate})}"
+                   th:classappend="${mode == 'WEEKLY'} ? ' active'">주간</a>
+            </div>
+            <form method="get" th:action="@{/stats}" class="stats-date-form">
+                <input type="hidden" name="mode" th:value="${mode}">
+                <label>
+                    <span>조회 기준 날짜</span>
+                    <input type="date" name="date" th:value="${selectedDate}" th:max="${maxDate}">
+                </label>
+                <button type="submit" class="primary-button">조회</button>
+            </form>
+            <p>서비스 날짜는 오전 4시에 변경됩니다.</p>
+        </section>
+
+        <section class="panel stats-focus-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2 th:text="${mode == 'DAILY' ? '일간 집중시간 분포' : '주간 집중시간 분포'}">집중시간 분포</h2>
+                    <span th:if="${mode == 'DAILY'}" th:text="|${selectedDate} 집중 기록 회원 기준|">기준일</span>
+                    <span th:if="${mode == 'WEEKLY'}" th:text="|${weekStart} ~ ${weekEnd} 집중 기록 회원 기준|">주간</span>
+                </div>
+                <strong th:text="|${focusStats.totalUsers}명|">0명</strong>
+            </div>
+            <div class="distribution-list">
+                <div class="distribution-row" th:each="item : ${focusStats.distribution}">
+                    <span class="distribution-label" th:text="${item.label}">0~2시간</span>
+                    <div class="distribution-track">
+                        <span class="distribution-fill focus-fill"
+                              th:style="|--bar-size: ${item.percentage}%|"></span>
+                    </div>
+                    <strong th:text="|${item.userCount}명|">0명</strong>
+                    <span th:text="|${item.percentage}%|">0%</span>
+                </div>
+            </div>
+            <div class="empty-state" th:if="${focusStats.totalUsers == 0}">
+                선택한 기간에 집중 기록이 없습니다.
+            </div>
+        </section>
+
+        <section class="stats-distribution-grid">
+            <article class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>카테고리 분포</h2>
+                        <span>활성 회원 기준 · 회원 수 내림차순</span>
+                    </div>
+                    <strong th:text="|${categoryStats.totalUsers}명|">0명</strong>
+                </div>
+                <div class="distribution-list compact-distribution-list">
+                    <div class="distribution-row" th:each="item : ${categoryStats.distribution}">
+                        <span class="distribution-label" th:text="${item.categoryName}">직장인</span>
+                        <div class="distribution-track">
+                            <span class="distribution-fill category-fill"
+                                  th:style="|--bar-size: ${item.percentage}%|"></span>
+                        </div>
+                        <strong th:text="|${item.userCount}명|">0명</strong>
+                        <span th:text="|${item.percentage}%|">0%</span>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>성별 분포</h2>
+                        <span>활성 회원 기준 · 남성, 여성, 미설정</span>
+                    </div>
+                    <strong th:text="|${genderStats.totalUsers}명|">0명</strong>
+                </div>
+                <div class="distribution-list compact-distribution-list">
+                    <div class="distribution-row" th:each="item : ${genderStats.distribution}">
+                        <span class="distribution-label" th:text="${item.genderName}">미설정</span>
+                        <div class="distribution-track">
+                            <span class="distribution-fill gender-fill"
+                                  th:classappend="${item.genderName == '여성'} ? ' female' : (${item.genderName == '미설정'} ? ' unset' : '')"
+                                  th:style="|--bar-size: ${item.percentage}%|"></span>
+                        </div>
+                        <strong th:text="|${item.userCount}명|">0명</strong>
+                        <span th:text="|${item.percentage}%|">0%</span>
+                    </div>
+                </div>
+            </article>
+        </section>
+    </main>
+</div>
+</body>
+</html>
