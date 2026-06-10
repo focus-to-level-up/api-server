@@ -1,12 +1,10 @@
-package com.studioedge.admin.controller;
+package com.studioedge.admin.member;
 
-import com.studioedge.admin.dto.request.AdminUpdateNicknameRequest;
-import com.studioedge.admin.dto.request.AdminUpdateProfileMessageRequest;
-import com.studioedge.admin.dto.request.AdminUpdateSchoolRequest;
-import com.studioedge.admin.dto.response.AdminMemberResponse;
-import com.studioedge.admin.exception.InvalidAdminMemberOperationException;
-import com.studioedge.admin.service.AdminMemberService;
-import com.studioedge.admin.service.AdminRankingService;
+import com.studioedge.admin.member.dto.MemberResponse;
+import com.studioedge.admin.member.dto.UpdateNicknameRequest;
+import com.studioedge.admin.member.dto.UpdateProfileMessageRequest;
+import com.studioedge.admin.member.dto.UpdateSchoolRequest;
+import com.studioedge.admin.ranking.RankingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -30,12 +28,12 @@ import java.time.LocalDate;
 @Controller
 @RequestMapping("/members")
 @RequiredArgsConstructor
-public class AdminMemberController {
+public class MemberController {
 
     private static final int PAGE_SIZE = 30;
 
-    private final AdminMemberService adminMemberService;
-    private final AdminRankingService adminRankingService;
+    private final MemberService memberService;
+    private final RankingService rankingService;
 
     @GetMapping
     public String members(
@@ -70,7 +68,7 @@ public class AdminMemberController {
     @PostMapping("/{memberId}/nickname")
     public String updateNickname(
             @PathVariable Long memberId,
-            @Valid @ModelAttribute("nicknameRequest") AdminUpdateNicknameRequest request,
+            @Valid @ModelAttribute("nicknameRequest") UpdateNicknameRequest request,
             BindingResult bindingResult,
             @RequestParam(defaultValue = "NICKNAME") String type,
             @RequestParam(defaultValue = "") String keyword,
@@ -81,7 +79,7 @@ public class AdminMemberController {
         if (bindingResult.hasErrors()) {
             addValidationError(bindingResult, redirectAttributes);
         } else {
-            adminMemberService.updateNickname(memberId, request.nickname());
+            memberService.updateNickname(memberId, request.nickname());
             redirectAttributes.addFlashAttribute("message", "닉네임을 변경했습니다.");
         }
         return redirectToMember(type, keyword, page, memberId, endDate);
@@ -90,7 +88,7 @@ public class AdminMemberController {
     @PostMapping("/{memberId}/profile-message")
     public String updateProfileMessage(
             @PathVariable Long memberId,
-            @Valid @ModelAttribute("profileMessageRequest") AdminUpdateProfileMessageRequest request,
+            @Valid @ModelAttribute("profileMessageRequest") UpdateProfileMessageRequest request,
             BindingResult bindingResult,
             @RequestParam(defaultValue = "NICKNAME") String type,
             @RequestParam(defaultValue = "") String keyword,
@@ -101,7 +99,7 @@ public class AdminMemberController {
         if (bindingResult.hasErrors()) {
             addValidationError(bindingResult, redirectAttributes);
         } else {
-            adminMemberService.updateProfileMessage(memberId, request.profileMessage());
+            memberService.updateProfileMessage(memberId, request.profileMessage());
             redirectAttributes.addFlashAttribute("message", "상태 메시지를 변경했습니다.");
         }
         return redirectToMember(type, keyword, page, memberId, endDate);
@@ -110,7 +108,7 @@ public class AdminMemberController {
     @PostMapping("/{memberId}/school")
     public String updateSchool(
             @PathVariable Long memberId,
-            @Valid @ModelAttribute("schoolRequest") AdminUpdateSchoolRequest request,
+            @Valid @ModelAttribute("schoolRequest") UpdateSchoolRequest request,
             BindingResult bindingResult,
             @RequestParam(defaultValue = "NICKNAME") String type,
             @RequestParam(defaultValue = "") String keyword,
@@ -121,7 +119,7 @@ public class AdminMemberController {
         if (bindingResult.hasErrors()) {
             addValidationError(bindingResult, redirectAttributes);
         } else {
-            adminMemberService.updateSchool(memberId, request.school(), request.schoolAddress());
+            memberService.updateSchool(memberId, request.school(), request.schoolAddress());
             redirectAttributes.addFlashAttribute("message", "학교 정보를 변경했습니다.");
         }
         return redirectToMember(type, keyword, page, memberId, endDate);
@@ -137,7 +135,7 @@ public class AdminMemberController {
             RedirectAttributes redirectAttributes
     ) {
         return executeMemberAction(
-                () -> adminRankingService.excludeMemberFromRanking(memberId),
+                () -> rankingService.excludeMemberFromRanking(memberId),
                 "회원을 랭킹에서 정지했습니다.",
                 type, keyword, page, memberId, endDate, redirectAttributes
         );
@@ -153,26 +151,26 @@ public class AdminMemberController {
             RedirectAttributes redirectAttributes
     ) {
         return executeMemberAction(
-                () -> adminMemberService.restoreMember(memberId),
+                () -> memberService.restoreMember(memberId),
                 "회원의 랭킹 참여를 복구했습니다.",
                 type, keyword, page, memberId, endDate, redirectAttributes
         );
     }
 
-    private Page<AdminMemberResponse> search(String type, String keyword, PageRequest pageable) {
+    private Page<MemberResponse> search(String type, String keyword, PageRequest pageable) {
         if (keyword == null || keyword.isBlank()) {
             return Page.empty(pageable);
         }
-        return adminMemberService.searchMembers(type, keyword.trim(), pageable);
+        return memberService.searchMembers(type, keyword.trim(), pageable);
     }
 
     private void addSelectedMember(Model model, Long memberId, LocalDate endDate) {
-        AdminMemberResponse member = adminMemberService.getMemberById(memberId);
+        MemberResponse member = memberService.getMemberById(memberId);
         model.addAttribute("selectedMember", member);
-        model.addAttribute("memberStats", adminMemberService.getMemberStats(memberId, endDate.minusDays(6), endDate));
-        model.addAttribute("nicknameRequest", new AdminUpdateNicknameRequest(member.nickname()));
-        model.addAttribute("profileMessageRequest", new AdminUpdateProfileMessageRequest(member.profileMessage()));
-        model.addAttribute("schoolRequest", new AdminUpdateSchoolRequest(member.school(), member.schoolAddress()));
+        model.addAttribute("memberStats", memberService.getMemberStats(memberId, endDate.minusDays(6), endDate));
+        model.addAttribute("nicknameRequest", new UpdateNicknameRequest(member.nickname()));
+        model.addAttribute("profileMessageRequest", new UpdateProfileMessageRequest(member.profileMessage()));
+        model.addAttribute("schoolRequest", new UpdateSchoolRequest(member.school(), member.schoolAddress()));
     }
 
     private void addValidationError(BindingResult bindingResult, RedirectAttributes redirectAttributes) {
@@ -193,7 +191,7 @@ public class AdminMemberController {
         try {
             action.run();
             redirectAttributes.addFlashAttribute("message", successMessage);
-        } catch (InvalidAdminMemberOperationException exception) {
+        } catch (InvalidMemberOperationException exception) {
             redirectAttributes.addFlashAttribute("error", exception.getMessage());
         }
         return redirectToMember(type, keyword, page, memberId, endDate);

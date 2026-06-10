@@ -1,4 +1,4 @@
-package com.studioedge.admin.dto.response;
+package com.studioedge.admin.ranking.dto;
 
 import com.studioedge.ranking.entity.League;
 import com.studioedge.ranking.enums.Tier;
@@ -9,15 +9,15 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Builder
-public record AdminLeagueResponse(
+public record LeagueResponse(
         List<LeagueInfo> leagues,
         int totalCount
 ) {
-    public static AdminLeagueResponse of(List<League> leagues) {
+    public static LeagueResponse of(List<League> leagues) {
         List<LeagueInfo> leagueInfos = leagues.stream()
                 .map(LeagueInfo::from)
                 .toList();
-        return AdminLeagueResponse.builder()
+        return LeagueResponse.builder()
                 .leagues(leagueInfos)
                 .totalCount(leagueInfos.size())
                 .build();

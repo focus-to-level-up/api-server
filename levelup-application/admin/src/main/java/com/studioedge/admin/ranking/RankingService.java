@@ -1,8 +1,8 @@
-package com.studioedge.admin.service;
+package com.studioedge.admin.ranking;
 
-import com.studioedge.admin.dto.response.AdminMemberResponse;
-import com.studioedge.admin.dto.response.AdminRankingResponse;
-import com.studioedge.admin.exception.InvalidAdminMemberOperationException;
+import com.studioedge.admin.member.InvalidMemberOperationException;
+import com.studioedge.admin.member.dto.MemberResponse;
+import com.studioedge.admin.ranking.dto.RankingResponse;
 import com.studioedge.member.repository.MemberRepository;
 import com.studioedge.member.entity.Member;
 import com.studioedge.member.enums.MemberStatus;
@@ -25,25 +25,26 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AdminRankingService {
+public class RankingService {
     private final LeagueRepository leagueRepository;
     private final RankingRepository rankingRepository;
     private final MemberRepository memberRepository;
     private final MailRepository mailRepository;
 
-    public AdminRankingResponse getRankingsByLeague(Long leagueId) {
+    public RankingResponse getRankingsByLeague(Long leagueId, String keyword) {
         League league = leagueRepository.findById(leagueId)
                 .orElseThrow(LeagueNotFoundException::new);
         List<Ranking> rankings = rankingRepository.findAllBySortedLeague(league);
-        return AdminRankingResponse.of(league, rankings);
+        List<Ranking> filteredRankings = filterRankings(rankings, keyword);
+        return RankingResponse.of(league, filteredRankings, rankings.size());
     }
 
     @Transactional
-    public AdminMemberResponse excludeMemberFromRanking(Long memberId) {
+    public MemberResponse excludeMemberFromRanking(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MemberNotFoundException::new);
         if (member.getStatus() != MemberStatus.ACTIVE) {
-            throw new InvalidAdminMemberOperationException("활성 회원만 랭킹에서 정지할 수 있습니다.");
+            throw new InvalidMemberOperationException("활성 회원만 랭킹에서 정지할 수 있습니다.");
         }
         Ranking ranking = rankingRepository.findByMemberId(member.getId())
                 .orElseThrow(MemberNotFoundException::new);
@@ -63,11 +64,26 @@ public class AdminRankingService {
                         .title("랭킹 정지")
                         .description("비정상적인 이용으로 랭킹이용이 정지되었습니다")
                         .popupTitle("랭킹 정지")
-                        .popupContent("비정상적인 이용으로 랭킹이용이 정지되었습니다\n정상적인 형태로 이용을 하시면 1주 후에 랭킹에 다시 참여하실 수 있습니다.")
+                        .popupContent("비정상적인 이용으로 랭킹이용이 정지되었습니다\n1주 후 브론즈 리그부터 랭킹에 다시 참여하실 수 있습니다.")
                         .expiredAt(LocalDate.now().plusDays(7))
                         .build()
         );
 
-        return AdminMemberResponse.from(member, member.getMemberInfo());
+        return MemberResponse.from(member, member.getMemberInfo());
+    }
+
+    private List<Ranking> filterRankings(List<Ranking> rankings, String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return rankings;
+        }
+        String normalizedKeyword = keyword.trim().toLowerCase();
+        return rankings.stream()
+                .filter(ranking -> matchesKeyword(ranking.getMember(), normalizedKeyword))
+                .toList();
+    }
+
+    private boolean matchesKeyword(Member member, String keyword) {
+        return String.valueOf(member.getId()).contains(keyword)
+                || member.getNickname().toLowerCase().contains(keyword);
     }
 }

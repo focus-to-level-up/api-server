@@ -1,10 +1,8 @@
-package com.studioedge.admin.controller;
+package com.studioedge.admin.member;
 
-import com.studioedge.admin.dto.request.AdminUpdateNicknameRequest;
-import com.studioedge.admin.dto.response.AdminMemberResponse;
-import com.studioedge.admin.exception.InvalidAdminMemberOperationException;
-import com.studioedge.admin.service.AdminMemberService;
-import com.studioedge.admin.service.AdminRankingService;
+import com.studioedge.admin.member.dto.MemberResponse;
+import com.studioedge.admin.member.dto.UpdateNicknameRequest;
+import com.studioedge.admin.ranking.RankingService;
 import com.studioedge.member.enums.MemberStatus;
 import com.studioedge.member.enums.SocialType;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,24 +24,24 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class AdminMemberControllerTest {
+class MemberControllerTest {
 
-    private final AdminMemberService adminMemberService = mock(AdminMemberService.class);
-    private final AdminRankingService adminRankingService = mock(AdminRankingService.class);
+    private final MemberService memberService = mock(MemberService.class);
+    private final RankingService rankingService = mock(RankingService.class);
     private final Principal principal = () -> "operator";
-    private AdminMemberController controller;
+    private MemberController controller;
 
     @BeforeEach
     void setUp() {
-        controller = new AdminMemberController(adminMemberService, adminRankingService);
+        controller = new MemberController(memberService, rankingService);
     }
 
     @Test
     void rendersSearchResultsAndSelectedMember() {
-        AdminMemberResponse member = member(1L, MemberStatus.ACTIVE);
-        when(adminMemberService.searchMembers(any(), any(), any()))
+        MemberResponse member = member(1L, MemberStatus.ACTIVE);
+        when(memberService.searchMembers(any(), any(), any()))
                 .thenReturn(new PageImpl<>(List.of(member)));
-        when(adminMemberService.getMemberById(1L)).thenReturn(member);
+        when(memberService.getMemberById(1L)).thenReturn(member);
 
         ConcurrentModel model = new ConcurrentModel();
         String view = controller.members(principal, "NICKNAME", "focus", 0, 1L, null, model);
@@ -57,7 +55,7 @@ class AdminMemberControllerTest {
     @Test
     void updatesNicknameAndPreservesSearchCondition() {
         RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
-        AdminUpdateNicknameRequest request = new AdminUpdateNicknameRequest("new-name");
+        UpdateNicknameRequest request = new UpdateNicknameRequest("new-name");
         BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(request, "nicknameRequest");
 
         String view = controller.updateNickname(
@@ -71,7 +69,7 @@ class AdminMemberControllerTest {
                 redirectAttributes
         );
 
-        verify(adminMemberService).updateNickname(1L, "new-name");
+        verify(memberService).updateNickname(1L, "new-name");
         assertThat(view).isEqualTo("redirect:/members?type=NICKNAME&keyword=focus&memberId=1&endDate=2026-06-09");
         assertThat(redirectAttributes.getFlashAttributes().get("message")).isEqualTo("닉네임을 변경했습니다.");
     }
@@ -82,20 +80,20 @@ class AdminMemberControllerTest {
 
         String view = controller.excludeFromRanking(1L, "ID", "1", 0, null, redirectAttributes);
 
-        verify(adminRankingService).excludeMemberFromRanking(1L);
+        verify(rankingService).excludeMemberFromRanking(1L);
         assertThat(view).isEqualTo("redirect:/members?type=ID&keyword=1&memberId=1");
     }
 
     @Test
     void requestsThirtyMembersSortedByNewestId() {
-        AdminMemberResponse member = member(1L, MemberStatus.ACTIVE);
-        when(adminMemberService.searchMembers(any(), any(), any()))
+        MemberResponse member = member(1L, MemberStatus.ACTIVE);
+        when(memberService.searchMembers(any(), any(), any()))
                 .thenReturn(new PageImpl<>(List.of(member)));
 
         ConcurrentModel model = new ConcurrentModel();
         controller.members(principal, "NICKNAME", "a", 2, null, null, model);
 
-        verify(adminMemberService).searchMembers(
+        verify(memberService).searchMembers(
                 eq("NICKNAME"),
                 eq("a"),
                 org.mockito.ArgumentMatchers.argThat(pageable ->
@@ -108,8 +106,8 @@ class AdminMemberControllerTest {
     @Test
     void redirectsToMemberWithFlashErrorWhenRankingBanIsNotAllowed() {
         RedirectAttributesModelMap redirectAttributes = new RedirectAttributesModelMap();
-        when(adminRankingService.excludeMemberFromRanking(1L))
-                .thenThrow(new InvalidAdminMemberOperationException("활성 회원만 랭킹에서 정지할 수 있습니다."));
+        when(rankingService.excludeMemberFromRanking(1L))
+                .thenThrow(new InvalidMemberOperationException("활성 회원만 랭킹에서 정지할 수 있습니다."));
 
         String view = controller.excludeFromRanking(1L, "ID", "1", 0, null, redirectAttributes);
 
@@ -118,8 +116,8 @@ class AdminMemberControllerTest {
                 .isEqualTo("활성 회원만 랭킹에서 정지할 수 있습니다.");
     }
 
-    private AdminMemberResponse member(Long id, MemberStatus status) {
-        return new AdminMemberResponse(
+    private MemberResponse member(Long id, MemberStatus status) {
+        return new MemberResponse(
                 id,
                 "focus",
                 SocialType.KAKAO,

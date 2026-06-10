@@ -5,9 +5,9 @@ import com.studioedge.member.entity.Member;
 import com.studioedge.member.entity.MemberSetting;
 import com.studioedge.ranking.repository.LeagueRepository;
 import com.studioedge.ranking.repository.RankingRepository;
+import com.studioedge.ranking.domain.RankingBanPolicy;
 import com.studioedge.ranking.entity.League;
 import com.studioedge.ranking.entity.Ranking;
-import com.studioedge.ranking.enums.Tier;
 import com.studioedge.common.enums.CategoryMainType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +57,7 @@ public class RestoreExcludeRankingStep {
                 .pageSize(25)
                 .methodName("findBannedMembersWithExpiredWarning")
                 .repository(memberSettingRepository)
-                .arguments(LocalDate.now().minusWeeks(2))
+                .arguments(RankingBanPolicy.restoreCutoff(LocalDate.now()))
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
     }
@@ -93,10 +93,11 @@ public class RestoreExcludeRankingStep {
 
                 // 4. Ranking 객체 생성 (In-Memory)
                 for (Member member : membersInGroup) {
+                    targetLeague.increaseCurrentMembers();
                     newRankings.add(Ranking.builder()
                             .league(targetLeague)
                             .member(member)
-                            .tier(Tier.BRONZE)
+                            .tier(RankingBanPolicy.restoreTier())
                             .build());
                 }
 

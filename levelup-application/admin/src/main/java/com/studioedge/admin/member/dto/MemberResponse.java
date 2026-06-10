@@ -1,4 +1,4 @@
-package com.studioedge.admin.dto.response;
+package com.studioedge.admin.member.dto;
 
 import com.studioedge.member.entity.Member;
 import com.studioedge.member.entity.MemberInfo;
@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
 @Schema(description = "관리자용 회원 정보 응답")
-public record AdminMemberResponse(
+public record MemberResponse(
         @Schema(description = "회원 ID", example = "1")
         Long memberId,
 
@@ -54,8 +54,8 @@ public record AdminMemberResponse(
         @Schema(description = "마지막 로그인", example = "2024-03-20T15:45:00")
         LocalDateTime lastLoginDateTime
 ) {
-    public static AdminMemberResponse from(Member member, MemberInfo memberInfo) {
-        return new AdminMemberResponse(
+    public static MemberResponse from(Member member, MemberInfo memberInfo) {
+        return new MemberResponse(
                 member.getId(),
                 member.getNickname(),
                 member.getSocialType(),

@@ -1,4 +1,4 @@
-package com.studioedge.admin.dto.response;
+package com.studioedge.admin.ranking.dto;
 
 import com.studioedge.member.entity.Member;
 import com.studioedge.member.enums.MemberStatus;
@@ -10,23 +10,35 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record AdminRankingResponse(
+public record RankingResponse(
         Long leagueId,
         String leagueName,
         Tier leagueTier,
-        Integer totalMembers,
+        Integer storedMembers,
+        Integer actualMembers,
+        Integer memberCountDifference,
+        Boolean memberCountMismatch,
+        Boolean memberCountOutOfExpectedRange,
         List<RankingInfo> rankings
 ) {
-    public static AdminRankingResponse of(League league, List<Ranking> rankings) {
+    private static final int EXPECTED_MIN_MEMBERS = 80;
+    private static final int EXPECTED_MAX_MEMBERS = 110;
+
+    public static RankingResponse of(League league, List<Ranking> rankings, int actualMembers) {
         List<RankingInfo> rankingInfos = rankings.stream()
                 .map(RankingInfo::from)
                 .toList();
+        int storedMembers = league.getCurrentMembers() == null ? 0 : league.getCurrentMembers();
 
-        return AdminRankingResponse.builder()
+        return RankingResponse.builder()
                 .leagueId(league.getId())
                 .leagueName(league.getName())
                 .leagueTier(league.getTier())
-                .totalMembers(rankings.size())
+                .storedMembers(storedMembers)
+                .actualMembers(actualMembers)
+                .memberCountDifference(actualMembers - storedMembers)
+                .memberCountMismatch(storedMembers != actualMembers)
+                .memberCountOutOfExpectedRange(actualMembers < EXPECTED_MIN_MEMBERS || actualMembers > EXPECTED_MAX_MEMBERS)
                 .rankings(rankingInfos)
                 .build();
     }
@@ -37,8 +49,7 @@ public record AdminRankingResponse(
             Long memberId,
             Integer level,
             String nickname,
-            String socialId, // 혹은 Email, 관리자 식별용
-            MemberStatus status, // 현재 밴 상태인지 확인용
+            MemberStatus status,
             Tier tier
     ) {
         public static RankingInfo from(Ranking ranking) {
@@ -48,7 +59,6 @@ public record AdminRankingResponse(
                     .memberId(member.getId())
                     .level(member.getCurrentLevel())
                     .nickname(member.getNickname())
-                    .socialId(member.getSocialId())
                     .status(member.getStatus())
                     .tier(ranking.getTier())
                     .build();
