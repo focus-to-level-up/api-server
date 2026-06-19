@@ -1,5 +1,6 @@
 package com.studioedge.step.monthly;
 
+import com.studioedge.common.policy.ServiceTimePolicy;
 import com.studioedge.focus.repository.DailySubjectRepository;
 import com.studioedge.focus.entity.Subject;
 import com.studioedge.member.repository.MemberRepository;
@@ -21,7 +22,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.CollectionUtils;
 
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
@@ -39,8 +39,6 @@ public class UpdateMonthlySubjectStatStep {
     private final MemberRepository memberRepository;
     private final MonthlySubjectStatRepository monthlySubjectStatRepository;
     private final DailySubjectRepository dailySubjectRepository;
-
-    private final Clock clock;
 
     @Bean
     public Step updateMonthlySubjectStat() {
@@ -72,7 +70,7 @@ public class UpdateMonthlySubjectStatStep {
     public ItemWriter<Member> updateMonthlySubjectStatWriter() {
         return chunk -> {
 
-            LocalDate today = LocalDate.now(clock);
+            LocalDate today = ServiceTimePolicy.getServiceDate();
             LocalDate firstDayOfLastMonth = today.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
             LocalDate lastDayOfLastMonth = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
             Integer lastYearValue = firstDayOfLastMonth.getYear(); // MonthlySubjectStat은 year 필드가 있음

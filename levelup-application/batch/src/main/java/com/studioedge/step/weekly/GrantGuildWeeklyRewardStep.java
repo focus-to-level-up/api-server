@@ -1,5 +1,6 @@
 package com.studioedge.step.weekly;
 
+import com.studioedge.common.policy.ServiceTimePolicy;
 import com.studioedge.guild.repository.GuildMemberRepository;
 import com.studioedge.guild.repository.GuildRepository;
 import com.studioedge.guild.repository.GuildWeeklyRewardRepository;
@@ -29,9 +30,7 @@ import org.springframework.dao.TransientDataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import java.time.Clock;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -70,8 +69,6 @@ public class GrantGuildWeeklyRewardStep {
     private static final int MAX_REWARD = 500;
     private static final int MIN_MEMBER_COUNT = 2;
     private static final int BOOST_BONUS = 50;
-
-    private final Clock clock;
 
     @Bean
     public Step grantGuildWeeklyReward() {
@@ -124,7 +121,7 @@ public class GrantGuildWeeklyRewardStep {
                     .distinct()
                     .toList();
 
-            LocalDate oneWeekAgo = LocalDate.now(clock).minusDays(6);
+            LocalDate oneWeekAgo = ServiceTimePolicy.getServiceDate().minusDays(6);
             List<Mail> existingMails = mailRepository.findAllByReceiverIdInAndTypeAndCreatedAtAfter(
                     allMemberIds, MailType.GUILD_WEEKLY, oneWeekAgo.atStartOfDay()
             );
@@ -132,7 +129,7 @@ public class GrantGuildWeeklyRewardStep {
                     .collect(Collectors.toMap(m -> m.getReceiver().getId(), m -> m));
 
             List<GuildWeeklyReward> existingHistories = guildWeeklyRewardRepository
-                    .findAllByGuildIdInAndCreatedAtBetween(guildIds, LocalDateTime.now(clock).minusDays(7));
+                    .findAllByGuildIdInAndCreatedAtBetween(guildIds, ServiceTimePolicy.now().minusDays(7));
 
             Map<Long, GuildWeeklyReward> dbHistoryMap = existingHistories.stream()
                     .collect(Collectors.toMap(h -> h.getGuild().getId(), java.util.function.Function.identity()));
@@ -248,7 +245,7 @@ public class GrantGuildWeeklyRewardStep {
                 .popupTitle("길드 주간 보상")
                 .popupContent(guildName + "의 길드 주간 보상을 수령하세요")
                 .reward(diamondAmount)
-                .expiredAt(LocalDate.now(clock).plusDays(7))
+                .expiredAt(ServiceTimePolicy.getServiceDate().plusDays(7))
                 .build();
     }
 

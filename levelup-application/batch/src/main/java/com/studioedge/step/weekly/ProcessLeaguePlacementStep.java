@@ -1,5 +1,6 @@
 package com.studioedge.step.weekly;
 
+import com.studioedge.common.policy.ServiceTimePolicy;
 import com.studioedge.member.entity.Member;
 import com.studioedge.member.enums.MemberStatus;
 import com.studioedge.ranking.repository.LeagueRepository;
@@ -24,7 +25,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import java.time.Clock;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -52,8 +52,6 @@ public class ProcessLeaguePlacementStep {
     private final SeasonRepository seasonRepository;
     private final MailRepository mailRepository;
 
-    private final Clock clock;
-
     private static final int TARGET_LEAGUE_SIZE = 100;
 
     @Bean
@@ -68,7 +66,7 @@ public class ProcessLeaguePlacementStep {
         return (contribution, chunkContext) -> {
             log.info(">> Step: 승강제 심사 및 리그 재배치 시작");
 
-            Season currentSeason = seasonRepository.findFirstByEndDateGreaterThanEqualOrderByStartDateDesc(LocalDate.now(clock))
+            Season currentSeason = seasonRepository.findFirstByEndDateGreaterThanEqualOrderByStartDateDesc(ServiceTimePolicy.getServiceDate())
                     .orElseThrow(() -> new IllegalStateException("진행 중인 시즌이 없습니다."));
 
             for (CategoryMainType category : CategoryMainType.values()) {
@@ -165,8 +163,8 @@ public class ProcessLeaguePlacementStep {
                     .name(leagueName)
                     .categoryType(category)
                     .tier(tier)
-                    .startDate(LocalDate.now(clock))
-                    .endDate(LocalDate.now(clock).plusDays(6))
+                    .startDate(ServiceTimePolicy.getServiceDate())
+                    .endDate(ServiceTimePolicy.getServiceDate().plusDays(6))
                     .currentWeek(nextWeek)
                     .build();
             createdLeagues.add(league);
@@ -211,7 +209,7 @@ public class ProcessLeaguePlacementStep {
                 .popupTitle(nextTier.name() + " 승급 보상")
                 .popupContent(nextTier.name() + "로 승급한걸 축하합니다!")
                 .reward(diamonds)
-                .expiredAt(LocalDate.now(clock).plusDays(7))
+                .expiredAt(ServiceTimePolicy.getServiceDate().plusDays(7))
                 .build();
     }
 }

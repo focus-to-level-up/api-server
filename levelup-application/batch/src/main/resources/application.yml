@@ -42,6 +42,16 @@ sentry:
   environment: ${SENTRY_ENVIRONMENT:local}
   release: ${SENTRY_RELEASE:focus-to-levelup-batch-v1}
 
+firebase:
+  fcm:
+    enabled: ${FIREBASE_FCM_ENABLED:true}
+  service-account-json: ${FIREBASE_SERVICE_ACCOUNT_JSON:}
+
+cloud:
+  aws:
+    s3:
+      enabled: false
+
 logging:
   level:
     org.springframework.batch: INFO

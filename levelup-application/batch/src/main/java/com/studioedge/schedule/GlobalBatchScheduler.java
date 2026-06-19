@@ -1,5 +1,6 @@
 package com.studioedge.schedule;
 
+import com.studioedge.common.policy.ServiceTimePolicy;
 import com.studioedge.ranking.repository.SeasonRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +11,6 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.DayOfWeek;
@@ -20,7 +20,6 @@ import java.time.LocalDateTime;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-@Profile({"dev", "prod"})
 public class GlobalBatchScheduler {
 
     private final JobLauncher jobLauncher;
@@ -47,44 +46,39 @@ public class GlobalBatchScheduler {
     @Scheduled(cron = "0 0 4 * * ?", zone = "Asia/Seoul")
     @SchedulerLock(name = "runBatchJobs", lockAtMostFor = "PT2H")
     public void runBatchJobs() {
-        LocalDate today = LocalDate.now();
-        LocalDateTime runTime = LocalDateTime.now();
-        log.info(">>> Batch Scheduler Started at: {}", runTime);
+        LocalDate runDate = LocalDate.now(ServiceTimePolicy.SERVICE_ZONE);
+        LocalDateTime triggeredAt = LocalDateTime.now(ServiceTimePolicy.SERVICE_ZONE);
+        log.info(">>> Batch Scheduler Started at: {} (runDate={})", triggeredAt, runDate);
 
         try {
-            // 공통 Job Parameter (실행 시간)
-            JobParameters params = new JobParametersBuilder()
-                    .addString("runTime", runTime.toString())
-                    .toJobParameters();
-
             // -------------------------------------------------------
             // 1. Daily Job (매일 무조건 실행)
             // -------------------------------------------------------
             log.info(">>> 1. Running Daily Job");
-            jobLauncher.run(dailyJob, params);
+            jobLauncher.run(dailyJob, jobParameters(BatchJobGroup.DAILY, runDate, triggeredAt));
 
 
             // -------------------------------------------------------
             // 2. Monthly Job (매월 1일인 경우 실행)
             // -------------------------------------------------------
-            if (today.getDayOfMonth() == 1) {
+            if (runDate.getDayOfMonth() == 1) {
                 log.info(">>> 2. Running Monthly Job (First Day of Month)");
-                jobLauncher.run(monthlyJob, params);
+                jobLauncher.run(monthlyJob, jobParameters(BatchJobGroup.MONTHLY, runDate, triggeredAt));
             }
 
 
             // -------------------------------------------------------
             // 3. Weekly OR SeasonEnd Job (월요일인 경우 실행)
             // -------------------------------------------------------
-            if (today.getDayOfWeek() == DayOfWeek.MONDAY) {
-                if (isActiveSeason(today)) {
+            if (runDate.getDayOfWeek() == DayOfWeek.MONDAY) {
+                if (isActiveSeason(runDate)) {
                     // 3-1. 일반 주차 -> WeeklyJob 실행
                     log.info(">>> 3-1. Running Weekly Job");
-                    jobLauncher.run(weeklyJob, params);
+                    jobLauncher.run(weeklyJob, jobParameters(BatchJobGroup.WEEKLY, runDate, triggeredAt));
                 } else {
                     // 3-2. 시즌 종료 주차 -> SeasonEndJob 실행
                     log.info(">>> 3-2. Running Season End Job (Season Finished)");
-                    jobLauncher.run(seasonEndJob, params);
+                    jobLauncher.run(seasonEndJob, jobParameters(BatchJobGroup.SEASON_END, runDate, triggeredAt));
                 }
             }
         } catch (Exception e) {
@@ -99,5 +93,20 @@ public class GlobalBatchScheduler {
      */
     private boolean isActiveSeason(LocalDate today) {
         return seasonRepository.findActiveSeason(today).isPresent();
+    }
+
+    private JobParameters jobParameters(BatchJobGroup jobGroup, LocalDate runDate, LocalDateTime triggeredAt) {
+        return new JobParametersBuilder()
+                .addString("jobGroup", jobGroup.name())
+                .addString("runDate", runDate.toString())
+                .addString("triggeredAt", triggeredAt.toString())
+                .toJobParameters();
+    }
+
+    private enum BatchJobGroup {
+        DAILY,
+        WEEKLY,
+        MONTHLY,
+        SEASON_END
     }
 }

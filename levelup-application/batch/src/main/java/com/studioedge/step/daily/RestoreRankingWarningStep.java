@@ -1,5 +1,6 @@
 package com.studioedge.step.daily;
 
+import com.studioedge.common.policy.ServiceTimePolicy;
 import com.studioedge.member.repository.MemberSettingRepository;
 import com.studioedge.member.entity.MemberSetting;
 import jakarta.persistence.EntityManagerFactory;
@@ -18,7 +19,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import java.time.LocalDate;
 import java.util.Map;
 
 @Slf4j
@@ -49,7 +49,7 @@ public class RestoreRankingWarningStep {
                 .name("restoreRankingWarningReader")
                 .entityManagerFactory(entityManagerFactory)
                 .queryString("SELECT ms FROM MemberSetting ms WHERE ms.rankingWarningAt < :targetDate ORDER BY ms.id ASC")
-                .parameterValues(Map.of("targetDate", LocalDate.now().minusWeeks(4)))
+                .parameterValues(Map.of("targetDate", ServiceTimePolicy.getServiceDate().minusWeeks(4)))
                 .build();
     }
 

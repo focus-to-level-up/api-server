@@ -22,6 +22,10 @@ spring:
     jdbc:
       initialize-schema: always
 
+firebase:
+  fcm:
+    enabled: false
+
 logging:
   level:
     org.hibernate.SQL: DEBUG

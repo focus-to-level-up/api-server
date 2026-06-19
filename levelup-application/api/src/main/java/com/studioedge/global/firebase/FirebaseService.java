@@ -5,7 +5,7 @@ import com.google.cloud.firestore.Firestore;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.cloud.FirestoreClient;
 import com.studioedge.domain.event.response.PreRegistrationData;
-import com.studioedge.infra.client.config.FirebaseConfig;
+import com.studioedge.infra.client.config.FirebasePreRegistrationConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,7 +33,7 @@ public class FirebaseService {
     public PreRegistrationData getPreRegistrationData(String phoneNumber) throws Exception {
         try {
             // 사전예약용 FirebaseApp 가져오기
-            FirebaseApp preRegistrationApp = FirebaseApp.getInstance(FirebaseConfig.PRE_REGISTRATION_APP_NAME);
+            FirebaseApp preRegistrationApp = FirebaseApp.getInstance(FirebasePreRegistrationConfig.PRE_REGISTRATION_APP_NAME);
             Firestore db = FirestoreClient.getFirestore(preRegistrationApp);
 
             // Firestore에서 reservation.phone 필드로 쿼리

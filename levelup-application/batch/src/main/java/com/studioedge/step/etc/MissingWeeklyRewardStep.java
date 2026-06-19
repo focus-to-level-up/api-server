@@ -1,5 +1,6 @@
 package com.studioedge.step.etc;
 
+import com.studioedge.common.policy.ServiceTimePolicy;
 import com.studioedge.character.repository.CharacterImageRepository;
 import com.studioedge.character.repository.MemberCharacterRepository;
 import com.studioedge.character.entity.CharacterImage;
@@ -24,8 +25,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
 import java.util.Map;
 
 @Slf4j
@@ -39,8 +38,6 @@ public class MissingWeeklyRewardStep {
     private final MemberCharacterRepository memberCharacterRepository;
     private final CharacterImageRepository characterImageRepository;
     private final WeeklyRewardRepository weeklyRewardRepository;
-
-    private final Clock clock;
 
     @Bean
     public Step missingWeeklyReward() {
@@ -59,7 +56,7 @@ public class MissingWeeklyRewardStep {
                 .pageSize(25)
                 .methodName("findAllActiveMemberWithoutWeeklyReward")
                 .repository(memberRepository)
-                .arguments(LocalDateTime.now(clock).minusDays(1))
+                .arguments(ServiceTimePolicy.now().minusDays(1))
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
     }

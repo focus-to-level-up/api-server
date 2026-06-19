@@ -3,14 +3,17 @@ package com.studioedge.common.policy;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 
 public final class ServiceTimePolicy {
+    public static final ZoneId SERVICE_ZONE = ZoneId.of("Asia/Seoul");
+
     private static final int RESET_HOUR = 4;
 
     private ServiceTimePolicy() {}
 
     public static LocalDate getServiceDate() {
-        return getServiceDate(LocalDateTime.now());
+        return getServiceDate(now());
     }
 
     public static LocalDate getServiceDate(LocalDateTime dateTime) {
@@ -38,5 +41,9 @@ public final class ServiceTimePolicy {
      */
     public static boolean isServiceTimeAfter(LocalTime time1, LocalTime time2) {
         return toServiceMinutes(time1) > toServiceMinutes(time2);
+    }
+
+    public static LocalDateTime now() {
+        return LocalDateTime.now(SERVICE_ZONE);
     }
 }

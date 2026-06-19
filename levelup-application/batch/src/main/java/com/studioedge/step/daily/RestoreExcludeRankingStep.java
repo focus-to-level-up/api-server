@@ -1,5 +1,6 @@
 package com.studioedge.step.daily;
 
+import com.studioedge.common.policy.ServiceTimePolicy;
 import com.studioedge.member.repository.MemberSettingRepository;
 import com.studioedge.member.entity.Member;
 import com.studioedge.member.entity.MemberSetting;
@@ -23,7 +24,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +57,7 @@ public class RestoreExcludeRankingStep {
                 .pageSize(25)
                 .methodName("findBannedMembersWithExpiredWarning")
                 .repository(memberSettingRepository)
-                .arguments(RankingBanPolicy.restoreCutoff(LocalDate.now()))
+                .arguments(RankingBanPolicy.restoreCutoff(ServiceTimePolicy.getServiceDate()))
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
     }

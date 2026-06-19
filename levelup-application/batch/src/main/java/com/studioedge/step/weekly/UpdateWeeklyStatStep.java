@@ -1,5 +1,6 @@
 package com.studioedge.step.weekly;
 
+import com.studioedge.common.policy.ServiceTimePolicy;
 import com.studioedge.character.repository.CharacterImageRepository;
 import com.studioedge.character.repository.MemberCharacterRepository;
 import com.studioedge.character.entity.CharacterImage;
@@ -37,7 +38,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.CollectionUtils;
 
-import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -73,8 +73,6 @@ public class UpdateWeeklyStatStep {private final JobRepository jobRepository;
     private final CharacterImageRepository characterImageRepository;
     private final WeeklyStatRepository weeklyStatRepository;
     private final WeeklySubjectStatRepository weeklySubjectStatRepository;
-
-    private final Clock clock;
 
     private record WeeklyStatContainer(
             WeeklyStat weeklyStat,
@@ -116,7 +114,7 @@ public class UpdateWeeklyStatStep {private final JobRepository jobRepository;
     @StepScope
     public ItemProcessor<Member, WeeklyStatContainer> updateWeeklyStatProcessor() {
 
-        LocalDate today = LocalDate.now(clock);
+        LocalDate today = ServiceTimePolicy.getServiceDate();
         LocalDate endDate = today.minusDays(1);
         LocalDate startDate = today.minusDays(7);
 

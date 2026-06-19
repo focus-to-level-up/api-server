@@ -1,5 +1,6 @@
 package com.studioedge.step.daily;
 
+import com.studioedge.common.policy.ServiceTimePolicy;
 import com.studioedge.mail.repository.MailRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,9 +12,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import java.time.Clock;
-import java.time.LocalDate;
-
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -23,13 +21,11 @@ public class DeleteExpiredMailStep {
 
     private final MailRepository mailRepository;
 
-    private final Clock clock;
-
     @Bean
     public Step deleteExpiredMail() {
         return new StepBuilder("deleteExpiredMail", jobRepository)
                 .tasklet((contribution, chunkContext) -> {
-                    mailRepository.deleteByExpirationDateBefore(LocalDate.now(clock));
+                    mailRepository.deleteByExpirationDateBefore(ServiceTimePolicy.getServiceDate());
                     return RepeatStatus.FINISHED;
                 }, platformTransactionManager)
                 .build();

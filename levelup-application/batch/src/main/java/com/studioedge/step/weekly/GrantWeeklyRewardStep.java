@@ -1,5 +1,6 @@
 package com.studioedge.step.weekly;
 
+import com.studioedge.common.policy.ServiceTimePolicy;
 import com.studioedge.character.repository.CharacterImageRepository;
 import com.studioedge.character.repository.MemberCharacterRepository;
 import com.studioedge.character.entity.CharacterImage;
@@ -31,8 +32,6 @@ import org.springframework.dao.TransientDataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -65,8 +64,6 @@ public class GrantWeeklyRewardStep {
     private final MemberCharacterRepository memberCharacterRepository;
     private final CharacterImageRepository characterImageRepository;
     private final WeeklyRewardRepository weeklyRewardRepository;
-
-    private final Clock clock;
 
     @Bean
     public Step grantWeeklyReward() {
@@ -122,7 +119,7 @@ public class GrantWeeklyRewardStep {
             }
 
             member.receiveWeeklyReward(false);
-            return weeklyRewardRepository.findByMemberIdAndSameDate(member.getId(), LocalDateTime.now(clock))
+            return weeklyRewardRepository.findByMemberIdAndSameDate(member.getId(), ServiceTimePolicy.now())
                     .map(existingReward -> {
                         return existingReward.updateInfo(
                                 memberCharacter.getCharacter(),

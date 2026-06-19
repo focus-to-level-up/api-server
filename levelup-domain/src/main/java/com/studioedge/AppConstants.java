@@ -1,6 +1,7 @@
 package com.studioedge;
 
 import com.studioedge.common.enums.CategoryMainType;
+import com.studioedge.common.policy.ServiceTimePolicy;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -53,18 +54,11 @@ public final class AppConstants {
     );
 
     public static LocalDate getServiceDate() {
-        LocalDateTime now = LocalDateTime.now();
-        if (now.getHour() < 4) {
-            return now.toLocalDate().minusDays(1);
-        }
-        return now.toLocalDate();
+        return ServiceTimePolicy.getServiceDate();
     }
 
     public static LocalDate getServiceDate(LocalDateTime dateTime) {
-        if (dateTime.getHour() < 4) {
-            return dateTime.toLocalDate().minusDays(1);
-        }
-        return dateTime.toLocalDate();
+        return ServiceTimePolicy.getServiceDate(dateTime);
     }
 
     /**
@@ -75,14 +69,7 @@ public final class AppConstants {
      * 이렇게 하면 00:30이 23:30보다 "늦은" 시간으로 올바르게 비교됨
      */
     public static int toServiceMinutes(LocalTime time) {
-        int hour = time.getHour();
-        int minute = time.getMinute();
-
-        // 새벽 4시 이전(00:00~03:59)은 24시간을 더해서 계산
-        if (hour < 4) {
-            return (hour + 24) * 60 + minute;
-        }
-        return hour * 60 + minute;
+        return ServiceTimePolicy.toServiceMinutes(time);
     }
 
     /**
@@ -92,6 +79,6 @@ public final class AppConstants {
      * @return time1이 time2보다 늦으면 true
      */
     public static boolean isServiceTimeAfter(LocalTime time1, LocalTime time2) {
-        return toServiceMinutes(time1) > toServiceMinutes(time2);
+        return ServiceTimePolicy.isServiceTimeAfter(time1, time2);
     }
 }

@@ -1,6 +1,7 @@
 package com.studioedge.step.season_end;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.studioedge.common.policy.ServiceTimePolicy;
 import com.studioedge.member.entity.Member;
 import com.studioedge.ranking.repository.LeagueRepository;
 import com.studioedge.ranking.entity.League;
@@ -55,7 +56,7 @@ public class GrantSeasonRewardStep {
     @Bean
     public RepositoryItemReader<League> grantSeasonRewardReader() {
         // 종료된 시즌의 모든 리그를 조회
-        LocalDate yesterday = LocalDate.now().minusDays(1);
+        LocalDate yesterday = ServiceTimePolicy.getServiceDate().minusDays(1);
 
         return new RepositoryItemReaderBuilder<League>()
                 .name("grantSeasonRewardReader")
@@ -133,7 +134,7 @@ public class GrantSeasonRewardStep {
                 .popupTitle(popupTitle)
                 .popupContent(popupContent)
                 .reward(diamonds) // 다이아 보상
-                .expiredAt(LocalDate.now().plusDays(7))
+                .expiredAt(ServiceTimePolicy.getServiceDate().plusDays(7))
                 .build();
     }
 
@@ -156,7 +157,7 @@ public class GrantSeasonRewardStep {
                 .popupTitle("시즌 종료 특별 보상")
                 .popupContent(finalTier.name() + " 티어 달성을 축하하며 특별한 테두리를 드립니다!")
                 .reward(0) // 재화 보상 없음 (아이템 지급은 수령 시 처리)
-                .expiredAt(LocalDate.now().plusDays(7))
+                .expiredAt(ServiceTimePolicy.getServiceDate().plusDays(7))
                 .build();
     }
 

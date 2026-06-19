@@ -1,6 +1,7 @@
 package com.studioedge.step.season_end;
 
 import com.google.common.collect.Lists;
+import com.studioedge.common.policy.ServiceTimePolicy;
 import com.studioedge.member.repository.MemberRepository;
 import com.studioedge.member.entity.Member;
 import com.studioedge.ranking.repository.LeagueRepository;
@@ -22,7 +23,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import java.time.Clock;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -48,8 +48,6 @@ public class StartNewSeasonStep {
     private final MemberRepository memberRepository;
     private final LeagueRepository leagueRepository;
 
-    private final Clock clock;
-
     private static final int TARGET_LEAGUE_SIZE = 110;
     private static final int CHUNK_SIZE = 1000; // 한 번에 처리할 유저 수
 
@@ -68,7 +66,7 @@ public class StartNewSeasonStep {
             leagueRepository.deleteAllInBatch();
             log.info(">> 기존 시즌 데이터 초기화 완료");
 
-            LocalDate today = LocalDate.now(clock);
+            LocalDate today = ServiceTimePolicy.getServiceDate();
             Season newSeason = seasonRepository.findByStartDate(today)
                     .orElseGet(() -> {
                         long seasonCount = seasonRepository.count();

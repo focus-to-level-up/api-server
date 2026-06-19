@@ -1,5 +1,6 @@
 package com.studioedge.step.weekly;
 
+import com.studioedge.common.policy.ServiceTimePolicy;
 import com.studioedge.member.repository.MemberRepository;
 import com.studioedge.member.entity.Member;
 import com.studioedge.ranking.repository.LeagueRepository;
@@ -22,7 +23,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import java.time.Clock;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,8 +51,6 @@ public class PlaceNewMemberInRankingStep {
     private final RankingRepository rankingRepository;
     private final SeasonRepository seasonRepository;
 
-    private final Clock clock;
-
     private static final int MAX_LEAGUE_CAPACITY = 110;
     private static final int BATCH_SIZE_LIMIT = 5000;
 
@@ -68,7 +66,7 @@ public class PlaceNewMemberInRankingStep {
         return (contribution, chunkContext) -> {
             log.info(">> Step: 신규 유저 브론즈 리그 배치 시작");
 
-            Season currentSeason = seasonRepository.findFirstByEndDateGreaterThanEqualOrderByStartDateDesc(LocalDate.now(clock))
+            Season currentSeason = seasonRepository.findFirstByEndDateGreaterThanEqualOrderByStartDateDesc(ServiceTimePolicy.getServiceDate())
                     .orElseThrow(() -> new IllegalStateException("진행 중인 시즌이 없습니다."));
 
             List<Member> newMembers = memberRepository.findActiveMembersWithoutRanking(PageRequest.of(0, BATCH_SIZE_LIMIT));
@@ -136,8 +134,8 @@ public class PlaceNewMemberInRankingStep {
                         .currentWeek(targetWeek)
                         .categoryType(category)
                         .tier(Tier.BRONZE)
-                        .startDate(LocalDate.now(clock))
-                        .endDate(LocalDate.now(clock).plusDays(6))
+                        .startDate(ServiceTimePolicy.getServiceDate())
+                        .endDate(ServiceTimePolicy.getServiceDate().plusDays(6))
                         .build();
 
                 leagueRepository.save(targetLeague);

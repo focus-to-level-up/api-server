@@ -1,5 +1,6 @@
 package com.studioedge.step.etc;
 
+import com.studioedge.common.policy.ServiceTimePolicy;
 import com.studioedge.member.repository.MemberRepository;
 import com.studioedge.member.entity.Member;
 import com.studioedge.ranking.repository.LeagueRepository;
@@ -60,7 +61,7 @@ public class MissingRankingStep {
                 .pageSize(100)
                 .methodName("findActiveMembersWithoutRanking") // MemberRepository에 추가 필요
                 .repository(memberRepository)
-                .arguments(Collections.singletonList(LocalDate.now()))
+                .arguments(Collections.singletonList(ServiceTimePolicy.getServiceDate()))
                 .sorts(Map.of("id", Sort.Direction.ASC))
                 .build();
     }
@@ -79,7 +80,7 @@ public class MissingRankingStep {
     @Bean
     public ItemWriter<Member> missingRankingWriter() {
         return chunk -> {
-            LocalDate today = LocalDate.now();
+            LocalDate today = ServiceTimePolicy.getServiceDate();
 
             // 1. 현재 시즌 조회 (청크 당 1회 호출)
             Season currentSeason = seasonRepository.findActiveSeason(today)
