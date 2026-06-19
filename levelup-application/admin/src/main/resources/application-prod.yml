@@ -10,3 +10,9 @@ spring:
       hibernate:
         hbm2ddl:
           auto: validate
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: true

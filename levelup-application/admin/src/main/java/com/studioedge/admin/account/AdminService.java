@@ -30,4 +30,16 @@ public class AdminService {
     public List<Admin> findAll() {
         return adminRepository.findAll();
     }
+
+    @Transactional
+    public void changePassword(String username, String currentPassword, String newPassword) {
+        Admin admin = adminRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("관리자 계정을 찾을 수 없습니다."));
+
+        if (!passwordEncoder.matches(currentPassword, admin.getPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        admin.changePassword(passwordEncoder.encode(newPassword));
+    }
 }

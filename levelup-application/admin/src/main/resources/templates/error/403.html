@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Focus Admin 접근 거부</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body class="error-body">
+<main class="error-panel">
+    <span class="error-code">403</span>
+    <h1>접근 권한이 없습니다.</h1>
+    <p>현재 계정으로 이 요청을 수행할 수 없습니다.</p>
+    <a class="primary-button button-link" th:href="@{/dashboard}">대시보드로 이동</a>
+</main>
+</body>
+</html>

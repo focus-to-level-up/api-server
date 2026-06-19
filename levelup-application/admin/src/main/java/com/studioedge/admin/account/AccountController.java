@@ -1,6 +1,7 @@
 package com.studioedge.admin.account;
 
 import com.studioedge.admin.account.dto.AdminRegistrationRequest;
+import com.studioedge.admin.account.dto.ChangePasswordRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -31,9 +32,7 @@ public class AccountController {
 
     @GetMapping("/admins")
     public String admins(Principal principal, Model model) {
-        model.addAttribute("currentAdmin", principal.getName());
-        model.addAttribute("admins", adminService.findAll());
-        model.addAttribute("registrationRequest", new AdminRegistrationRequest("", ""));
+        populateAccountModel(principal, model);
         return "admins/index";
     }
 
@@ -46,8 +45,7 @@ public class AccountController {
             RedirectAttributes redirectAttributes
     ) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("currentAdmin", principal.getName());
-            model.addAttribute("admins", adminService.findAll());
+            populateAccountModel(principal, model);
             return "admins/index";
         }
 
@@ -55,12 +53,48 @@ public class AccountController {
             adminService.register(request.username(), request.password());
         } catch (IllegalArgumentException exception) {
             bindingResult.rejectValue("username", "duplicate", exception.getMessage());
-            model.addAttribute("currentAdmin", principal.getName());
-            model.addAttribute("admins", adminService.findAll());
+            populateAccountModel(principal, model);
             return "admins/index";
         }
 
         redirectAttributes.addFlashAttribute("message", "관리자 계정을 등록했습니다.");
         return "redirect:/admins";
+    }
+
+    @PostMapping("/admins/password")
+    public String changePassword(
+            Principal principal,
+            @Valid @ModelAttribute("changePasswordRequest") ChangePasswordRequest request,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (bindingResult.hasErrors()) {
+            populateAccountModel(principal, model);
+            return "admins/index";
+        }
+
+        try {
+            adminService.changePassword(principal.getName(), request.currentPassword(), request.newPassword());
+        } catch (IllegalArgumentException exception) {
+            bindingResult.rejectValue("currentPassword", "mismatch", exception.getMessage());
+            populateAccountModel(principal, model);
+            return "admins/index";
+        }
+
+        redirectAttributes.addFlashAttribute("message", "비밀번호를 변경했습니다.");
+        return "redirect:/admins";
+    }
+
+    private void populateAccountModel(Principal principal, Model model) {
+        model.addAttribute("currentAdmin", principal.getName());
+        model.addAttribute("admins", adminService.findAll());
+
+        if (!model.containsAttribute("registrationRequest")) {
+            model.addAttribute("registrationRequest", new AdminRegistrationRequest("", ""));
+        }
+        if (!model.containsAttribute("changePasswordRequest")) {
+            model.addAttribute("changePasswordRequest", new ChangePasswordRequest("", "", ""));
+        }
     }
 }

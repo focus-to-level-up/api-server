@@ -19,8 +19,12 @@ public class AdminSecurityConfig {
     public SecurityFilterChain adminSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/css/**", "/actuator/health").permitAll()
+                        .requestMatchers("/login", "/css/**", "/error", "/actuator/health").permitAll()
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(exception -> exception
+                        .accessDeniedHandler((request, response, accessDeniedException) ->
+                                response.sendError(403))
                 )
                 .formLogin(form -> form
                         .loginPage("/login")

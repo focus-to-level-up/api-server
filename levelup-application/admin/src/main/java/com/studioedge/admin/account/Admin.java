@@ -45,4 +45,8 @@ public class Admin extends BaseEntity {
     public void markLoggedIn(LocalDateTime loggedInAt) {
         this.lastLoginAt = loggedInAt;
     }
+
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
 }

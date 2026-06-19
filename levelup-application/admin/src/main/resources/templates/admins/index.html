@@ -53,6 +53,35 @@
                 </form>
             </article>
         </section>
+
+        <section class="panel account-password-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>내 비밀번호 변경</h2>
+                    <span th:text="|현재 로그인 계정: ${currentAdmin}|">현재 로그인 계정: admin</span>
+                </div>
+            </div>
+            <form method="post" th:action="@{/admins/password}" th:object="${changePasswordRequest}"
+                  class="form-stack password-change-form">
+                <label>
+                    현재 비밀번호
+                    <input type="password" th:field="*{currentPassword}" autocomplete="current-password">
+                    <small class="field-error" th:errors="*{currentPassword}"></small>
+                </label>
+                <label>
+                    새 비밀번호
+                    <input type="password" th:field="*{newPassword}" autocomplete="new-password">
+                    <small class="field-error" th:errors="*{newPassword}"></small>
+                </label>
+                <label>
+                    새 비밀번호 확인
+                    <input type="password" th:field="*{newPasswordConfirmation}" autocomplete="new-password">
+                    <small class="field-error" th:errors="*{newPasswordConfirmation}"></small>
+                    <small class="field-error" th:errors="*{newPasswordConfirmed}"></small>
+                </label>
+                <button type="submit" class="primary-button">비밀번호 변경</button>
+            </form>
+        </section>
     </main>
 </div>
 </body>
