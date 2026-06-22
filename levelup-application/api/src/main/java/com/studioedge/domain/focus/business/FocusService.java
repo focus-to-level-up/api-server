@@ -1,0 +1,264 @@
+package com.studioedge.domain.focus.business;
+
+import com.studioedge.character.repository.MemberCharacterRepository;
+import com.studioedge.character.entity.MemberCharacter;
+import com.studioedge.character.exception.CharacterDefaultNotFoundException;
+import com.studioedge.domain.character.business.TrainingRewardCommandService;
+import com.studioedge.event.repository.SchoolRepository;
+import com.studioedge.focus.repository.DailyGoalRepository;
+import com.studioedge.focus.repository.DailySubjectRepository;
+import com.studioedge.focus.repository.PlannerRepository;
+import com.studioedge.focus.repository.SubjectRepository;
+import com.studioedge.domain.focus.request.SaveFocusRequest;
+import com.studioedge.domain.focus.request.StartFocusRequest;
+import com.studioedge.domain.focus.response.FocusModeImageResponse;
+import com.studioedge.domain.focus.response.MonsterAnimationResponse;
+import com.studioedge.focus.entity.DailyGoal;
+import com.studioedge.focus.entity.DailySubject;
+import com.studioedge.focus.entity.Planner;
+import com.studioedge.focus.entity.Subject;
+import com.studioedge.focus.exception.DailyGoalNotFoundException;
+import com.studioedge.focus.exception.SubjectNotFoundException;
+import com.studioedge.focus.exception.SubjectUnAuthorizedException;
+import com.studioedge.guild.repository.GuildMemberRepository;
+import com.studioedge.guild.entity.GuildMember;
+import com.studioedge.member.repository.MemberInfoRepository;
+import com.studioedge.member.repository.MemberRepository;
+import com.studioedge.member.repository.MemberSettingRepository;
+import com.studioedge.member.entity.Member;
+import com.studioedge.member.entity.MemberInfo;
+import com.studioedge.member.exception.MemberInfoInvalidException;
+import com.studioedge.member.exception.MemberNotFoundException;
+import com.studioedge.domain.item.business.ItemAchievementService;
+import com.studioedge.system.repository.BackgroundRepository;
+import com.studioedge.system.repository.MonsterImageRepository;
+import com.studioedge.system.entity.Background;
+import com.studioedge.system.entity.Monster;
+import com.studioedge.system.entity.MonsterImage;
+import com.studioedge.system.enums.MonsterImageType;
+import com.studioedge.system.exception.BackgroundNotFoundException;
+import com.studioedge.AppConstants;
+import com.studioedge.common.enums.CategorySubType;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.studioedge.AppConstants.getServiceDate;
+
+@Service
+@RequiredArgsConstructor
+public class FocusService {
+    private final MemberRepository memberRepository;
+    private final MemberInfoRepository memberInfoRepository;
+    private final MemberSettingRepository memberSettingRepository;
+    private final SubjectRepository subjectRepository;
+    private final DailyGoalRepository dailyGoalRepository;
+    private final MemberCharacterRepository memberCharacterRepository;
+    private final DailySubjectRepository dailySubjectRepository;
+    private final SchoolRepository schoolRepository;
+    private final GuildMemberRepository guildMemberRepository;
+    private final MonsterImageRepository monsterImageRepository;
+    private final BackgroundRepository backgroundRepository;
+    private final ItemAchievementService itemAchievementService;
+    private final TrainingRewardCommandService trainingRewardService;
+    private final PlannerRepository plannerRepository;
+
+    @Transactional
+    public void saveFocus(Member m, Long subjectId, SaveFocusRequest request) {
+        /**
+         * member 레벨업 -> member.levelUp()
+         * subject 공부 시간 누적
+         * dailyGoal 누적
+         * 대표 캐릭터 친밀도 누적
+         * 현재 집중중 상태 해제
+         * */
+        /*
+         * 4시 경계 체크 및 시간 보정 로직 (추가된 부분)
+         * - 시작 시간을 기준으로 '다음 4시'를 구합니다.
+         * - 종료 시간이 4시를 넘어가면, '시작~4시'까지의 시간만 저장하도록 focusSeconds를 조정합니다.
+         */
+        LocalDateTime startTime = request.startTime();
+        LocalDateTime endTime = startTime.plusSeconds(request.focusSeconds());
+
+        LocalDateTime limitTime;
+        if (startTime.getHour() < 4) {
+            limitTime = startTime.toLocalDate().atTime(4, 0);
+        } else {
+            limitTime = startTime.toLocalDate().plusDays(1).atTime(4, 0);
+        }
+
+        int savedFocusSeconds = request.focusSeconds();
+        if (endTime.isAfter(limitTime)) {
+            long durationUntilLimit = Duration.between(startTime, limitTime).getSeconds();
+            savedFocusSeconds = (int) Math.max(0, durationUntilLimit);
+            endTime = startTime.plusSeconds(savedFocusSeconds);
+        }
+
+        int focusMinutes = savedFocusSeconds / 60;
+        int remainSeconds = savedFocusSeconds % 60;
+        LocalDate serviceDate = getServiceDate(startTime);
+
+        Member member = memberRepository.findById(m.getId())
+                .orElseThrow(MemberNotFoundException::new);
+        MemberInfo memberInfo = memberInfoRepository.findByMemberId(m.getId())
+                .orElseThrow(MemberInfoInvalidException::new);
+        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), serviceDate)
+                .orElseThrow(DailyGoalNotFoundException::new);
+        Subject subject = this.subjectRepository.findByIdAndDeleteAtIsNull(subjectId)
+                .orElseThrow(SubjectNotFoundException::new);
+        MemberCharacter memberCharacter = memberCharacterRepository.findByMemberIdAndIsDefault(m.getId(), true)
+                .orElseThrow(CharacterDefaultNotFoundException::new);
+        DailySubject dailySubject = dailySubjectRepository.findByMemberAndSubjectAndDate(member, subject, serviceDate)
+                .orElseGet(() -> {
+                    return DailySubject.builder()
+                            .member(member)
+                            .subject(subject)
+                            .date(serviceDate)
+                            .build();
+                });
+        if (!subject.getMember().getId().equals(m.getId())) {
+            throw new SubjectUnAuthorizedException();
+        }
+
+        // 초단위의 남은 시간이 60분보다 클 경우
+        remainSeconds += dailySubject.getRemainSeconds();
+        if (remainSeconds >= 60) {
+            focusMinutes += 1;
+            dailySubject.setRemainSeconds(remainSeconds - 60);
+        } else {
+            dailySubject.setRemainSeconds(remainSeconds);
+        }
+
+        int focusExp = focusMinutes * 10;
+        // 레벨 업
+        member.expUp(focusExp);
+        // 총 레벨 업
+        memberInfo.totalExpUp(focusExp);
+        // 골드 획득
+        memberInfo.addGold(focusExp);
+        // 일일 목표 공부 시간 더하기
+        dailyGoal.addCurrentSeconds(savedFocusSeconds);
+        // 과목 공부 시간 더하기
+        dailySubject.addSeconds(savedFocusSeconds);
+        // 캐릭터 친밀도 상승
+        memberCharacter.expUp(focusExp);
+        // 집중 상태 해제
+        member.focusOff();
+
+        // 만약 dailySubject가 생성되어있지 않다면 저장해야함.
+        dailySubjectRepository.save(dailySubject);
+        dailySubjectRepository.flush();
+
+        if (AppConstants.SCHOOL_CATEGORIES.contains(memberInfo.getCategoryMain()) &&
+            !memberInfo.getCategorySub().equals(CategorySubType.N_SU) &&
+            memberInfo.getSchool() != null && !memberInfo.getSchool().isBlank()) {
+            schoolRepository.findByName(memberInfo.getSchool())
+                    .ifPresent(school -> school.plusTotalLevel(focusExp));
+        }
+
+        // 길드 주간 집중 시간 업데이트 (가입한 모든 길드)
+        List<GuildMember> guildMembers = guildMemberRepository.findAllByMemberIdWithGuild(m.getId());
+        for (GuildMember gm : guildMembers) {
+            gm.addWeeklyFocusTime(savedFocusSeconds);
+            gm.getGuild().updateAverageFocusTime(savedFocusSeconds);
+        }
+
+        // 하루 최대 집중시간 확인하기
+        if (request.maxConsecutiveSeconds() > dailyGoal.getMaxConsecutiveSeconds()) {
+            dailyGoal.renewMaxConsecutiveSeconds(request.maxConsecutiveSeconds());
+        }
+
+        // 오늘 가장 빠른 시작 시각, 가장 늦은 종료 시각 업데이트
+        dailyGoal.updateEarliestStartTime(startTime.toLocalTime());
+        dailyGoal.updateLatestEndTime(endTime.toLocalTime());
+
+        // 아이템 달성 조건 체크 (DailySubject 저장 이후)
+        itemAchievementService.checkAchievements(m.getId(), savedFocusSeconds, startTime, dailyGoal);
+
+        // 훈련 보상 적립
+        trainingRewardService.accumulateTrainingReward(m.getId(), savedFocusSeconds);
+
+        // 플래너 저장
+        plannerRepository.save(
+                Planner.builder()
+                        .member(member)
+                        .subject(subject)
+                        .date(serviceDate)
+                        .startTime(startTime.toLocalTime())
+                        .endTime(endTime.toLocalTime())
+                        .build()
+        );
+    }
+
+    @Transactional
+    public void startFocusV1(Member m, StartFocusRequest request) {
+        Member member = memberRepository.findById(m.getId())
+                .orElseThrow(MemberNotFoundException::new);
+        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), getServiceDate())
+                .orElseThrow(DailyGoalNotFoundException::new);
+
+        member.focusOn();
+        dailyGoal.updateStartTime(request.startTime());
+    }
+
+    @Transactional
+    public void startFocusV2(Member m, boolean isResetScreenTime) {
+        Member member = memberRepository.findById(m.getId())
+                .orElseThrow(MemberNotFoundException::new);
+        DailyGoal dailyGoal = dailyGoalRepository.findByMemberIdAndDailyGoalDate(m.getId(), getServiceDate())
+                .orElse(dailyGoalRepository.findFirstByMemberIdOrderByDailyGoalDateDesc(m.getId())
+                        .orElseThrow(DailyGoalNotFoundException::new));
+        member.focusOn();
+        dailyGoal.updateStartTime();
+        if (isResetScreenTime || dailyGoal.getScreenStartTime() == null) {
+            dailyGoal.updateScreenStartTime();
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public FocusModeImageResponse getFocusAnimation(Member member) {
+        List<MonsterImage> monsterImages = monsterImageRepository.findAllWithMonster();
+        // 몬스터(Monster) 객체 기준으로 그룹화
+        Map<Monster, List<MonsterImage>> imagesByMonster = monsterImages.stream()
+                .collect(Collectors.groupingBy(MonsterImage::getMonster));
+
+        List<MonsterAnimationResponse> responses = new ArrayList<>();
+        for (Map.Entry<Monster, List<MonsterImage>> entry : imagesByMonster.entrySet()) {
+            Monster monster = entry.getKey();
+            List<MonsterImage> images = entry.getValue();
+
+            String moveUrl = findUrlByType(images, MonsterImageType.MOVE);
+            String dieUrl = findUrlByType(images, MonsterImageType.DIE);
+
+            responses.add(MonsterAnimationResponse.of(
+                    monster.getName(),
+                    dieUrl,
+                    moveUrl
+            ));
+        }
+
+        Background background = backgroundRepository.findByName(AppConstants.DEFAULT_FOCUS_BACKGROUND_NAME)
+                .orElseThrow(BackgroundNotFoundException::new);
+
+        return FocusModeImageResponse.of(background.getImageUrl(), responses);
+    }
+
+    /**
+     * 몬스터 이미지 리스트에서 특정 타입의 URL을 찾는 헬퍼 메서드
+     */
+    private String findUrlByType(List<MonsterImage> images, MonsterImageType type) {
+        return images.stream()
+                .filter(m -> m.getType() == type)
+                .map(MonsterImage::getImageUrl)
+                .findFirst()
+                .orElse(null);
+    }
+}

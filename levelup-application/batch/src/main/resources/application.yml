@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: focus-to-levelup-batch
+
+  main:
+    web-application-type: none
+
+  profiles:
+    active: ${SPRING_PROFILE:local}
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      repositories:
+        enabled: false
+
+  jpa:
+    show-sql: true
+    open-in-view: false
+    generate-ddl: false
+    database-platform: org.hibernate.dialect.MySQLDialect
+    properties:
+      hibernate:
+        implicit_naming_strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+        physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+        hbm2ddl:
+          auto: validate
+        format_sql: true
+
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      schema: classpath:org/springframework/batch/core/schema-mysql.sql
+      initialize-schema: always
+
+sentry:
+  dsn: ${SENTRY_DSN:}
+  send-default-pii: true
+  traces-sample-rate: 1.0
+  environment: ${SENTRY_ENVIRONMENT:local}
+  release: ${SENTRY_RELEASE:focus-to-levelup-batch-v1}
+
+firebase:
+  fcm:
+    enabled: ${FIREBASE_FCM_ENABLED:true}
+  service-account-json: ${FIREBASE_SERVICE_ACCOUNT_JSON:}
+
+cloud:
+  aws:
+    s3:
+      enabled: false
+
+logging:
+  level:
+    org.springframework.batch: INFO
+    org.hibernate.SQL: DEBUG

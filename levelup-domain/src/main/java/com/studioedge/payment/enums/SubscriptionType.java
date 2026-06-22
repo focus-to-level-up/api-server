@@ -1,0 +1,16 @@
+package com.studioedge.payment.enums;
+
+import lombok.Getter;
+
+@Getter
+public enum SubscriptionType {
+    NONE(0),
+    BASIC(3),
+    PREMIUM(6);
+
+    private final int bonusTicketCount;
+
+    SubscriptionType(int bonusTicketCount) {
+        this.bonusTicketCount = bonusTicketCount;
+    }
+}

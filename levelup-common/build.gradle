@@ -1,0 +1,9 @@
+bootJar { enabled = false }
+jar { enabled = true }
+
+dependencies {
+    // .env
+    api 'io.github.cdimascio:dotenv-java:3.0.0'
+    // json
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+}

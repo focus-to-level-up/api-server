@@ -1,0 +1,108 @@
+package com.studioedge.member.entity;
+
+import com.studioedge.ranking.enums.Tier;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.time.LocalDate;
+
+@Entity
+@Table(name = "member_settings")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class MemberSetting {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "member_setting_id")
+    private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", unique = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Member member;
+
+    @Column(nullable = false)
+    @ColumnDefault("true")
+    private Boolean alarmOn = true; // 알림기능 여부
+
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private Boolean isRankingCaution = false; // 경고받은 상태인지 여부
+
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private Boolean isPomodoro = false; // 뽀모도로 기능 여부
+
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private Boolean isAIPlanner = false; // AI 플래너 여부
+
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private Boolean isSubscriptionMessageBlocked = false; // 구독권 메세지 차단 여부
+
+    @Column(nullable = false)
+    @ColumnDefault("true")
+    private Boolean isRankingActive = true; // 랭킹 활성화 여부
+
+    private LocalDate rankingWarningAt; // 경고 당한 날짜
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer rankingDeactivatedCount = 0; // 랭킹에서 비활성화 횟수
+
+    @ColumnDefault("'BRONZE'")
+    @Enumerated(EnumType.STRING)
+    private Tier bannedTier; // 강제 밴 당한 티어
+
+    @Column(nullable = false)
+    @ColumnDefault("'FFFF00'")
+    private String totalStatColor = "FFFF00"; // 노란색 초기값
+
+    @Builder
+    public MemberSetting(Member member) {
+        this.member = member;
+    }
+
+    public void updateSetting(boolean alarmOn, boolean isPomodoro, boolean IsAIPlanner,
+                              boolean isSubscriptionMessageBlocked, String totalStatColor) {
+        this.alarmOn = alarmOn;
+        this.isPomodoro = isPomodoro;
+        this.isAIPlanner = IsAIPlanner;
+        this.isSubscriptionMessageBlocked = isSubscriptionMessageBlocked;
+        this.totalStatColor = totalStatColor;
+    }
+
+    public void updateTotalStatColor(String color) {
+        this.totalStatColor = color;
+    }
+
+    public void clearRankingWarning() {
+        this.isRankingCaution = false;
+        this.rankingWarningAt = null;
+        this.isRankingActive = true;
+    }
+
+    public boolean warning() {
+        if (this.rankingWarningAt != null) {
+            this.isRankingActive = false;
+            this.rankingDeactivatedCount++;
+            return false;
+        }
+        this.rankingWarningAt = LocalDate.now();
+        return true;
+    }
+
+    public void banRanking(Tier tier) {
+        this.isRankingActive = false;
+        this.rankingDeactivatedCount++;
+        this.rankingWarningAt = LocalDate.now();
+        this.bannedTier = tier;
+    }
+}

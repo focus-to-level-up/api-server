@@ -1,0 +1,17 @@
+bootJar { enabled = true }
+jar { enabled = false }
+
+dependencies {
+    implementation project(':levelup-domain')
+    implementation project(':levelup-common')
+    implementation project(':levelup-infra:mysql')
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'com.h2database:h2'
+}

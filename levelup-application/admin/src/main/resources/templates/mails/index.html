@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Focus Admin 우편 발송</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('mails')}"></aside>
+    <main class="content">
+        <header class="page-header">
+            <div>
+                <h1>우편 발송</h1>
+                <p>회원에게 CS 보상 우편을 발송하고 최근 발송 내역을 확인합니다.</p>
+            </div>
+        </header>
+
+        <div class="alert success" th:if="${message}" th:text="${message}">발송 완료</div>
+        <div class="alert error" th:if="${error}" th:text="${error}">발송 실패</div>
+
+        <section class="panel search-panel">
+            <form method="get" th:action="@{/mails}" class="search-form">
+                <label>
+                    <span>검색 기준</span>
+                    <select name="type">
+                        <option value="NICKNAME" th:selected="${searchType == 'NICKNAME'}">닉네임</option>
+                        <option value="ID" th:selected="${searchType == 'ID'}">회원 ID</option>
+                    </select>
+                </label>
+                <label>
+                    <span>검색어</span>
+                    <input name="keyword" th:value="${keyword}" placeholder="발송 대상을 검색하세요">
+                </label>
+                <button type="submit" class="primary-button">조회</button>
+            </form>
+        </section>
+
+        <section class="mail-layout">
+            <article class="panel result-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>회원 검색 결과</h2>
+                        <span>탈퇴 및 가입 미완료 회원에게는 발송할 수 없습니다.</span>
+                    </div>
+                    <strong th:text="|${memberPage.totalElements}명|">0명</strong>
+                </div>
+                <div class="empty-state" th:if="${memberPage.empty}">
+                    닉네임 또는 회원 ID로 발송 대상을 검색하세요.
+                </div>
+                <div class="table-scroll" th:if="${!memberPage.empty}">
+                    <table>
+                        <thead>
+                        <tr><th>회원</th><th>상태</th><th>선택</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="member : ${memberPage.content}"
+                            th:classappend="${selectedMember != null and selectedMember.memberId == member.memberId} ? ' selected-row'">
+                            <td>
+                                <strong th:text="${member.nickname}">닉네임</strong>
+                                <div class="muted" th:text="|ID ${member.memberId}|">ID 1</div>
+                            </td>
+                            <td><span class="badge" th:classappend="| status-${member.status}|" th:text="${member.status}">ACTIVE</span></td>
+                            <td>
+                                <a class="secondary-button button-link compact-button"
+                                   th:href="@{/mails(type=${searchType}, keyword=${keyword}, page=${memberPage.number}, memberId=${member.memberId})}">
+                                    선택
+                                </a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <nav class="pagination" th:if="${memberPage.totalPages > 1}" aria-label="회원 목록 페이지">
+                    <a th:if="${memberPage.hasPrevious()}"
+                       th:href="@{/mails(type=${searchType}, keyword=${keyword}, page=${memberPage.number - 1})}">이전</a>
+                    <span th:text="|${memberPage.number + 1} / ${memberPage.totalPages}|">1 / 1</span>
+                    <a th:if="${memberPage.hasNext()}"
+                       th:href="@{/mails(type=${searchType}, keyword=${keyword}, page=${memberPage.number + 1})}">다음</a>
+                </nav>
+            </article>
+
+            <article class="panel empty-state detail-placeholder" th:if="${selectedMember == null}">
+                왼쪽 목록에서 우편을 발송할 회원을 선택하세요.
+            </article>
+
+            <article class="panel mail-compose-panel" th:if="${selectedMember != null}">
+                <div class="panel-heading">
+                    <div>
+                        <h2>보상 우편 작성</h2>
+                        <span th:text="|${selectedMember.nickname} · ID ${selectedMember.memberId}|">수신자</span>
+                    </div>
+                    <span class="badge" th:classappend="| status-${selectedMember.status}|" th:text="${selectedMember.status}">ACTIVE</span>
+                </div>
+
+                <div class="alert warning"
+                     th:if="${selectedMember.status.name() == 'WITHDRAWN' or selectedMember.status.name() == 'PENDING'}">
+                    탈퇴 또는 가입 미완료 회원에게는 우편을 발송할 수 없습니다.
+                </div>
+
+                <form method="post" th:action="@{/mails}" th:object="${mailRequest}" class="form-stack" id="mail-form">
+                    <input type="hidden" th:field="*{receiverId}">
+                    <input type="hidden" name="type" th:value="${searchType}">
+                    <input type="hidden" name="keyword" th:value="${keyword}">
+                    <input type="hidden" name="page" th:value="${memberPage.number}">
+
+                    <label>
+                        <span>제목</span>
+                        <input th:field="*{title}" maxlength="255" required placeholder="CS 보상 지급">
+                    </label>
+                    <label>
+                        <span>설명</span>
+                        <textarea th:field="*{description}" maxlength="999" rows="3" required
+                                  placeholder="보상 지급 사유를 입력하세요"></textarea>
+                    </label>
+                    <div class="mail-field-grid">
+                        <label>
+                            <span>팝업 제목</span>
+                            <input th:field="*{popupTitle}" maxlength="255" placeholder="선택 입력">
+                        </label>
+                        <label>
+                            <span>만료 기간</span>
+                            <input type="number" th:field="*{expireDays}" min="1" max="90" required>
+                        </label>
+                    </div>
+                    <label>
+                        <span>팝업 내용</span>
+                        <textarea th:field="*{popupContent}" maxlength="999" rows="2" placeholder="선택 입력"></textarea>
+                    </label>
+                    <div class="mail-field-grid reward-fields">
+                        <label>
+                            <span>다이아 · 최대 10,000</span>
+                            <input type="number" th:field="*{diamondAmount}" min="0" max="10000" required>
+                        </label>
+                        <label>
+                            <span>골드 · 최대 100,000</span>
+                            <input type="number" th:field="*{goldAmount}" min="0" max="100000" required>
+                        </label>
+                        <label>
+                            <span>보너스 티켓 · 최대 10</span>
+                            <input type="number" th:field="*{bonusTicketCount}" min="0" max="10" required>
+                        </label>
+                    </div>
+
+                    <div class="mail-confirmation">
+                        <span>최종 발송 내용</span>
+                        <strong th:text="|${selectedMember.nickname} (ID ${selectedMember.memberId})|">수신자</strong>
+                        <p id="reward-summary">보상 수량을 입력하세요.</p>
+                        <p id="expiration-summary">만료일을 계산하고 있습니다.</p>
+                        <label class="confirmation-check">
+                            <input type="checkbox" th:field="*{confirmed}" id="confirmed">
+                            <span>수신자와 보상 내용을 확인했습니다.</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="primary-button" id="send-button"
+                            th:disabled="${selectedMember.status.name() == 'WITHDRAWN' or selectedMember.status.name() == 'PENDING'}">
+                        보상 우편 발송
+                    </button>
+                </form>
+            </article>
+        </section>
+
+        <section class="panel recent-mail-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>최근 발송 내역</h2>
+                    <span>최근 관리자 보상 우편 20건</span>
+                </div>
+            </div>
+            <div class="empty-state" th:if="${#lists.isEmpty(recentMails)}">발송된 관리자 보상 우편이 없습니다.</div>
+            <div class="table-scroll" th:if="${!#lists.isEmpty(recentMails)}">
+                <table>
+                    <thead>
+                    <tr><th>발송 일시</th><th>수신자</th><th>제목</th><th>다이아</th><th>골드</th><th>티켓</th><th>수령</th><th>만료일</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="mail : ${recentMails}">
+                        <td th:text="${#temporals.format(mail.createdAt, 'yyyy-MM-dd HH:mm')}">일시</td>
+                        <td>
+                            <strong th:text="${mail.receiverNickname}">닉네임</strong>
+                            <div class="muted" th:text="|ID ${mail.receiverId}|">ID 1</div>
+                        </td>
+                        <td th:text="${mail.title}">제목</td>
+                        <td th:text="${mail.diamondAmount ?: 0}">0</td>
+                        <td th:text="${mail.goldAmount ?: 0}">0</td>
+                        <td th:text="${mail.bonusTicketCount ?: 0}">0</td>
+                        <td><span class="badge" th:classappend="${mail.isReceived} ? '' : ' pending-mail'"
+                                  th:text="${mail.isReceived} ? '수령' : '미수령'">미수령</span></td>
+                        <td th:text="${mail.expiredAt}">2026-07-10</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+<script>
+    (() => {
+        const form = document.getElementById('mail-form');
+        if (!form) return;
+
+        const confirmed = document.getElementById('confirmed');
+        const sendButton = document.getElementById('send-button');
+        const rewardSummary = document.getElementById('reward-summary');
+        const expirationSummary = document.getElementById('expiration-summary');
+        const inputs = {
+            diamond: document.getElementById('diamondAmount'),
+            gold: document.getElementById('goldAmount'),
+            ticket: document.getElementById('bonusTicketCount'),
+            days: document.getElementById('expireDays')
+        };
+        const blocked = sendButton.disabled;
+
+        const updateSummary = () => {
+            const rewards = [
+                ['다이아', Number(inputs.diamond.value || 0)],
+                ['골드', Number(inputs.gold.value || 0)],
+                ['보너스 티켓', Number(inputs.ticket.value || 0)]
+            ].filter(([, amount]) => amount > 0);
+            rewardSummary.textContent = rewards.length
+                ? rewards.map(([name, amount]) => `${name} ${amount.toLocaleString('ko-KR')}개`).join(' · ')
+                : '보상 수량을 입력하세요.';
+
+            const expiration = new Date();
+            expiration.setDate(expiration.getDate() + Number(inputs.days.value || 0));
+            expirationSummary.textContent = `만료 예정일 ${expiration.toLocaleDateString('ko-KR')}`;
+            sendButton.disabled = blocked || !confirmed.checked || rewards.length === 0;
+        };
+
+        Object.values(inputs).forEach(input => input.addEventListener('input', updateSummary));
+        confirmed.addEventListener('change', updateSummary);
+        form.addEventListener('submit', () => {
+            sendButton.disabled = true;
+            sendButton.textContent = '발송 중...';
+        });
+        updateSummary();
+    })();
+</script>
+</body>
+</html>

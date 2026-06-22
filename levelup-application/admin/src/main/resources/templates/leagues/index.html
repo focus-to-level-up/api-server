@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Focus Admin 리그 · 랭킹</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/sidebar :: sidebar('leagues')}"></aside>
+    <main class="content">
+        <header class="page-header">
+            <div>
+                <h1>리그 · 랭킹</h1>
+                <p>리그별 배치 현황을 확인하고 비정상 이용 회원을 랭킹에서 제외합니다.</p>
+            </div>
+        </header>
+
+        <div class="alert success" th:if="${message}" th:text="${message}"></div>
+        <div class="alert error" th:if="${error}" th:text="${error}"></div>
+
+        <section class="panel search-panel">
+            <form method="get" th:action="@{/leagues}" class="league-filter-form">
+                <label>
+                    <span>카테고리</span>
+                    <select name="category">
+                        <option value="">전체</option>
+                        <option th:each="category : ${categories}"
+                                th:value="${category}"
+                                th:selected="${category == selectedCategory}"
+                                th:text="${category.categoryName}">고등</option>
+                    </select>
+                </label>
+                <label>
+                    <span>티어</span>
+                    <select name="tier">
+                        <option value="">전체</option>
+                        <option th:each="tier : ${tiers}"
+                                th:value="${tier}"
+                                th:selected="${tier == selectedTier}"
+                                th:text="${tier}">BRONZE</option>
+                    </select>
+                </label>
+                <label>
+                    <span>상태</span>
+                    <select name="active">
+                        <option value="true" th:selected="${active}">활성</option>
+                        <option value="false" th:selected="${!active}">종료</option>
+                    </select>
+                </label>
+                <button type="submit" class="primary-button">필터 적용</button>
+            </form>
+        </section>
+
+        <section class="league-layout">
+            <article class="panel league-list-panel">
+                <div class="panel-heading">
+                    <h2>리그 목록</h2>
+                    <span th:text="|총 ${leagueResponse.totalCount}개|">0개</span>
+                </div>
+                <div class="empty-state" th:if="${leagueResponse.leagues.empty}">
+                    조건에 맞는 리그가 없습니다.
+                </div>
+                <div class="league-list" th:if="${!leagueResponse.leagues.empty}">
+                    <a class="league-list-item"
+                       th:each="league : ${leagueResponse.leagues}"
+                       th:classappend="${league.leagueId == selectedLeagueId} ? ' selected'"
+                       th:href="@{/leagues(category=${selectedCategory}, tier=${selectedTier}, active=${active}, leagueId=${league.leagueId})}">
+                        <div>
+                            <strong th:text="${league.name}">리그명</strong>
+                            <span th:text="|${league.category.categoryName} · ${league.tier}|">고등 · BRONZE</span>
+                        </div>
+                        <div class="league-list-meta">
+                            <span th:text="|저장 ${league.currentMembers}명|">저장 0명</span>
+                            <span th:text="|${league.startDate} - ${league.endDate}|">기간</span>
+                        </div>
+                    </a>
+                </div>
+            </article>
+
+            <article class="panel ranking-panel" th:if="${ranking != null}">
+                <div class="ranking-heading">
+                    <div>
+                        <h2 th:text="${ranking.leagueName}">리그명</h2>
+                        <span th:text="${ranking.leagueTier}">BRONZE</span>
+                    </div>
+                    <div class="ranking-counts">
+                        <div><span>실제 인원</span><strong th:text="|${ranking.actualMembers}명|">0명</strong></div>
+                        <div><span>저장 인원</span><strong th:text="|${ranking.storedMembers}명|">0명</strong></div>
+                    </div>
+                </div>
+
+                <div class="alert error" th:if="${ranking.memberCountMismatch}"
+                     th:text="|실제 랭킹 인원과 저장 인원이 ${ranking.memberCountDifference}명 차이 납니다. 자동 보정하지 않으며 원인 확인이 필요합니다.|">
+                </div>
+                <div class="alert warning" th:if="${ranking.memberCountOutOfExpectedRange}"
+                     th:text="|실제 인원이 운영 기준 80~110명 범위를 벗어났습니다. 현재 ${ranking.actualMembers}명입니다.|">
+                </div>
+
+                <form method="get" th:action="@{/leagues}" class="ranking-search-form">
+                    <input type="hidden" name="category" th:value="${selectedCategory}">
+                    <input type="hidden" name="tier" th:value="${selectedTier}">
+                    <input type="hidden" name="active" th:value="${active}">
+                    <input type="hidden" name="leagueId" th:value="${selectedLeagueId}">
+                    <label>
+                        <span>회원 검색</span>
+                        <input name="keyword" th:value="${keyword}" placeholder="회원 ID 또는 닉네임">
+                    </label>
+                    <button type="submit" class="secondary-button">검색</button>
+                </form>
+
+                <div class="empty-state" th:if="${ranking.rankings.empty}">
+                    조건에 맞는 랭킹 회원이 없습니다.
+                </div>
+                <div class="ranking-table-scroll" th:if="${!ranking.rankings.empty}">
+                    <table>
+                        <thead>
+                        <tr><th>순위</th><th>회원 ID</th><th>닉네임</th><th>레벨</th><th>상태</th><th>관리</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="rankingInfo, stat : ${ranking.rankings}">
+                            <td th:text="${stat.count}">1</td>
+                            <td>
+                                <a th:href="@{/members(type='ID', keyword=${rankingInfo.memberId}, memberId=${rankingInfo.memberId})}"
+                                   th:text="${rankingInfo.memberId}">1</a>
+                            </td>
+                            <td>
+                                <a th:href="@{/members(type='ID', keyword=${rankingInfo.memberId}, memberId=${rankingInfo.memberId})}"
+                                   th:text="${rankingInfo.nickname}">닉네임</a>
+                            </td>
+                            <td th:text="${rankingInfo.level}">1</td>
+                            <td>
+                                <span class="badge" th:classappend="| status-${rankingInfo.status}|"
+                                      th:text="${rankingInfo.status}">ACTIVE</span>
+                            </td>
+                            <td>
+                                <form method="post"
+                                      th:if="${rankingInfo.status.name() == 'ACTIVE'}"
+                                      th:action="@{/leagues/{leagueId}/rankings/{memberId}/exclude(leagueId=${selectedLeagueId}, memberId=${rankingInfo.memberId})}"
+                                      onsubmit="return confirm('이 회원을 1주간 랭킹에서 정지하시겠습니까? 복귀 시 브론즈 리그에 배치됩니다.')">
+                                    <input type="hidden" name="category" th:value="${selectedCategory}">
+                                    <input type="hidden" name="tier" th:value="${selectedTier}">
+                                    <input type="hidden" name="active" th:value="${active}">
+                                    <input type="hidden" name="keyword" th:value="${keyword}">
+                                    <button type="submit" class="danger-button compact-button">랭킹 정지</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article class="panel empty-state detail-placeholder" th:if="${ranking == null}">
+                조회할 리그를 선택하세요.
+            </article>
+        </section>
+    </main>
+</div>
+</body>
+</html>

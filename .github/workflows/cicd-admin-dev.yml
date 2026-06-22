@@ -1,0 +1,26 @@
+name: CI/CD Admin for Development
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Optional image tag override'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  call-cicd-template:
+    name: Deploy Admin for Development
+    uses: ./.github/workflows/cicd-template.yml
+    secrets: inherit
+    with:
+      environment: 'dev'
+      module_name: 'admin'
+      gradle_task: ':levelup-application:admin:bootJar'
+      module_dir: 'levelup-application/admin'
+      deploy_strategy: 'simple'
+      compose_service: 'admin'
+      image_tag: ${{ inputs.image_tag }}

@@ -1,0 +1,20 @@
+spring:
+  datasource-data:
+    jdbc-url: jdbc:mysql://localhost:13307/focus_db?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    username: focus
+    password: focus
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: update
+
+  thymeleaf:
+    cache: false
+
+admin:
+  initial:
+    username: ${ADMIN_INITIAL_USERNAME:local-admin}
+    password: ${ADMIN_INITIAL_PASSWORD:local-admin-password}

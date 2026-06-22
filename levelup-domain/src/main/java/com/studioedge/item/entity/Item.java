@@ -1,0 +1,38 @@
+package com.studioedge.item.entity;
+
+import com.studioedge.item.enums.ItemType;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "items")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Item {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "item_id")
+    private Long id;
+
+    @Column(unique = true, nullable = false)
+    private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ItemType type;
+
+    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
+    private List<ItemDetail> details = new ArrayList<>();
+
+    @Builder
+    public Item(String name, ItemType type) {
+        this.name = name;
+        this.type = type;
+    }
+}

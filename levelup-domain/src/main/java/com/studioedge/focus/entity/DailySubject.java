@@ -1,0 +1,67 @@
+package com.studioedge.focus.entity;
+
+import com.studioedge.common.entity.BaseEntity;
+import com.studioedge.member.entity.Member;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.time.LocalDate;
+
+@Entity
+@Table(
+        name = "daily_subjects",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"member_id", "subject_id", "date"})
+        }
+)
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class DailySubject extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "daily_subject_id")
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Member member;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subject_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Subject subject;
+
+    @Column(nullable = false)
+    private LocalDate date;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer focusSeconds = 0;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Integer remainSeconds = 0; // 과목별 남은 초단위(분단위 보상체제 이후)
+
+    @Builder
+    public DailySubject(Member member, Subject subject, LocalDate date) {
+        this.member = member;
+        this.subject = subject;
+        this.date = date;
+    }
+
+    public void addSeconds(int seconds) {
+        this.focusSeconds += seconds;
+    }
+
+    public void setRemainSeconds(int seconds) {
+        this.remainSeconds = seconds;
+    }
+}
