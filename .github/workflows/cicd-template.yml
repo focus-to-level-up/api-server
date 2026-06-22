@@ -1,4 +1,4 @@
-name: CI/CD Template
+name: CI/CD Module Template
 
 on:
   workflow_call:
@@ -7,29 +7,55 @@ on:
         description: 'dev/prod'
         required: true
         type: string
+      module_name:
+        description: 'api/admin/batch'
+        required: false
+        default: 'api'
+        type: string
+      gradle_task:
+        description: 'Gradle bootJar task'
+        required: false
+        default: ':levelup-application:api:bootJar'
+        type: string
+      module_dir:
+        description: 'Module directory used to copy the bootJar'
+        required: false
+        default: 'levelup-application/api'
+        type: string
+      deploy_strategy:
+        description: 'bluegreen/simple'
+        required: false
+        default: 'bluegreen'
+        type: string
+      compose_service:
+        description: 'Docker compose service for simple deployment'
+        required: false
+        default: 'api'
+        type: string
+      image_tag:
+        description: 'Optional image tag override'
+        required: false
+        default: ''
+        type: string
 
 env:
-  IMAGE_TAG: ${{ inputs.environment == 'prod' && github.ref_name || github.sha }}
+  IMAGE_TAG: ${{ inputs.image_tag != '' && inputs.image_tag || (inputs.environment == 'prod' && github.ref_type == 'tag' && github.ref_name || github.sha) }}
   EC2_HOST: ${{ inputs.environment == 'prod' && secrets.EC2_HOST_PROD || secrets.EC2_HOST_DEV }}
   EC2_SSH_KEY: ${{ inputs.environment == 'prod' && secrets.EC2_SSH_KEY_PROD || secrets.EC2_SSH_KEY_DEV }}
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  DOCKER_REPO: ${{ secrets.DOCKER_REPO }}
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  DOCKER_REPO_API: ${{ secrets.DOCKER_REPO_API || 'focus-to-level-up-api' }}
+  DOCKER_REPO_ADMIN: ${{ secrets.DOCKER_REPO_ADMIN || 'focus-to-level-up-admin' }}
+  DOCKER_REPO_BATCH: ${{ secrets.DOCKER_REPO_BATCH || 'focus-to-level-up-batch' }}
 
 jobs:
   build-and-release:
-    name: Build and Release for ${{ inputs.environment }}
+    name: Build and Release ${{ inputs.module_name }} for ${{ inputs.environment }}
     runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: 17
-          distribution: 'temurin'
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -37,8 +63,37 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+      - name: Resolve image tags
+        id: image
+        shell: bash
+        run: |
+          case "${{ inputs.module_name }}" in
+            api)
+              IMAGE_REPO="${DOCKER_USERNAME}/${DOCKER_REPO_API}"
+              ;;
+            admin)
+              IMAGE_REPO="${DOCKER_USERNAME}/${DOCKER_REPO_ADMIN}"
+              ;;
+            batch)
+              IMAGE_REPO="${DOCKER_USERNAME}/${DOCKER_REPO_BATCH}"
+              ;;
+            *)
+              echo "Unsupported module_name: ${{ inputs.module_name }}"
+              exit 1
+              ;;
+          esac
+
+          {
+            echo "tags<<EOF"
+            echo "${IMAGE_REPO}:${IMAGE_TAG}"
+            if [ "${{ inputs.environment }}" = "prod" ]; then
+              echo "${IMAGE_REPO}:latest"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -46,17 +101,19 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}:${{ env.IMAGE_TAG }}
-            ${{ inputs.environment == 'prod' && format('{0}/{1}:latest', secrets.DOCKER_USERNAME, secrets.DOCKER_REPO) || '' }}
+          cache-from: type=gha,scope=${{ inputs.module_name }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.module_name }}
+          build-args: |
+            GRADLE_TASK=${{ inputs.gradle_task }}
+            MODULE_DIR=${{ inputs.module_dir }}
+          tags: ${{ steps.image.outputs.tags }}
           platforms: linux/amd64
 
   deploy:
     needs: build-and-release
     runs-on: ubuntu-24.04
-    name: Deploy for ${{ inputs.environment }}
+    name: Deploy ${{ inputs.module_name }} for ${{ inputs.environment }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -82,14 +139,14 @@ jobs:
           source: docker-compose-${{ inputs.environment }}.yml
           target: /opt/focus-to-level-up
 
-      - name: Copy deploy script to EC2
+      - name: Copy deploy scripts to EC2
         uses: appleboy/scp-action@master
         with:
           host: ${{ env.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ env.EC2_SSH_KEY }}
           port: 22
-          source: scripts/deploy.sh
+          source: scripts/deploy.sh,scripts/deploy-api-bluegreen.sh,scripts/deploy-simple.sh
           target: /opt/focus-to-level-up
 
       - name: Copy DB init scripts to EC2
@@ -99,19 +156,9 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ env.EC2_SSH_KEY }}
           port: 22
-          source: src/main/resources/db/
+          source: levelup-application/api/src/main/resources/db/
           target: /opt/focus-to-level-up
           strip_components: 0
-
-      - name: Rename docker-compose file on EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ env.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ env.EC2_SSH_KEY }}
-          port: 22
-          script: |
-            mv /opt/focus-to-level-up/docker-compose-${{ inputs.environment }}.yml /opt/focus-to-level-up/docker-compose.yml
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
@@ -119,64 +166,84 @@ jobs:
           host: ${{ env.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ env.EC2_SSH_KEY }}
-          envs: IMAGE_TAG,DOCKER_USERNAME,DOCKER_REPO,DOCKER_PASSWORD
+          envs: IMAGE_TAG,DOCKER_USERNAME,DOCKER_PASSWORD,DOCKER_REPO_API,DOCKER_REPO_ADMIN,DOCKER_REPO_BATCH
           port: 22
           script: |
-            set -e
-                    
-            # .env 파일 생성
-            cat > /opt/focus-to-level-up/.env << 'ENV_EOF'
+            set -euo pipefail
+
+            cd /opt/focus-to-level-up
+
+            API_IMAGE_TAG_CURRENT=$(grep '^API_IMAGE_TAG=' .env 2>/dev/null | cut -d '=' -f2- || true)
+            ADMIN_IMAGE_TAG_CURRENT=$(grep '^ADMIN_IMAGE_TAG=' .env 2>/dev/null | cut -d '=' -f2- || true)
+            BATCH_IMAGE_TAG_CURRENT=$(grep '^BATCH_IMAGE_TAG=' .env 2>/dev/null | cut -d '=' -f2- || true)
+
+            API_IMAGE_TAG_VALUE="${API_IMAGE_TAG_CURRENT:-latest}"
+            ADMIN_IMAGE_TAG_VALUE="${ADMIN_IMAGE_TAG_CURRENT:-latest}"
+            BATCH_IMAGE_TAG_VALUE="${BATCH_IMAGE_TAG_CURRENT:-latest}"
+
+            case "${{ inputs.module_name }}" in
+              api)
+                API_IMAGE_TAG_VALUE="${IMAGE_TAG}"
+                ;;
+              admin)
+                ADMIN_IMAGE_TAG_VALUE="${IMAGE_TAG}"
+                ;;
+              batch)
+                BATCH_IMAGE_TAG_VALUE="${IMAGE_TAG}"
+                ;;
+              *)
+                echo "Unsupported module_name: ${{ inputs.module_name }}"
+                exit 1
+                ;;
+            esac
+
+            cat > .env << 'ENV_EOF'
             ${{ inputs.environment == 'prod' && secrets.ENV_FILE_PROD || secrets.ENV_FILE_DEV }}
             ENV_EOF
-            
-            # 쉘 환경 변수 설정
-            export IMAGE_TAG="${IMAGE_TAG}"
-            export DOCKER_USERNAME="${DOCKER_USERNAME}"
-            export DOCKER_REPO="${DOCKER_REPO}"
-            
-            # Docker 로그인
+
+            cat >> .env << ENV_EOF
+
+            DOCKER_USERNAME=${DOCKER_USERNAME}
+            DOCKER_REPO_API=${DOCKER_REPO_API}
+            DOCKER_REPO_ADMIN=${DOCKER_REPO_ADMIN}
+            DOCKER_REPO_BATCH=${DOCKER_REPO_BATCH}
+            API_IMAGE_TAG=${API_IMAGE_TAG_VALUE}
+            ADMIN_IMAGE_TAG=${ADMIN_IMAGE_TAG_VALUE}
+            BATCH_IMAGE_TAG=${BATCH_IMAGE_TAG_VALUE}
+            ENV_EOF
+
+            mv docker-compose-${{ inputs.environment }}.yml docker-compose.yml
+            chmod +x scripts/deploy.sh scripts/deploy-api-bluegreen.sh scripts/deploy-simple.sh
+
             echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-            
-            # DB 및 공통 서비스 확인
+
             if [ "${{ inputs.environment }}" != "prod" ]; then
-               docker compose -f /opt/focus-to-level-up/docker-compose.yml up -d mysql redis
-               sleep 15
-            fi
-            
-            # docker compose -f /opt/focus-to-level-up/docker-compose.yml pull app
-            # docker compose -f /opt/focus-to-level-up/docker-compose.yml up -d
+              docker compose -f docker-compose.yml up -d mysql redis
+              sleep 15
 
-            # Extract DB credentials from .env file
-            DB_ROOT_PASSWORD=$(grep '^DB_ROOT_PASSWORD=' /opt/focus-to-level-up/.env | cut -d '=' -f2)
-            DB_USERNAME=$(grep '^DB_USERNAME=' /opt/focus-to-level-up/.env | cut -d '=' -f2)
-            DB_PASSWORD=$(grep '^DB_PASSWORD=' /opt/focus-to-level-up/.env | cut -d '=' -f2)
-
-            if [ "${{ inputs.environment }}" = "prod" ]; then
-              # Prod: RDS에 focus_meta_db 생성 (master 유저로 접속하므로 GRANT 불필요)
-              echo "Initializing RDS database..."
-
-              which mysql || (sudo apt-get update && sudo apt-get install -y mysql-client)
-
-              DB_URL=$(grep '^DB_URL=' /opt/focus-to-level-up/.env | cut -d '=' -f2)
-              DB_HOST=$(echo $DB_URL | sed -n 's|.*://\([^:/]*\).*|\1|p')
-
-              mysql -h ${DB_HOST} -u ${DB_USERNAME} -p${DB_PASSWORD} -e "CREATE DATABASE IF NOT EXISTS focus_meta_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || true
-
-            else
-              # Dev: Docker MySQL 컨테이너 사용 (root로 접속하여 권한 부여)
-              echo "Waiting for MySQL container to be ready..."
-              sleep 10
+              DB_ROOT_PASSWORD=$(grep '^DB_ROOT_PASSWORD=' .env | cut -d '=' -f2-)
+              DB_USERNAME=$(grep '^DB_USERNAME=' .env | cut -d '=' -f2-)
 
               docker exec focus-mysql mysql -uroot -p${DB_ROOT_PASSWORD} -e "CREATE DATABASE IF NOT EXISTS focus_meta_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || true
               docker exec focus-mysql mysql -uroot -p${DB_ROOT_PASSWORD} -e "GRANT ALL PRIVILEGES ON focus_meta_db.* TO '${DB_USERNAME}'@'%';" || true
               docker exec focus-mysql mysql -uroot -p${DB_ROOT_PASSWORD} -e "FLUSH PRIVILEGES;" || true
             fi
-            
-            # 6. 배포 스크립트 실행 권한 부여 및 실행
-            echo "Executing Blue-Green Deployment Script..."
-            chmod +x /opt/focus-to-level-up/scripts/deploy.sh
-            
-            # deploy.sh 실행
-            /opt/focus-to-level-up/scripts/deploy.sh
+
+            if [ "${{ inputs.deploy_strategy }}" = "bluegreen" ]; then
+              ./scripts/deploy-api-bluegreen.sh
+            else
+              case "${{ inputs.compose_service }}" in
+                admin)
+                  ./scripts/deploy-simple.sh admin http://127.0.0.1:9090/admin/actuator/health
+                  ;;
+                batch)
+                  ./scripts/deploy-simple.sh batch "" "Started FocusToLevelupBatchApplication"
+                  ;;
+                *)
+                  echo "Unsupported simple deploy service: ${{ inputs.compose_service }}"
+                  exit 1
+                  ;;
+              esac
+            fi
 
             docker image prune -f

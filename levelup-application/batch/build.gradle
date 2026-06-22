@@ -6,6 +6,7 @@ dependencies {
     implementation project(':levelup-common')
     implementation project(':levelup-infra:mysql')
     implementation project(':levelup-infra:redis')
+    implementation project(':levelup-infra:client')
 
     // Batch Core
     implementation 'org.springframework.boot:spring-boot-starter-batch'

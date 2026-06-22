@@ -1,0 +1,26 @@
+name: CI/CD Batch for Development
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Optional image tag override'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  call-cicd-template:
+    name: Deploy Batch for Development
+    uses: ./.github/workflows/cicd-template.yml
+    secrets: inherit
+    with:
+      environment: 'dev'
+      module_name: 'batch'
+      gradle_task: ':levelup-application:batch:bootJar'
+      module_dir: 'levelup-application/batch'
+      deploy_strategy: 'simple'
+      compose_service: 'batch'
+      image_tag: ${{ inputs.image_tag }}
