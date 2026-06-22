@@ -42,19 +42,29 @@ if [ -n "$HEALTH_URL" ]; then
 fi
 
 echo "### 4. 컨테이너 상태 확인 ###"
-sleep 10
-RUNNING_SERVICE=$(docker compose -f "$COMPOSE_FILE" ps --status running --services | grep -x "$SERVICE" || true)
+for i in {1..30}; do
+  RUNNING_SERVICE=$(docker compose -f "$COMPOSE_FILE" ps --status running --services | grep -x "$SERVICE" || true)
 
-if [ -z "$RUNNING_SERVICE" ]; then
-  echo "❌ $SERVICE 컨테이너가 실행 중이 아닙니다."
-  docker compose -f "$COMPOSE_FILE" logs --tail=120 "$SERVICE"
-  exit 1
-fi
+  if [ -z "$RUNNING_SERVICE" ]; then
+    echo "❌ $SERVICE 컨테이너가 실행 중이 아닙니다."
+    docker compose -f "$COMPOSE_FILE" logs --tail=120 "$SERVICE"
+    exit 1
+  fi
 
-if ! docker compose -f "$COMPOSE_FILE" logs --tail=120 "$SERVICE" | grep -q "$STARTED_LOG_PATTERN"; then
-  echo "❌ $SERVICE 시작 로그를 확인하지 못했습니다. 최근 로그를 출력합니다."
-  docker compose -f "$COMPOSE_FILE" logs --tail=120 "$SERVICE"
-  exit 1
-fi
+  if docker compose -f "$COMPOSE_FILE" logs --tail=160 "$SERVICE" | grep -q "$STARTED_LOG_PATTERN"; then
+    echo "✅ $SERVICE 시작 로그 확인 완료!"
+    echo "✅ $SERVICE 배포 완료!"
+    exit 0
+  fi
+
+  if [ "$i" -eq 30 ]; then
+    echo "❌ $SERVICE 시작 로그를 확인하지 못했습니다. 최근 로그를 출력합니다."
+    docker compose -f "$COMPOSE_FILE" logs --tail=160 "$SERVICE"
+    exit 1
+  fi
+
+  echo "⏳ 시작 로그 대기 중... ($i/30)"
+  sleep 5
+done
 
 echo "✅ $SERVICE 배포 완료!"

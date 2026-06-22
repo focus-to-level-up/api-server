@@ -245,6 +245,11 @@
 - API는 기존 blue-green 배포 방식을 유지한다.
 - Batch와 Admin은 API와 독립적으로 배포 가능하도록 분리한다.
 - 현재 main 브랜치가 dev로 바로 배포되는 흐름은 별도 배포 설계 전까지 유의한다.
+- 멀티모듈 CI/CD는 dev부터 신중하게 검증한다.
+  - GitHub Actions `ENV_FILE_PROD`는 아직 최신 `MASTER_DATA_PATH`와 Admin 최초 계정 값으로 업데이트하지 않았다.
+  - RDS 백업은 아직 생성하지 않았다.
+  - prod nginx의 `/admin/` path 라우팅은 아직 설정하지 않았다.
+  - dev API 배포 검증 후 Admin, Batch를 각각 수동 workflow로 배포한다.
 - 운영 서버에 미사용 Docker 이미지가 지속적으로 누적된 원인을 확인한다.
   - 배포 워크플로우의 이미지 태그 및 정리 정책을 점검한다.
   - blue-green 배포에 필요한 롤백 이미지 보존 개수를 결정한다.
