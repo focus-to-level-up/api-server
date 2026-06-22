@@ -2,14 +2,16 @@ package com.studioedge.step.season_end;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studioedge.common.policy.ServiceTimePolicy;
+import com.studioedge.mail.entity.Mail;
+import com.studioedge.mail.enums.MailType;
+import com.studioedge.mail.repository.MailRepository;
 import com.studioedge.member.entity.Member;
-import com.studioedge.ranking.repository.LeagueRepository;
 import com.studioedge.ranking.entity.League;
 import com.studioedge.ranking.entity.Ranking;
 import com.studioedge.ranking.enums.Tier;
-import com.studioedge.mail.repository.MailRepository;
-import com.studioedge.mail.entity.Mail;
-import com.studioedge.mail.enums.MailType;
+import com.studioedge.ranking.repository.LeagueRepository;
+import com.studioedge.system.entity.Asset;
+import com.studioedge.system.repository.AssetRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Step;
@@ -42,6 +44,7 @@ public class GrantSeasonRewardStep {
     private final MailRepository mailRepository;
     private final LeagueRepository leagueRepository;
     private final ObjectMapper objectMapper;
+    private final AssetRepository assetRepository;
 
     @Bean
     public Step grantSeasonReward() {
@@ -115,9 +118,6 @@ public class GrantSeasonRewardStep {
         // 보상 계산
         int diamonds = Tier.getSeasonRewardDiamonds(finalTier);
 
-        // 마스터인 경우 구독권 텍스트 추가
-        boolean isMaster = (finalTier == Tier.MASTER);
-
         String title = "시즌이 종료되었습니다. 최종 보상을 확인하세요";
         String popupTitle = finalTier.name() + " 시즌 종료 보상";
         String popupContent = String.format(
@@ -130,7 +130,7 @@ public class GrantSeasonRewardStep {
                 .senderName("Focus to Level Up")
                 .type(MailType.SEASON_END)
                 .title(title)
-                .description("시즌 종료 보상입니다.\n" + (isMaster ? "(구독권 포함)" : ""))
+                .description("시즌 종료 보상입니다!\n")
                 .popupTitle(popupTitle)
                 .popupContent(popupContent)
                 .reward(diamonds) // 다이아 보상
@@ -144,6 +144,8 @@ public class GrantSeasonRewardStep {
     private Mail createProfileBorderMail(Member member, Tier finalTier) {
         // SQL이나 Enum에 정의된 한글 에셋 이름 (예: "골드 프로필 테두리")
         String assetName = Tier.getBorderAssetName(finalTier);
+        Asset asset = assetRepository.findByName(assetName)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 에셋입니다: " + assetName));
 
         String title = finalTier.name() + " 테두리 보상";
         String description = String.format("%s 티어 달성 기념으로\n[%s]를 드립니다.", finalTier.name(), assetName);
@@ -158,6 +160,8 @@ public class GrantSeasonRewardStep {
                 .popupContent(finalTier.name() + " 티어 달성을 축하하며 특별한 테두리를 드립니다!")
                 .reward(0) // 재화 보상 없음 (아이템 지급은 수령 시 처리)
                 .expiredAt(ServiceTimePolicy.getServiceDate().plusDays(7))
+                .assetName(assetName)
+                .profileBorderImageUrl(asset.getAssetUrl())
                 .build();
     }
 

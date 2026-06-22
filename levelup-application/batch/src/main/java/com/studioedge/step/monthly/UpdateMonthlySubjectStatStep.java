@@ -69,7 +69,6 @@ public class UpdateMonthlySubjectStatStep {
     @Bean
     public ItemWriter<Member> updateMonthlySubjectStatWriter() {
         return chunk -> {
-
             LocalDate today = ServiceTimePolicy.getServiceDate();
             LocalDate firstDayOfLastMonth = today.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth());
             LocalDate lastDayOfLastMonth = today.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());

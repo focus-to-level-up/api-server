@@ -11,7 +11,7 @@ public record UpdateProfileRequest(
         @Schema(description = "프로필 이미지 pk", example = "3")
         Long profileImageId,
 
-        @NotNull(message = "프로필 이미지 선택은 필수입니다.")
+        @NotNull(message = "프로필 테두리 선택은 필수입니다.")
         @Schema(description = "프로필 테두리 pk", example = "5")
         Long profileBorderId
 ) {
