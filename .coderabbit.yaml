@@ -1,0 +1,131 @@
+# CodeRabbit Configuration for Solo Developer
+# 1인 개발자를 위한 효율성 및 품질 중심 설정
+
+version: "2"
+
+language: "ko-KR" # 리뷰 언어를 한국어로 설정 (필요시 "en-US"로 변경)
+early_access: true # 최신 기능을 미리 사용해 생산성 향상
+enable_free_tier: true
+
+reviews:
+  profile: "chill" # "assertive"는 너무 깐깐할 수 있으므로 "chill"로 설정하되 툴을 통해 품질 보장
+  request_changes_workflow: false # 1인 개발이므로 봇이 병합을 막지 않도록 설정 (중요)
+  high_level_summary: true # PR 내용을 자동으로 요약하여 히스토리 관리 용이
+  high_level_summary_in_walkthrough: true # 워크스루(상세 리뷰)에 요약 포함
+  auto_title_placeholder: "@coderabbitai" # PR 제목 자동 생성 트리거
+
+  # 시각화 및 문서화 도움
+  sequence_diagrams: true # 복잡한 로직을 시퀀스 다이어그램으로 시각화 (미래의 나를 위해 유용)
+  changed_files_summary: true # 변경된 파일 요약
+  collapse_walkthrough: false # 리뷰 내용을 바로 볼 수 있도록 펼쳐둠
+
+  # 재미 요소 제거 (효율성 중심)
+  poem: false
+  in_progress_fortune: false
+
+  # 라벨링 자동화 (이슈 트래킹 용이)
+  suggested_labels: true
+  auto_apply_labels: true
+
+  # 제외할 파일들 (노이즈 제거)
+  path_filters:
+    - "!**/build/**"
+    - "!**/gradle/**"
+    - "!**/test/**" # 테스트 코드는 리뷰 생략하거나 필요시 제거
+    - "!**/swagger.yaml"
+    - "!**/README.md"
+
+  # 1인 개발자를 위한 특별 지침 (Tone & Style)
+  # [핵심] 커스텀 리뷰 가이드라인
+  path_instructions:
+    # 1. JPA Entity 및 DB 컨벤션 (인프런 규칙을 Java/JPA에 맞게 변형)
+    - path: "**/{domain,entity,model}/**/*.java"
+      instructions: >
+        JPA Entity 클래스를 리뷰할 때 다음 규칙을 확인해주세요.
+        1. **ID 타입 강제**: `@Id`가 붙은 PK 필드나, `_id`로 끝나는 외래키(FK)성 필드는 반드시 `Long` (Wrapper Class) 타입을 사용해야 합니다. `int`, `Integer`를 사용했다면 `Long`으로 변경하라고 경고해주세요.
+        2. **FK 제약조건**: 팀 컨벤션상 물리적인 FK 제약조건(Constraint)을 걸지 않는 것을 선호합니다. `@ForeignKey` 어노테이션 사용을 제안하지 마세요.
+        3. **경고 메시지**: 위 규칙 위반 시 경고 메시지 앞에 "🚨🚨🚨 [DB Convention]"을 붙여주세요.
+
+    # 2. REST API 설계 원칙 (인프런 규칙을 Spring Boot Controller에 적용)
+    - path: "**/*Controller.java"
+      instructions: >
+        Spring Boot Controller의 API 엔드포인트를 다음 가이드라인에 맞춰 리뷰해주세요.
+        
+        ### Richardson Maturity Model (RMM)
+        - 적절한 HTTP 메서드(GET, POST, PUT, DELETE, PATCH)가 사용되었는지 확인해주세요.
+        
+        ### URI Naming Convention
+        - URI는 **kebab-case**를 사용해야 합니다. (예: `/api/v1/user-profiles`)
+        - Resource는 복수형 명사를 사용합니다. (예: `/users` instead of `/user`)
+        - URI에 동사(create, get 등)가 포함되지 않도록 합니다. (단, 복잡한 컨트롤러 로직인 경우 예외 허용)
+        - Body나 Parameter는 **camelCase**를 사용해야 합니다.
+        
+        ### Response Type
+        - 반환 타입은 항상 `ResponseEntity<ApiResponse<T>>` 형태의 통일된 응답 포맷을 권장합니다.
+        - 이떄, `HttpResponseUtils` 클래스를 활용하여 일관된 응답 구조를 유지하는지 확인해주세요.
+
+    # 3. [프로젝트 특화] TimeZone 및 Sentry 설정 (우리가 겪은 이슈 방지)
+    - path: "**/*.java"
+      instructions: >
+        **중요: 날짜/시간 및 로깅 관련 리뷰 가이드**
+        1. **TimeZone 이슈 방지**: `LocalDateTime`을 파라미터로 받거나 반환할 때, 프론트엔드(Flutter)와의 시차 문제(+9시간)가 발생할 가능성이 있는지 확인해주세요. 가능하다면 `OffsetDateTime` 사용을 권장하거나, UTC 처리가 명확한지 로직을 점검해주세요.
+        2. **Sentry Context**: 예외 처리(`catch`) 블록이나 중요 비즈니스 로직(결제, 공부 종료 등)에서 `Sentry.setUser()` 또는 `Sentry.setContext()`를 통해 디버깅 정보를 남기고 있는지 확인해주세요. 단순히 `log.error()`만 찍는 경우 Sentry 활용을 제안해주세요.
+chat:
+  auto_reply: true # 댓글을 달면 즉시 반응하도록 설정
+
+# 코드 생성 및 자동화 (1인 개발의 핵심)
+code_generation:
+  docstrings:
+    path_instructions:
+      - path: "**/*Controller.java"
+        instructions: "Swagger 어노테이션(@Operation, @Schema)에 들어갈 설명을 포함하여 JavaDoc을 작성해주세요."
+      - path: "**/*Service.java"
+        instructions: "비즈니스 로직의 예외 케이스와 트랜잭션 범위를 명시하는 JavaDoc을 작성해주세요."
+  unit_tests:
+    path_instructions:
+      - path: "**/*Service.java"
+        instructions: "JUnit 5와 Mockito를 사용하여 단위 테스트 코드를 제안해주세요. 특히 날짜 시간 계산 로직에 대한 엣지 케이스를 포함해주세요."
+
+# 병합 전 체크 (스스로를 위한 안전장치)
+# 경고(warning)만 주고 병합을 막지는 않음
+pre_merge_checks:
+  title:
+    mode: "warning"
+  description:
+    mode: "warning"
+  docstrings:
+    mode: "warning"
+    threshold: 50 # 문서화 커버리지 50% 권장
+  issue_assessment:
+    mode: "warning" # 연결된 이슈 해결 여부 확인
+
+# 툴 설정 (정적 분석 및 보안)
+# 사용하는 언어에 맞춰 필요한 것만 true로 유지해도 됨
+tools:
+  # 보안 필수 (혼자 개발할 때 키 유출 실수가 잦음)
+  gitleaks:
+    enabled: true
+  osv-scanner: # 의존성 취약점 스캔
+    enabled: true
+
+  # Java 정적 분석
+  pmd:
+    enabled: true
+
+  # 인프라 (Docker)
+  hadolint:
+    enabled: true # Dockerfile 린트
+  checkov:
+    enabled: true # IaC 보안 점검
+
+  # 기타 유용한 툴
+  markdownlint:
+    enabled: true
+  actionlint:
+    enabled: true # GitHub Actions 린트
+  yamllint:
+    enabled: true
+
+  # GitHub Checks 통합 (PR 하단에서 상태 확인 가능)
+  github-checks:
+    enabled: true
